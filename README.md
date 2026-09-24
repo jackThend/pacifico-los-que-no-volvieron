@@ -122,6 +122,10 @@ El repositorio cuenta con una base documental de **48 archivos de alta definici�
 │   ├── 04_Uniformes_y_Armamento/         # Planos técnicos de fusilería y uniformología
 │   ├── 05_Cartas_y_Documentos/           # Facsímiles, cartas y crónicas transcritas
 │   └── README_Indice_Archivo_Historico.md # Índice catalogado con resolución y metadatos
+├── AGENTS.md                             # Protocolo y directivas de desarrollo para Agentes de IA
+├── ROADMAP_DE_DESARROLLO.md              # Plan maestro de trabajo, fases y criterios de verificación
+├── DEV_LOG.md                            # Bitácora de iteraciones autónomas y resolución de errores
+├── CLAUDE.md                             # Guía rápida para asistentes de codificación en terminal
 ├── GDD_Narrativo_y_Misiones.md           # Game Design Document técnico y narrativo (Unity URP)
 ├── Historia_Completa_Guion.md            # Guion narrativo detallado con diálogos y cinemáticas
 ├── download_historical_archive.py        # Herramienta de sincronización con Wikimedia Commons
