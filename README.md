@@ -1,0 +1,153 @@
+# 🌊 PACÍFICO: LOS QUE NO VOLVIERON
+
+> **«No es una historia de tratados ni de generales en salones de terciopelo. Es la crónica de los muchachos que marcharon hacia el salitre... y jamás regresaron.»**
+
+[![Unity 6 / URP](https://img.shields.io/badge/Engine-Unity%206%20%2F%20URP-black?style=for-the-badge&logo=unity)](https://unity.com/)
+[![Genre](https://img.shields.io/badge/G%C3%A9nero-FPS%20%7C%20Naval%203D%20%7C%20RTS%20T%C3%A1ctico-blue?style=for-the-badge)](GDD_Narrativo_y_Misiones.md)
+[![Tone](https://img.shields.io/badge/Tono-Realismo%20Hist%C3%B3rico%20%7C%20Antibelicista-darkred?style=for-the-badge)](Historia_Completa_Guion.md)
+[![Historical Archive](https://img.shields.io/badge/Archivo%20Hist%C3%B3rico-48%20Documentos%20Reales-gold?style=for-the-badge)](Archivo_Historico/README_Indice_Archivo_Historico.md)
+[![Language](https://img.shields.io/badge/Idioma-Espa%C3%B1ol-green?style=for-the-badge)](#)
+
+---
+
+## 📖 Visión del Proyecto
+
+**Pacífico: Los que no volvieron** es un proyecto interactivo bélico-narrativo diseñado para sumergir al jugador en los episodios capitales de la **Guerra del Pacífico (1879–1884)** a través de las cartas, memorias y vivencias de los soldados rasos, marineros novatos, conscriptos indígenas y minorías olvidadas de ambos bandos (**Chile** y la **Alianza Perú-Bolivia**).
+
+Lejos de apologías patrioteras o clichés heroicos unilaterales, la obra plantea un enfoque **crudo, riguroso y humanista**: *"El enemigo es humano"*. La dignidad y el honor de figuras históricas como **Arturo Prat**, **Miguel Grau**, **Francisco Bolognesi** y **Andrés Avelino Cáceres** conviven con el drama desgarrador de los miles de combatientes anónimos consumidos por la pólvora negra, el escorbuto y la sed en el desierto más árido del mundo.
+
+---
+
+## 🎯 Los Cuatro Pilares Fundamentales
+
+```
+                     ┌────────────────────────────────────────┐
+                     │     PACÍFICO: LOS QUE NO VOLVIERON     │
+                     └───────────────────┬────────────────────┘
+          ┌──────────────────────┬───────┴────────┬──────────────────────┐
+          ▼                      ▼                ▼                      ▼
+┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
+│   LA VERDAD EN   │   │    EL TESTIGO    │   │   JUGABILIDAD    │   │   LA VOZ DE LOS  │
+│  LOS BOLSILLOS   │   │     NEUTRAL      │   │     MODERNA      │   │    MARGINADOS    │
+│ Cartas, fotos y  │   │ Cinemáticas con  │   │ FPS dinámico,    │   │ Culíes chinos,   │
+│ objetos reales   │   │ corresponsales   │   │ duelos navales y │   │ quechuas, aimaras│
+│ en cada soldado  │   │ de ultramar      │   │ táctica sin base │   │ y mineros cívicos│
+└──────────────────┘   └──────────────────┘   └──────────────────┘   └──────────────────┘
+```
+
+1. **La Verdad en los Bolsillos (Narrativa de Trinchera):**
+   * Al registrar caídos en el frente, el jugador no extrae botines genéricos, sino **cartas manuscritas originales, relicarios de hojalata y daguerrotipos de época**. El enemigo deja de ser un polígono y se revela como un zapatero de Quillota, un artesano limeño o un pastor aimara de La Paz.
+2. **El Testigo Neutral (Crónicas de Ultramar):**
+   * Perspectiva cinematográfica enmarcada por corresponsales y diplomáticos europeos (*Sir George F. Morice* de *The Times* y el ministro británico *Sir Spenser St. John*). Su mirada evoluciona del prejuicio colonial inicial al absoluto asombro y respeto marcial ante la bravura y estoicismo de los ejércitos sudamericanos.
+3. **Jugabilidad Moderna y Enganchante:**
+   * Fidelidad absoluta al siglo XIX en apariencia, sonido y balística, adaptada a una experiencia ágil: recargas de fusil de cerrojo dinámicas (~2 segundos), disipación cinematográfica del humo blanco de pólvora y maniobras tácticas fluidas.
+4. **La Voz de los Marginados:**
+   * Protagonismo de sectores silenciados: los culíes chinos esclavizados liberados de las haciendas que combatieron como zapadores (*Compañía Vulcano*), los conscriptos aimaras y quechuas del batallón *Colorados de Bolivia*, y las esforzadas cantineras y enfermeras de campaña.
+
+---
+
+## 🎮 Tres Fases de Jugabilidad Híbrida
+
+| Fase | Género | Mecánicas Clave | Misiones Destacadas |
+| :--- | :--- | :--- | :--- |
+| **Terrestre** | **FPS Ágil & Táctico** | Fusiles monotiro y cerrojo (Comblain, Chassepot, Gras, Remington Rolling Block), bayonetas triangulares, combate visceral con corvo, parapetos destructibles y morteros de trinchera. | Pisagua, Tarapacá, Reductos de Miraflores. |
+| **Naval 3D** | **Simulador de Combate Naval** | Vista exterior y telémetro artillero, telégrafo de calderas, torre giratoria *Coles* del monitor *Huáscar*, ángulo de impacto y rebote de coraza de hierro, maniobras de espolón y brigadas de control de averías. | Iquique, Punta Gruesa, Combate de Angamos. |
+| **Estratégica** | **RTS Táctico sin Bases** | Mando directo de escuadras de infantería, cazadores tiradores, baterías Krupp/Armstrong y caballería ligera. Supresión de fuego, moral en combate, cargas a la bayoneta y convoyes de agua/munición vitales en el desierto. | Alto de la Alianza (Tacna), Asalto al Morro de Arica. |
+
+---
+
+## 👥 Protagonistas y Facciones
+
+El guion no ofrece un único punto de vista heroico, sino múltiples vivencias cruzadas inspiradas en identidades y memorias históricas auténticas:
+
+* **Abraham Quiroz (Chile):** El "Roto Culto", soldado raso de Quillota en el regimiento Cazadores del Desierto y 3° de Línea. Conscripto sensible, reflexivo y autor de célebres cartas a su padre.
+* **Wenceslao Vargas (Chile):** Grumete de 17 años a bordo de la corbeta de madera *Esmeralda*. Testigo del martirio de Arturo Prat y de la agonía de su nave bajo el espolón del *Huáscar*.
+* **Cabo Dámaso Antúnez (Perú):** Artillero de la dotación de la torre giratoria Coles en el monitor *Huáscar*. Experimenta la claustrofobia de hierro bajo las órdenes del Almirante Miguel Grau.
+* **Subteniente Daniel Ballivián (Bolivia):** Oficial de los míticos *Colorados de Bolivia*. Vive el épico cruce andino hacia el infierno salitrero del Cerro Intiorko en la Batalla de Tacna.
+* **Augusto Bedoya (Perú):** Joven letrado de la Reserva Urbana de Lima. Civiles, académicos y comerciantes atrincherados en los reductos de Miraflores para defender sus hogares.
+* **Quintín Quintana / Tan Bi (Compañía Vulcano):** Líder de los trabajadores chinos culíes liberados en las haciendas azucareras del valle de Cañete, transformados en zapadores de élite y artificieros.
+
+---
+
+## 📜 Estructura de la Campaña (Guion Completo)
+
+La historia se divide en **8 capítulos dinámicos más prólogo y epílogo**, abarcando las 5 campañas de la guerra:
+
+```
+[PRÓLOGO: El Ojo de Europa]
+  └─ Valparaíso y Callao (1879): Introducción de los corresponsales extranjeros.
+[CAPÍTULO 1: Madera y Blindaje]
+  └─ Combate Naval de Iquique y Punta Gruesa (Doble perspectiva: Esmeralda y Huáscar).
+[CAPÍTULO 2: El Fantasma de Hierro]
+  └─ Las correrías del Huáscar y la guerra de corso de Miguel Grau.
+[CAPÍTULO 3: Trampa en Punta Angamos]
+  └─ El cerco de la escuadra chilena y el desenlace fatal del Almirante de los Mares.
+[CAPÍTULO 4: Sangre en la Marea]
+  └─ El desembarco anfibio de Pisagua: fuego cruzado entre falúas y peñones.
+[CAPÍTULO 5: El Cañón de la Muerte]
+  └─ Batalla de Tarapacá: emboscada en el desfiladero y la resistencia aliada de Cáceres.
+[CAPÍTULO 6: La Carga de los Ponchos Rojos]
+  └─ Batalla del Alto de la Alianza (Tacna): combate masivo de 20.000 soldados en la arena.
+[CAPÍTULO 7: Hasta el Último Cartucho]
+  └─ Asalto al Morro de Arica: la respuesta de Bolognesi y la toma de los reductos minados.
+[CAPÍTULO 8: El Último Reducto]
+  └─ Batalla de Miraflores y defensa final de Lima: la caída de Abraham Quiroz.
+[EPÍLOGO: El Retorno de las Cenizas]
+  └─ Londres (1890): Reflexión final de Sir George F. Morice ante los monumentos erigidos.
+```
+
+---
+
+## 🏛️ Archivo Histórico y Multimedia
+
+El repositorio cuenta con una base documental de **48 archivos de alta definición** curados directamente de archivos nacionales (Biblioteca Nacional de Chile, Archivo General de la Nación del Perú, Archivo Histórico de La Paz y Library of Congress):
+
+* **[📁 01_Barcos_y_Combate_Naval](Archivo_Historico/01_Barcos_y_Combate_Naval):** Fotografías originales de 1879 del *Huáscar*, *Esmeralda*, *Cochrane*, *Blanco Encalada*, planos de la fragata *Independencia* y óleos navales de Thomas Somerscales.
+* **[📁 02_Fotos_Soldados_y_Personajes](Archivo_Historico/02_Fotos_Soldados_y_Personajes):** Daguerrotipos de época de Prat, Grau, Bolognesi, Cáceres, Alfonso Ugarte, soldados bolivianos, el batallón Aconcagua, culíes chinos esclavizados y retratos médicos de campaña.
+* **[📁 03_Lugares_y_Campos_de_Batalla](Archivo_Historico/03_Lugares_y_Campos_de_Batalla):** Vistas reales de Pisagua, el cañón de Tarapacá, pampas de Intiorko, el Morro de Arica y fotografías excepcionales en 7 MB del Reducto N° 3 de Miraflores tras la batalla.
+* **[📁 04_Uniformes_y_Armamento](Archivo_Historico/04_Uniformes_y_Armamento):** Planos técnicos de cerrojos y despiece de fusiles Chassepot 1866, Gras 1874, Remington Rolling Block y réplicas museográficas de uniformes.
+* **[📁 05_Cartas_y_Documentos](Archivo_Historico/05_Cartas_y_Documentos):** Facsímiles de la *Carta de Grau a Carmela Carvajal*, planos tácticos de Arica con polvorines y minas, y transcripciones íntegras del epistolario íntimo del soldado Abraham Quiroz y crónicas de corresponsales de guerra.
+
+*(Para más detalles, consulta el [Índice Maestro del Archivo](Archivo_Historico/README_Indice_Archivo_Historico.md)).*
+
+---
+
+## 📂 Estructura del Repositorio
+
+```text
+├── Archivo_Historico/
+│   ├── 01_Barcos_y_Combate_Naval/        # Fotografías, planos y grabados navales
+│   ├── 02_Fotos_Soldados_y_Personajes/   # Daguerrotipos y retratos de combatientes
+│   ├── 03_Lugares_y_Campos_de_Batalla/   # Fotografías de campamentos y campos de batalla
+│   ├── 04_Uniformes_y_Armamento/         # Planos técnicos de fusilería y uniformología
+│   ├── 05_Cartas_y_Documentos/           # Facsímiles, cartas y crónicas transcritas
+│   └── README_Indice_Archivo_Historico.md # Índice catalogado con resolución y metadatos
+├── GDD_Narrativo_y_Misiones.md           # Game Design Document técnico y narrativo (Unity URP)
+├── Historia_Completa_Guion.md            # Guion narrativo detallado con diálogos y cinemáticas
+├── download_historical_archive.py        # Herramienta de sincronización con Wikimedia Commons
+├── .gitignore                            # Exclusiones de Python, SO y previsión para Unity
+└── README.md                             # Documento maestro del proyecto
+```
+
+---
+
+## ⚡ Herramientas y Sincronización
+
+Para verificar la integridad del archivo documental o descargar de manera automatizada las fuentes desde los repositorios de dominio público de Wikimedia Commons:
+
+```bash
+# Requisitos: Python 3.8+
+python download_historical_archive.py
+```
+
+El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de MediaWiki con encabezados normalizados para preservar la máxima calidad de compresión original sin pérdida.
+
+---
+
+## ⚖️ Licencia y Rigor Histórico
+
+* **Documentación y Guion:** Los textos creativos, guiones y documentos de diseño son obra de autor original basada en investigación histórica.
+* **Material Gráfico y Documental:** Todas las fotografías de época, planos, facsímiles y pinturas pertenecen al **Dominio Público** internacional (obras de más de 140 años de antigüedad originadas entre 1879 y 1884, albergadas en museos nacionales y bibliotecas públicas).
+
+---
+*«La contienda es desigual, pero en las sombras de la historia todos los caídos comparten la misma tierra y el mismo mar.»*
