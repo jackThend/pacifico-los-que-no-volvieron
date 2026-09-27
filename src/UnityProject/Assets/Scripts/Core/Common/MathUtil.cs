@@ -64,6 +64,29 @@ namespace Pacifico.Core.Common
             return current + Math.Sign(delta) * maxDelta;
         }
 
+        /// <summary>
+        /// Suavizado críticamente amortiguado (Game Programming Gems 4, §1.10; el mismo que Mathf.SmoothDamp):
+        /// continuo en posición y velocidad, sin sobreimpulso apreciable y estable con cualquier paso de tiempo.
+        /// </summary>
+        public static float SmoothDamp(float current, float target, ref float velocity, float smoothTime, float dt)
+        {
+            smoothTime = Math.Max(1e-4f, smoothTime);
+            float omega = 2f / smoothTime;
+            float x = omega * dt;
+            float exp = 1f / (1f + x + 0.48f * x * x + 0.235f * x * x * x);
+            float change = current - target;
+            float temp = (velocity + omega * change) * dt;
+            velocity = (velocity - omega * temp) * exp;
+            float output = target + (change + temp) * exp;
+            // Evita sobrepasar el objetivo por errores numéricos.
+            if ((target - current > 0f) == (output > target))
+            {
+                output = target;
+                velocity = 0f;
+            }
+            return output;
+        }
+
         public static bool Approximately(float a, float b, float epsilon = 1e-4f) => Math.Abs(a - b) <= epsilon;
     }
 }

@@ -151,12 +151,14 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ## 🛠️ Desarrollo en Unity 6
 
-**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas: estructura del proyecto, datos históricos con fuentes y módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
+**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, y la 3.1 de la fase FPS: estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías) y controlador de infantería en primera persona con alzas graduadas de época. Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
 
 ### Abrir el proyecto
 1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
 2. Menú **Pacífico → Datos → Generar ScriptableObjects históricos**: crea los assets de armas, buques y coleccionables desde los catálogos y el Archivo Histórico.
-3. Menú **Pacífico → Prototipos → Construir escena naval de Iquique** y pulsa Play.
+3. Menú **Pacífico → Prototipos → Construir escena naval de Iquique** (o **…FPS de Pisagua**) y pulsa Play.
+
+**Naval (Iquique):**
 
 | Control | Acción |
 | :--- | :--- |
@@ -165,6 +167,18 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 | Ratón · clic o `Espacio` | Apuntar la torre Coles · disparar |
 | `R` / `F` | Convergencia de las piezas · `Mayús`: telémetro |
 | `1` / `2` / `3` | Brigada de averías: incendios · achique · vapor |
+
+**Infantería (Pisagua):**
+
+| Control | Acción |
+| :--- | :--- |
+| `WASD` · ratón | Moverse · mirar |
+| `Mayús` | Correr (gasta resistencia) |
+| `C` / `Ctrl` | Agacharse; corriendo: deslizamiento táctico |
+| `Espacio` | Saltar |
+| Botón derecho | Encarar el fusil con las miras |
+| Rueda (al encarar) o `RePág`/`AvPág` | Graduar el alza (100 m por muesca) |
+| `Esc` | Liberar o capturar el ratón |
 
 ### Arquitectura
 * **`Pacifico.Core`** (`noEngineReferences`) contiene toda la lógica de simulación: se prueba sin abrir Unity y es determinista.

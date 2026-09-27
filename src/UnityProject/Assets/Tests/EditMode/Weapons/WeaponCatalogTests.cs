@@ -88,10 +88,11 @@ namespace Pacifico.Tests.Weapons
         public void Clone_CopiaProfundamenteLasListas()
         {
             var original = WeaponCatalog.Gras();
+            int references = original.Source.References.Count;
             var copy = original.Clone();
             copy.Source.References.Add("otra");
             copy.UsedBy.Add(Faction.Bolivia);
-            Assert.That(original.Source.References.Count, Is.EqualTo(2));
+            Assert.That(original.Source.References.Count, Is.EqualTo(references));
             Assert.That(original.UsedBy, Has.Count.EqualTo(1));
         }
     }

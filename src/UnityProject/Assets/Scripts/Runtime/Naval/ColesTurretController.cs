@@ -143,7 +143,7 @@ namespace Pacifico.Naval
 
         private bool TryMouseOnSea(out Vector3 point)
         {
-            Vector3 mouse = MousePosition();
+            Vector3 mouse = GameInput.MousePosition;
             Ray ray = _camera.ScreenPointToRay(mouse);
             var sea = new Plane(Vector3.up, new Vector3(0f, seaLevel, 0f));
             if (sea.Raycast(ray, out float enter))
@@ -153,19 +153,6 @@ namespace Pacifico.Naval
             }
             point = default;
             return false;
-        }
-
-        private static Vector3 MousePosition()
-        {
-#if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
-            return UnityEngine.InputSystem.Mouse.current != null
-                ? (Vector3)UnityEngine.InputSystem.Mouse.current.position.ReadValue()
-                : Vector3.zero;
-#elif ENABLE_LEGACY_INPUT_MANAGER
-            return UnityEngine.Input.mousePosition;
-#else
-            return Vector3.zero;
-#endif
         }
 
         // ------------------------------------------------------------------------------------------

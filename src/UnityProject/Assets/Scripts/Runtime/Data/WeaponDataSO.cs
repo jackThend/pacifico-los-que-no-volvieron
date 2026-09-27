@@ -26,6 +26,8 @@ namespace Pacifico.Data
         [Min(0f)] public float caliberMm;
         [Tooltip("Velocidad en boca (m/s).")]
         [Min(0f)] public float muzzleVelocityMps;
+        [Tooltip("Masa de la bala (g).")]
+        [Min(0f)] public float bulletMassG;
         [Min(0f)] public float massKg;
         [Tooltip("Alcance máximo del alza (m).")]
         [Min(0f)] public float maxSightRangeM;
@@ -60,6 +62,7 @@ namespace Pacifico.Data
                 Cartridge = cartridge,
                 CaliberMm = caliberMm,
                 MuzzleVelocityMps = muzzleVelocityMps,
+                BulletMassG = bulletMassG,
                 MassKg = massKg,
                 MaxSightRangeM = maxSightRangeM,
                 Source = source != null ? source.ToCore() : new HistoricalSource(),
@@ -87,6 +90,7 @@ namespace Pacifico.Data
             cartridge = spec.Cartridge;
             caliberMm = spec.CaliberMm;
             muzzleVelocityMps = spec.MuzzleVelocityMps;
+            bulletMassG = spec.BulletMassG;
             massKg = spec.MassKg;
             maxSightRangeM = spec.MaxSightRangeM;
             source = SerializableHistoricalSource.FromCore(spec.Source);

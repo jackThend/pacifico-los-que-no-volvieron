@@ -79,7 +79,7 @@ namespace Pacifico.EditorTools
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
-            AddToBuildSettings(ScenePath);
+            PrototypeSceneKit.AddToBuildSettings(ScenePath);
             Debug.Log("[Pacífico] Escena de prototipo guardada en " + ScenePath + " (" + esmeralda.name + " contra " + huascar.name + ").");
         }
 
@@ -250,33 +250,14 @@ namespace Pacifico.EditorTools
         private static GameObject Primitive(PrimitiveType type, string name, Transform parent, Vector3 localPosition,
                                             Vector3 localScale, Color color, bool keepCollider = true)
         {
-            GameObject go = GameObject.CreatePrimitive(type);
-            go.name = name;
-            if (parent != null) go.transform.SetParent(parent, false);
-            go.transform.localPosition = localPosition;
-            go.transform.localScale = localScale;
-            if (!keepCollider) Object.DestroyImmediate(go.GetComponent<Collider>());
-            go.GetComponent<Renderer>().sharedMaterial = MaterialFor(name, color);
-            return go;
+            return PrototypeSceneKit.Primitive(type, name, parent, localPosition, localScale, MaterialFor(name, color), keepCollider);
         }
 
         private static Material MaterialFor(string name, Color color)
         {
             string key = color == SeaColor ? "Mar" : color == CoastColor ? "Costa" : color == IronColor ? "Hierro"
                 : color == WoodColor ? "Madera" : color == BrassColor ? "Bronce" : name;
-            string path = ProjectPaths.Materials + "/Proto_" + key + ".mat";
-            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (material != null) return material;
-
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Standard");
-            material = new Material(shader);
-            if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
-            if (material.HasProperty("_Color")) material.SetColor("_Color", color);
-            if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", key == "Mar" ? 0.8f : 0.25f);
-            HistoricalDataAssetGenerator.EnsureFolder(ProjectPaths.Materials);
-            AssetDatabase.CreateAsset(material, path);
-            return material;
+            return PrototypeSceneKit.Material(key, color, key == "Mar" ? 0.8f : 0.25f);
         }
 
         private static NavalShell CreateShellPrefab()
@@ -296,20 +277,6 @@ namespace Pacifico.EditorTools
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(shell, ShellPrefabPath);
             Object.DestroyImmediate(shell);
             return prefab.GetComponent<NavalShell>();
-        }
-
-        private static void AddToBuildSettings(string path)
-        {
-            var scenes = EditorBuildSettings.scenes;
-            foreach (var s in scenes)
-            {
-                if (s.path == path) return;
-            }
-            var list = new System.Collections.Generic.List<EditorBuildSettingsScene>(scenes)
-            {
-                new EditorBuildSettingsScene(path, true),
-            };
-            EditorBuildSettings.scenes = list.ToArray();
         }
     }
 }

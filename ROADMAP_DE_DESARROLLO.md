@@ -15,8 +15,8 @@
 
 - [ ] **0.3 Validación en el Editor de Unity 6** *(requiere una máquina con Unity; el entorno de agentes en la nube no lo tiene)*
   * *Criterio:* Abrir `src/UnityProject` en Unity 6000.0 LTS, ejecutar **Pacífico → Datos → Generar ScriptableObjects históricos** y **Pacífico → Prototipos → Construir escena naval de Iquique**, y correr el Test Runner (EditMode: `Pacifico.Tests.EditMode` y `Pacifico.Tests.Unity`).
-  * *Verificación:* Consola sin errores de compilación; todas las pruebas en verde; en `Proto_Iquique` se comprueban a mano los criterios de 2.1 a 2.4 (W/S/A/D con inercia, torre y retícula, rebotes de 40 lb en el *Huáscar*, espolonazo y brigada 1/2/3).
-  * *Nota:* hasta completarla, las tareas marcadas `[X]` de las fases 1 y 2 están verificadas **fuera del motor**: arnés `tools/verify` con referencias de API de Unity y 115 pruebas NUnit de la lógica.
+  * *Verificación:* Consola sin errores de compilación; todas las pruebas en verde; en `Proto_Iquique` se comprueban a mano los criterios de 2.1 a 2.4 (W/S/A/D con inercia, torre y retícula, rebotes de 40 lb en el *Huáscar*, espolonazo y brigada 1/2/3); en `Proto_Pisagua_FPS` (**Pacífico → Prototipos → Construir escena FPS de Pisagua**), los de 3.1 (movimiento fluido a 60 FPS con el contador del HUD, rampas, escalera, túnel agachado, deslizamiento, encare y alza).
+  * *Nota:* hasta completarla, las tareas marcadas `[X]` de las fases 1 a 3 están verificadas **fuera del motor**: arnés `tools/verify` con referencias de API de Unity y 156 pruebas NUnit de la lógica.
 
 ---
 
@@ -50,7 +50,7 @@
 ---
 
 ## 📌 FASE 3: MÓDULO FPS DE INFANTERÍA (PROTOTIPO PISAGUA)
-- [ ] **3.1 Controlador de Primera Persona Inmersivo**
+- [X] **3.1 Controlador de Primera Persona Inmersivo**
   * *Criterio:* Movimiento ágil, deslizamiento corto táctico, cabeceo de cámara realista y sistema de apuntado con miras de época.
   * *Verificación:* Movimiento fluido a 60 FPS sin jitter ni errores de física.
 - [ ] **3.2 Sistema de Fusiles de Época y Recarga Dinámica**

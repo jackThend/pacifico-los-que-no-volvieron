@@ -51,6 +51,8 @@ namespace Pacifico.Core.Weapons
         public string Cartridge { get; set; } = string.Empty;
         public float CaliberMm { get; set; }
         public float MuzzleVelocityMps { get; set; }
+        /// <summary>Masa de la bala (g). Determina la pérdida de velocidad por rozamiento y la caída.</summary>
+        public float BulletMassG { get; set; }
         public float MassKg { get; set; }
         /// <summary>Alcance máximo del alza (o alcance máximo documentado).</summary>
         public float MaxSightRangeM { get; set; }
@@ -129,6 +131,7 @@ namespace Pacifico.Core.Weapons
                 r.Require(MuzzleVelocityMps >= 250f && MuzzleVelocityMps <= 600f,
                     "MuzzleVelocityMps fuera del rango de la pólvora negra (" + MuzzleVelocityMps + ")");
                 r.RequirePositive(MassKg, "MassKg");
+                r.Require(BulletMassG >= 5f && BulletMassG <= 40f, "BulletMassG fuera de rango (" + BulletMassG + ")");
                 r.RequirePositive(MaxSightRangeM, "MaxSightRangeM");
                 r.RequirePositive(ReloadSeconds, "ReloadSeconds");
                 r.RequirePositive(BaseDamage, "BaseDamage");

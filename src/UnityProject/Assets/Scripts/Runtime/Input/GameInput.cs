@@ -10,6 +10,7 @@ namespace Pacifico.Input
     {
         W, A, S, D, Q, E, R, F, G, H, Space, Tab, Escape, LeftShift,
         Digit1, Digit2, Digit3,
+        C, LeftControl, PageUp, PageDown,
     }
 
     /// <summary>
@@ -96,6 +97,21 @@ namespace Pacifico.Input
 #endif
         }
 
+        /// <summary>Posición del ratón en píxeles de pantalla.</summary>
+        public static Vector3 MousePosition
+        {
+            get
+            {
+#if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
+                return Mouse.current != null ? (Vector3)Mouse.current.position.ReadValue() : Vector3.zero;
+#elif ENABLE_LEGACY_INPUT_MANAGER
+                return UnityEngine.Input.mousePosition;
+#else
+                return Vector3.zero;
+#endif
+            }
+        }
+
         /// <summary>-1 si solo se pulsa <paramref name="negative"/>, +1 si solo <paramref name="positive"/>, 0 si ninguna o ambas.</summary>
         public static float Axis(GameKey negative, GameKey positive)
         {
@@ -126,6 +142,10 @@ namespace Pacifico.Input
                 case GameKey.Digit1: return k.digit1Key;
                 case GameKey.Digit2: return k.digit2Key;
                 case GameKey.Digit3: return k.digit3Key;
+                case GameKey.C: return k.cKey;
+                case GameKey.LeftControl: return k.leftCtrlKey;
+                case GameKey.PageUp: return k.pageUpKey;
+                case GameKey.PageDown: return k.pageDownKey;
                 default: return null;
             }
         }
@@ -152,6 +172,10 @@ namespace Pacifico.Input
                 case GameKey.Digit1: return KeyCode.Alpha1;
                 case GameKey.Digit2: return KeyCode.Alpha2;
                 case GameKey.Digit3: return KeyCode.Alpha3;
+                case GameKey.C: return KeyCode.C;
+                case GameKey.LeftControl: return KeyCode.LeftControl;
+                case GameKey.PageUp: return KeyCode.PageUp;
+                case GameKey.PageDown: return KeyCode.PageDown;
                 default: return KeyCode.None;
             }
         }

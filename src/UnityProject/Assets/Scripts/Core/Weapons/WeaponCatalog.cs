@@ -52,6 +52,7 @@ namespace Pacifico.Core.Weapons
                 Cartridge = "11×50R Comblain",
                 CaliberMm = 11f,
                 MuzzleVelocityMps = 440f,
+                BulletMassG = 24.7f,
                 MassKg = 4.3f,
                 MaxSightRangeM = 1300f,
                 Source = new HistoricalSource
@@ -61,8 +62,8 @@ namespace Pacifico.Core.Weapons
                         "Greve Moller, P. «Fusil Chileno Comblain II Modelo 1871, Calibre 11x50 R mm».",
                         "Wikipedia (en): «M1870 Belgian Comblain» — masa 4,3 kg sin bayoneta, alcance máximo 1.300 m.",
                     },
-                    EstimatedFields = { nameof(WeaponSpec.MuzzleVelocityMps), nameof(WeaponSpec.YearAdopted) },
-                    Notes = "Velocidad tomada de la munición belga 11×51R (proyectil 24,7 g, ~440 m/s). " +
+                    EstimatedFields = { nameof(WeaponSpec.MuzzleVelocityMps), nameof(WeaponSpec.BulletMassG), nameof(WeaponSpec.YearAdopted) },
+                    Notes = "Velocidad y masa de bala tomadas de la munición belga 11×51R (proyectil 24,7 g, ~440 m/s). " +
                             "Arma reglamentaria de la infantería chilena (foto 11 del Archivo Histórico).",
                 },
                 ReloadSeconds = 2.0f,
@@ -91,13 +92,14 @@ namespace Pacifico.Core.Weapons
                 Cartridge = "11 mm Chassepot (cartucho combustible de papel)",
                 CaliberMm = 11f,
                 MuzzleVelocityMps = 410f,
+                BulletMassG = 25f,
                 MassKg = 4.635f,
                 MaxSightRangeM = 1200f,
                 Source = new HistoricalSource
                 {
                     References =
                     {
-                        "Wikipedia (en): «Chassepot» — velocidad en boca 410 m/s, masa 4,635 kg, alcance máximo 1.200 m.",
+                        "Wikipedia (en): «Chassepot» — velocidad en boca 410 m/s, bala de plomo de 25 g, masa 4,635 kg, alcance máximo 1.200 m.",
                         "Archivo Histórico: 04_Uniformes_y_Armamento/01 y 02 (planos de cerrojo y cañón).",
                     },
                     Notes = "Aguja percutora sobre cartucho de papel; el juego abstrae el ciclo como recarga de 2,2 s.",
@@ -128,6 +130,7 @@ namespace Pacifico.Core.Weapons
                 Cartridge = "11×59R Gras (vaina metálica)",
                 CaliberMm = 11f,
                 MuzzleVelocityMps = 450f,
+                BulletMassG = 25f,
                 MassKg = 4.2f,
                 MaxSightRangeM = 1800f,
                 Source = new HistoricalSource
@@ -135,6 +138,7 @@ namespace Pacifico.Core.Weapons
                     References =
                     {
                         "Wikipedia (en): «Fusil Gras mle 1874» — velocidad en boca 450 m/s, masa 4,2 kg, cañón 795 mm.",
+                        "Wikipedia (en): «11×59mmR Gras» — bala de plomo encamisada en papel de 25,0 g.",
                         "Archivo Histórico: 04_Uniformes_y_Armamento/03 y 04 (cerrojo y cartucho metálico).",
                     },
                     EstimatedFields = { nameof(WeaponSpec.MaxSightRangeM) },
@@ -165,6 +169,7 @@ namespace Pacifico.Core.Weapons
                 Cartridge = ".43 Spanish (11,15×58R)",
                 CaliberMm = 11.15f,
                 MuzzleVelocityMps = 389f,
+                BulletMassG = 25.7f,
                 MassKg = 4.2f,
                 MaxSightRangeM = 1000f,
                 Source = new HistoricalSource
@@ -202,13 +207,18 @@ namespace Pacifico.Core.Weapons
                 YearAdopted = 1873,
                 Cartridge = ".44-40 WCF",
                 CaliberMm = 10.8f,
-                MuzzleVelocityMps = 380f,
+                MuzzleVelocityMps = 379f,
+                BulletMassG = 13f,
                 MassKg = 3.3f,
                 MaxSightRangeM = 500f,
                 Source = new HistoricalSource
                 {
-                    References = { "Especificación comercial Winchester Model 1873 (carabina, depósito tubular de 12 cartuchos)." },
-                    EstimatedFields = { nameof(WeaponSpec.MuzzleVelocityMps), nameof(WeaponSpec.MassKg), nameof(WeaponSpec.MaxSightRangeM) },
+                    References =
+                    {
+                        "Especificación comercial Winchester Model 1873 (carabina, depósito tubular de 12 cartuchos).",
+                        "Wikipedia (en): «.44-40 Winchester» — bala de 200 gr (13 g) a ~1.245 ft/s (379 m/s) con pólvora negra.",
+                    },
+                    EstimatedFields = { nameof(WeaponSpec.MassKg), nameof(WeaponSpec.MaxSightRangeM) },
                     Notes = "Carabina ligera citada en el GDD para la Compañía Vulcano. Recarga por cartucho.",
                 },
                 ReloadSeconds = 0.45f,

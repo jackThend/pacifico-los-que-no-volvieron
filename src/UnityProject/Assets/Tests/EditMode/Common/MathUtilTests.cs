@@ -30,6 +30,22 @@ namespace Pacifico.Tests.Common
         }
 
         [Test]
+        public void SmoothDamp_LlegaAlObjetivoSinSobrepasarlo_ConCualquierPaso()
+        {
+            foreach (float dt in new[] { 1f / 144f, 1f / 60f, 1f / 20f })
+            {
+                float value = 0f, velocity = 0f, max = 0f;
+                for (float t = 0f; t < 3f; t += dt)
+                {
+                    value = MathUtil.SmoothDamp(value, 1f, ref velocity, 0.3f, dt);
+                    max = System.Math.Max(max, value);
+                }
+                Assert.That(value, Is.EqualTo(1f).Within(1e-3f), "dt = " + dt);
+                Assert.That(max, Is.LessThanOrEqualTo(1f + 1e-5f), "dt = " + dt);
+            }
+        }
+
+        [Test]
         public void Conversiones_DeUnidadesDeEpoca()
         {
             Assert.That(Units.InchesToMillimeters(4.5f), Is.EqualTo(114.3f).Within(1e-3f));
