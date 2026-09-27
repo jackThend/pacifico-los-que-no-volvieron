@@ -57,12 +57,12 @@ namespace Pacifico.Core.Tactics
         /// Probabilidad de que un disparo alcance a un hombre a <paramref name="distanceM"/>, con la fracción
         /// <paramref name="coverFraction"/> de su silueta tapada (parapeto, zanja).
         /// </summary>
-        public static float HitProbability(WeaponSpec weapon, float distanceM, Posture posture, float coverFraction = 0f)
+        public static float HitProbability(WeaponSpec weapon, float distanceM, Posture posture, float coverFraction = 0f, float dispersionScale = 1f)
         {
             if (weapon == null || !weapon.IsFirearm) return 0f;
             if (distanceM > weapon.MaxSightRangeM) return 0f;
             float d = Math.Max(1f, distanceM);
-            double sigma = d * Math.Tan(SigmaDeg(weapon) * MathUtil.Deg2Rad);
+            double sigma = d * Math.Tan(SigmaDeg(weapon) * Math.Max(0.1f, dispersionScale) * MathUtil.Deg2Rad);
             float w = SilhouetteWidthM(posture);
             float h = SilhouetteHeightM(posture) * (1f - MathUtil.Clamp01(coverFraction));
             if (h <= 0f) return 0f;
@@ -125,17 +125,20 @@ namespace Pacifico.Core.Tactics
 
         /// <summary>
         /// Avanza el fuego. Solo se dispara si <paramref name="canFire"/> (a tiro, con línea de visión, parados); si
-        /// no, los hombres siguen recargando y quedan listos.
+        /// no, los hombres siguen recargando y quedan listos. Bajo fuego (ROADMAP 4.2) la escuadra apunta peor
+        /// (<paramref name="dispersionScale"/>) y dispara menos (<paramref name="rateFactor"/>).
         /// </summary>
-        public VolleyResult Step(float dt, bool canFire, float distanceM, Posture targetPosture, float targetCover = 0f)
+        public VolleyResult Step(float dt, bool canFire, float distanceM, Posture targetPosture, float targetCover = 0f,
+                                 float dispersionScale = 1f, float rateFactor = 1f)
         {
             var result = new VolleyResult();
             if (dt <= 0f) return result;
-            float p = FireModel.HitProbability(Weapon, distanceM, targetPosture, targetCover);
+            float p = FireModel.HitProbability(Weapon, distanceM, targetPosture, targetCover, dispersionScale);
             float incapacitate = FireModel.IncapacitationProbability(Weapon, distanceM);
+            float elapsed = dt * MathUtil.Clamp(rateFactor, 0f, 1f);
             for (int i = 0; i < _cooldown.Length; i++)
             {
-                _cooldown[i] -= dt;
+                _cooldown[i] -= elapsed;
                 if (_cooldown[i] > 0f) continue;
                 if (!canFire)
                 {

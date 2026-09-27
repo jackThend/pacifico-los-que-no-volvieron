@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 namespace Pacifico.EditorTools
 {
     /// <summary>
-    /// Construye la escena de prototipo RTS «Tacna» (ROADMAP 4): la meseta del Intiorko con dunas, la zanja y los
+    /// Construye la escena de prototipo RTS «Tacna» (ROADMAP 4.1–4.2): la meseta del Intiorko con dunas, la zanja y los
     /// parapetos de la línea aliada, tres escuadras del Batallón Colorados de Bolivia (el jugador, con Remington) y
     /// tres escuadras chilenas (Comblain) al pie de la meseta. El NavMesh se genera al cargar la escena.
     /// Modo batch:
@@ -42,7 +42,8 @@ namespace Pacifico.EditorTools
             BuildScene();
             EditorUtility.DisplayDialog("Pacífico", "Escena creada en " + ScenePath +
                 "\n\nClic o recuadro: seleccionar escuadras · clic derecho: mover (arrastrar: frente) · clic derecho sobre el " +
-                "enemigo: atacar · 1 línea · 2 guerrilla · H alto · WASD, Q/E y rueda: cámara", "Aceptar");
+                "enemigo: atacar · 1 línea · 2 guerrilla · H alto · WASD, Q/E y rueda: cámara\n\nLos chilenos avanzan a los 20 s: " +
+                "lleva tus escuadras a la zanja y concentra el fuego para suprimirlos.", "Aceptar");
         }
 
         public static void RunBatch()
@@ -205,19 +206,53 @@ namespace Pacifico.EditorTools
             return layer;
         }
 
-        /// <summary>Parapetos de sacos delante de la zanja, con huecos para salir al contraataque.</summary>
+        /// <summary>
+        /// Parapetos de sacos delante de la zanja, con huecos para salir al contraataque, y los puestos a cubierto
+        /// (ROADMAP 4.2): uno por metro al pie de cada parapeto y cada 1,2 m en la zanja, protegiendo hacia el sur.
+        /// En la tierra de nadie, peñascos con puestos por ambos lados.
+        /// </summary>
         private static void CreateDefences(Terrain terrain)
         {
             var root = new GameObject("Linea_Aliada").transform;
+            var covers = new GameObject("Puestos_a_Cubierto").transform;
             Material sacks = PrototypeSceneKit.Material("Sacos", SackColor);
+            Material rock = PrototypeSceneKit.Material("Roca_Tacna", new Color(0.52f, 0.46f, 0.4f));
             for (int i = -4; i <= 4; i++)
             {
                 if (i == 0) continue; // hueco central
                 float x = i * 20f;
                 Vector3 p = new Vector3(x, 0f, 88.5f);
-                p.y = terrain.SampleHeight(p) + terrain.transform.position.y + 0.5f;
+                p.y = Ground(terrain, p) + 0.5f;
                 PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Parapeto_" + (i + 5), root, p, new Vector3(14f, 1.1f, 1.2f), sacks);
+                for (float dx = -6.5f; dx <= 6.5f; dx += 1f) Cover(terrain, covers, new Vector3(x + dx, 0f, 89.7f), 180f, 0.65f);
             }
+            for (float x = -84f; x <= 84f; x += 1.2f) Cover(terrain, covers, new Vector3(x, 0f, 92f), 180f, 0.8f);
+
+            // Peñascos en la tierra de nadie: cubren a quien esté detrás, venga el fuego de donde venga.
+            float[] rocksX = { -90f, -35f, 10f, 60f, 110f };
+            for (int i = 0; i < rocksX.Length; i++)
+            {
+                var c = new Vector3(rocksX[i], 0f, -40f + (i % 2) * 25f);
+                c.y = Ground(terrain, c) + 0.6f;
+                GameObject boulder = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Penasco_" + (i + 1), root, c, new Vector3(6f, 1.6f, 2.2f), rock);
+                boulder.transform.rotation = Quaternion.Euler(0f, 8f * i - 16f, 0f);
+                for (float dx = -2.5f; dx <= 2.5f; dx += 1f)
+                {
+                    Cover(terrain, covers, c + boulder.transform.rotation * new Vector3(dx, 0f, -1.7f), boulder.transform.eulerAngles.y, 0.55f);
+                    Cover(terrain, covers, c + boulder.transform.rotation * new Vector3(dx, 0f, 1.7f), boulder.transform.eulerAngles.y + 180f, 0.55f);
+                }
+            }
+        }
+
+        private static float Ground(Terrain terrain, Vector3 p) => terrain.SampleHeight(p) + terrain.transform.position.y;
+
+        private static void Cover(Terrain terrain, Transform parent, Vector3 position, float headingDeg, float protection)
+        {
+            var go = new GameObject("Puesto");
+            go.transform.SetParent(parent, false);
+            position.y = Ground(terrain, position);
+            go.transform.SetPositionAndRotation(position, Quaternion.Euler(0f, headingDeg, 0f));
+            go.AddComponent<CoverPoint>().Protection = protection;
         }
 
         private static Camera CreateCamera()
@@ -242,6 +277,8 @@ namespace Pacifico.EditorTools
             position.y = terrain.SampleHeight(position) + terrain.transform.position.y;
             go.transform.SetPositionAndRotation(position, Quaternion.Euler(0f, headingDeg, 0f));
             go.AddComponent<SquadController>().Configure(name, faction, weapon, count, formation, player, uniform, trim);
+            // Los chilenos atacan: las primeras olas de asalto del capítulo 5 (GDD), para ver la supresión en acción.
+            if (!player) go.AddComponent<SquadAI>().StartDelaySeconds = 20f;
         }
     }
 }

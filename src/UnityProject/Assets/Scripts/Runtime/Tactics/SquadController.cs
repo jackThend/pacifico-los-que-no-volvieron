@@ -42,6 +42,11 @@ namespace Pacifico.Tactics
         private const float RetargetSeconds = 1f;
         private const float SightCheckSeconds = 0.5f;
         private const float RepathSeconds = 2f;
+        private const float CoverReassignSeconds = 3f;
+        /// <summary>Tras este tiempo sin recibir fuego ni tener objetivo, la escuadra deja de sentirse amenazada.</summary>
+        private const float ThreatMemorySeconds = 10f;
+        /// <summary>Un hombre está en su puesto a cubierto si está a menos de esta distancia.</summary>
+        private const float InCoverDistance = 1f;
 
         private static readonly List<SquadController> s_all = new List<SquadController>();
 
@@ -57,6 +62,13 @@ namespace Pacifico.Tactics
         private bool _lineOfSight;
         private SquadController _sightTarget;
         private float _repathTimer;
+
+        private readonly List<int> _coverOf = new List<int>();
+        private readonly HashSet<int> _takenBuffer = new HashSet<int>();
+        private float _coverTimer;
+        private bool _usingCover;
+        private Vector3 _threatFrom;
+        private float _threatTime = float.NegativeInfinity;
 
         /// <summary>Todas las escuadras vivas de la escena.</summary>
         public static IReadOnlyList<SquadController> All => s_all;
@@ -90,10 +102,17 @@ namespace Pacifico.Tactics
         public IReadOnlyList<SoldierUnit> Soldiers => _soldiers;
         public FormationType Formation => Command != null ? Command.Formation : formation;
 
-        /// <summary>Postura que ofrece al enemigo (ROADMAP 4.2 la cambia bajo fuego).</summary>
-        public Posture Posture { get; set; } = Posture.Standing;
-        /// <summary>Fracción de la silueta tapada por la cobertura (ROADMAP 4.2).</summary>
-        public float Cover { get; set; }
+        /// <summary>Supresión (ROADMAP 4.2): el fuego recibido la frena, la hace tenderse y empeora su puntería.</summary>
+        public SuppressionModel Suppression { get; } = new SuppressionModel();
+
+        /// <summary>Postura que ofrece al enemigo: la que impone la supresión, o rodilla en tierra tras un parapeto.</summary>
+        public Posture Posture { get; private set; } = Posture.Standing;
+
+        /// <summary>Fracción de la silueta tapada por la cobertura frente a la amenaza actual (ROADMAP 4.2).</summary>
+        public float Cover { get; private set; }
+
+        /// <summary>Hombres que ocupan un puesto a cubierto.</summary>
+        public int InCover { get; private set; }
 
         /// <summary>Último resultado del fuego propio (para el HUD).</summary>
         public VolleyResult LastVolley { get; private set; }
@@ -141,6 +160,7 @@ namespace Pacifico.Tactics
                 _soldiers.Add(CreateSoldier(i, position, facing));
                 _positions.Add(ToVec3(position));
                 _lastDestination.Add(position);
+                _coverOf.Add(-1);
             }
             InitialStrength = _soldiers.Count;
             Command = new SquadCommand(formation, _positions, ToVec3(anchor), ToVec3(facing));
@@ -158,6 +178,7 @@ namespace Pacifico.Tactics
             if (!IsAlive) return;
             Order = SquadOrderKind.Move;
             _target = null;
+            LeaveCover();
             MarchTo(anchor, facing);
         }
 
@@ -167,6 +188,7 @@ namespace Pacifico.Tactics
             Order = SquadOrderKind.Attack;
             _target = enemy;
             _repathTimer = 0f;
+            LeaveCover();
         }
 
         public void IssueHalt()
@@ -203,23 +225,120 @@ namespace Pacifico.Tactics
             if (dt <= 0f || Command == null || !IsAlive) return;
 
             SyncPositions();
+            Suppression.Step(dt);
+            SuppressionState state = Suppression.State;
+            Command.March.SpeedFactor = SuppressionModel.SpeedFactor(state);
+
             // Llegada: la escuadra queda a la espera y responde al fuego por su cuenta.
             if (Order == SquadOrderKind.Move && !Command.March.Moving) Order = SquadOrderKind.Hold;
             SquadController target = UpdateEngagement(dt, out bool canFire, out float distance);
+            UpdateCover(dt, target);
             Command.Step(dt, _positions);
             DriveSoldiers();
 
-            VolleyResult volley = Fire.Step(dt, canFire, distance, target != null ? target.Posture : Posture.Standing, target != null ? target.Cover : 0f);
+            VolleyResult volley = Fire.Step(dt, canFire, distance, target != null ? target.Posture : Posture.Standing, target != null ? target.Cover : 0f,
+                                            SuppressionModel.AccuracyPenalty(state), SuppressionModel.RateFactor(state));
             LastVolley = volley;
             if (volley.Shots > 0)
             {
                 ShotsFired += volley.Shots;
                 EmitShots(volley.Shots, target);
             }
-            if (volley.Casualties > 0 && target != null)
+            if (target != null && volley.Shots > 0)
             {
-                EnemyCasualties += target.TakeCasualties(volley.Casualties, CenterOfMass());
+                Vector3 here = CenterOfMass();
+                if (volley.Casualties > 0) EnemyCasualties += target.TakeCasualties(volley.Casualties, here);
+                target.ReceiveFire(volley, distance, Weapon.EffectiveRangeM, here);
             }
+        }
+
+        /// <summary>Fuego que llega a esta escuadra (acierte o no): alimenta la supresión y marca de dónde viene la amenaza.</summary>
+        public void ReceiveFire(VolleyResult volley, float distanceM, float shooterRangeM, Vector3 from)
+        {
+            if (!IsAlive) return;
+            Suppression.ReceiveFire(volley.Shots, volley.Hits, volley.Casualties, distanceM, shooterRangeM, Cover);
+            _threatFrom = from;
+            _threatTime = Time.time;
+        }
+
+        private bool HasThreat(SquadController target, out Vector3 threatDirection)
+        {
+            Vector3 source;
+            if (target != null) source = target.CenterOfMass();
+            else if (Time.time - _threatTime < ThreatMemorySeconds) source = _threatFrom;
+            else
+            {
+                threatDirection = Facing;
+                return false;
+            }
+            Vector3 d = Vector3.ProjectOnPlane(source - CenterOfMass(), Vector3.up);
+            threatDirection = d.sqrMagnitude > 0.01f ? d.normalized : Facing;
+            return true;
+        }
+
+        /// <summary>
+        /// Cobertura (ROADMAP 4.2): parada y amenazada, o suprimida, la escuadra ocupa los puestos a cubierto cercanos
+        /// que protegen del lado del enemigo (zanja, parapeto); quien no tiene puesto se tiende donde está. Las órdenes
+        /// de mover o atacar la sacan de la cobertura.
+        /// </summary>
+        private void UpdateCover(float dt, SquadController target)
+        {
+            bool threatened = HasThreat(target, out Vector3 threat);
+            bool wantCover = threatened && Order != SquadOrderKind.Move && !Command.March.Moving;
+            if (!wantCover)
+            {
+                if (_usingCover) LeaveCover();
+            }
+            else
+            {
+                _coverTimer -= dt;
+                if (!_usingCover || _coverTimer <= 0f)
+                {
+                    _coverTimer = CoverReassignSeconds;
+                    IReadOnlyList<CoverSpot> spots = CoverPoint.Spots;
+                    CoverPoint.Release(this);
+                    int[] assigned = CoverSelector.Assign(_positions, Command.March.Anchor, spots, ToVec3(threat), CoverPoint.TakenByOthers(this, _takenBuffer));
+                    _usingCover = false;
+                    for (int i = 0; i < assigned.Length; i++)
+                    {
+                        _coverOf[i] = assigned[i];
+                        if (assigned[i] < 0) continue;
+                        CoverPoint.Claim(assigned[i], this);
+                        _usingCover = true;
+                    }
+                }
+            }
+
+            // Cobertura efectiva: solo cuentan los que ya han llegado a su puesto.
+            IReadOnlyList<CoverSpot> all = CoverPoint.Spots;
+            int inCover = 0;
+            float protection = 0f;
+            for (int i = 0; i < _soldiers.Count; i++)
+            {
+                int spot = _coverOf[i];
+                if (spot < 0 || spot >= all.Count) continue;
+                Vector3 p = ToVector3(all[spot].Position);
+                if (Vector3.ProjectOnPlane(p - _soldiers[i].transform.position, Vector3.up).magnitude > InCoverDistance) continue;
+                inCover++;
+                protection += all[spot].ProtectionAgainst(ToVec3(threat));
+            }
+            InCover = inCover;
+            Cover = _soldiers.Count > 0 ? protection / _soldiers.Count : 0f;
+
+            // Postura: la de la supresión; a cubierto y en calma, rodilla en tierra para disparar desde el parapeto.
+            SuppressionState state = Suppression.State;
+            Posture = state != SuppressionState.Normal ? SuppressionModel.PostureFor(state)
+                : inCover * 2 >= _soldiers.Count && threatened ? Posture.Kneeling
+                : Posture.Standing;
+            foreach (SoldierUnit soldier in _soldiers) soldier.SetPosture(Posture);
+        }
+
+        private void LeaveCover()
+        {
+            if (!_usingCover && InCover == 0) return;
+            CoverPoint.Release(this);
+            for (int i = 0; i < _coverOf.Count; i++) _coverOf[i] = -1;
+            _usingCover = false;
         }
 
         /// <summary>Decide a quién se dispara y si se puede: a tiro, con línea de visión y parados.</summary>
@@ -258,7 +377,13 @@ namespace Pacifico.Tactics
             bool sight = HasLineOfSight(target);
             float range = Weapon.EffectiveRangeM;
 
-            if (Order == SquadOrderKind.Attack)
+            if (Order == SquadOrderKind.Attack && Suppression.State == SuppressionState.Suppressed)
+            {
+                // Suprimida: el asalto se detiene hasta que afloje el fuego (se retoma solo).
+                if (Command.March.Moving) Command.Halt();
+                _repathTimer = 0f;
+            }
+            else if (Order == SquadOrderKind.Attack)
             {
                 _repathTimer -= dt;
                 bool inPosition = distance <= range * 0.95f && sight;
@@ -338,7 +463,9 @@ namespace Pacifico.Tactics
                 SoldierUnit soldier = _soldiers[i];
                 NavMeshAgent agent = soldier.Agent;
                 if (agent == null || !agent.isOnNavMesh) continue;
-                Vector3 slot = ToVector3(Command.SlotOf(i));
+                int spot = _coverOf[i];
+                IReadOnlyList<CoverSpot> spots = CoverPoint.Spots;
+                Vector3 slot = spot >= 0 && spot < spots.Count ? ToVector3(spots[spot].Position) : ToVector3(Command.SlotOf(i));
                 Vector3 position = soldier.transform.position;
                 float distance = Vector3.ProjectOnPlane(slot - position, Vector3.up).magnitude;
                 agent.speed = Mathf.Max(0.2f, Command.FollowSpeed(distance));
@@ -365,6 +492,7 @@ namespace Pacifico.Tactics
                 _soldiers[index].Fall(fireFrom);
                 _soldiers.RemoveAt(index);
                 _lastDestination.RemoveAt(index);
+                _coverOf.RemoveAt(index);
                 fallen++;
             }
             if (fallen == 0) return 0;
@@ -377,6 +505,7 @@ namespace Pacifico.Tactics
             else
             {
                 Order = SquadOrderKind.Hold;
+                CoverPoint.Release(this);
                 enabled = false;
                 s_all.Remove(this);
             }
@@ -426,9 +555,13 @@ namespace Pacifico.Tactics
             go.transform.SetPositionAndRotation(position, Quaternion.LookRotation(facing, Vector3.up));
             go.layer = SoldierUnit.Layer;
 
-            Part(go.transform, PrimitiveType.Capsule, "Cuerpo", new Vector3(0f, 0.85f, 0f), new Vector3(0.5f, 0.85f, 0.4f), uniformMaterial, keepCollider: true);
-            Part(go.transform, PrimitiveType.Cylinder, "Quepis", new Vector3(0f, 1.78f, 0f), new Vector3(0.24f, 0.07f, 0.24f), trimMaterial, keepCollider: false);
-            Part(go.transform, PrimitiveType.Cube, "Fusil", new Vector3(0.22f, 1.1f, 0.25f), new Vector3(0.04f, 0.04f, 1.2f), trimMaterial, keepCollider: false)
+            // Las piezas visibles cuelgan de «Figura» (pivote en los pies), que la postura acorta o tumba.
+            var figure = new GameObject("Figura").transform;
+            figure.gameObject.layer = SoldierUnit.Layer;
+            figure.SetParent(go.transform, false);
+            Part(figure, PrimitiveType.Capsule, "Cuerpo", new Vector3(0f, 0.85f, 0f), new Vector3(0.5f, 0.85f, 0.4f), uniformMaterial, keepCollider: true);
+            Part(figure, PrimitiveType.Cylinder, "Quepis", new Vector3(0f, 1.78f, 0f), new Vector3(0.24f, 0.07f, 0.24f), trimMaterial, keepCollider: false);
+            Part(figure, PrimitiveType.Cube, "Fusil", new Vector3(0.22f, 1.1f, 0.25f), new Vector3(0.04f, 0.04f, 1.2f), trimMaterial, keepCollider: false)
                 .transform.localRotation = Quaternion.Euler(-60f, 0f, 0f);
 
             var agent = go.AddComponent<NavMeshAgent>();
@@ -444,7 +577,7 @@ namespace Pacifico.Tactics
             agent.avoidancePriority = 40 + index;
 
             var soldier = go.AddComponent<SoldierUnit>();
-            soldier.Initialize(this);
+            soldier.Initialize(this, figure);
             go.SetActive(true);
             if (agent.isOnNavMesh) agent.Warp(position);
             return soldier;

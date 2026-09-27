@@ -44,6 +44,9 @@ namespace Pacifico.Core.Tactics
         /// <summary>Anchura del frente (para limitar el giro: los extremos no pueden correr más que un hombre).</summary>
         public float Frontage { get; set; }
 
+        /// <summary>Multiplicador de la velocidad de marcha (la supresión la reduce, ROADMAP 4.2).</summary>
+        public float SpeedFactor { get; set; } = 1f;
+
         /// <summary>La formación ha cambiado de frente de golpe: hay que reasignar los puestos.</summary>
         public bool Reformed { get; private set; }
 
@@ -144,7 +147,7 @@ namespace Pacifico.Core.Tactics
             }
             float misalignment = Math.Abs(MathUtil.DeltaAngle(newHeading, target));
             float alignFactor = MathUtil.Lerp(1f, 0f, MathUtil.InverseLerp(20f, 60f, misalignment));
-            Speed = MarchSpeedMps * cohesion * alignFactor;
+            Speed = MarchSpeedMps * cohesion * alignFactor * MathUtil.Clamp01(SpeedFactor);
             float travel = Speed * dt;
             while (travel > 0f && Moving)
             {
@@ -260,7 +263,9 @@ namespace Pacifico.Core.Tactics
         /// </summary>
         public float FollowSpeed(float distanceToSlot)
         {
-            return MathUtil.Clamp(March.Speed + distanceToSlot * 1.5f, 0f, SquadMarch.RunSpeedMps);
+            // Bajo fuego nadie corre erguido: la carrera se limita con el mismo factor que la marcha (mínimo, arrastrarse).
+            float cap = SquadMarch.RunSpeedMps * Math.Max(0.35f, MathUtil.Clamp01(March.SpeedFactor));
+            return MathUtil.Clamp(March.Speed + distanceToSlot * 1.5f, 0f, cap);
         }
 
         private void Rebuild(IReadOnlyList<Vec3> soldiers)

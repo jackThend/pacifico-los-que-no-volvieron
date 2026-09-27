@@ -178,6 +178,11 @@ namespace Pacifico.Tactics
                 foreach (SoldierUnit soldier in squad.Soldiers) Mark(soldier.transform.position, new Color(0.55f, 0.95f, 0.55f, 0.9f), 6f);
                 Label(squad.CenterOfMass() + Vector3.up * 3f, squad.DisplayName, _small);
             }
+            foreach (SquadController squad in SquadController.All)
+            {
+                if (squad.Suppression.State == SuppressionState.Normal) continue;
+                Label(squad.CenterOfMass() + Vector3.up * 5f, squad.Suppression.State == SuppressionState.Suppressed ? "¡Suprimida!" : "Presionada", _small);
+            }
             if (_hoverEnemy != null)
             {
                 foreach (SoldierUnit soldier in _hoverEnemy.Soldiers) Mark(soldier.transform.position, new Color(1f, 0.35f, 0.25f, 0.9f), 6f);
@@ -232,13 +237,38 @@ namespace Pacifico.Tactics
                 string state = s.Order == SquadOrderKind.Attack ? "Atacando" : s.Command.March.Moving ? "En marcha" : s.Target != null ? "Haciendo fuego" : "Alto";
                 string text = (selected ? "> " : "   ") + s.DisplayName + " — " + s.Strength + "/" + s.InitialStrength + " · " +
                               (s.Formation == FormationType.Line ? "Línea" : "Guerrilla") + " · " + state +
-                              " · " + s.Weapon.DisplayName + " · bajas causadas: " + s.EnemyCasualties;
+                              " · " + SuppressionName(s.Suppression.State) + (s.InCover > 0 ? " · a cubierto " + s.InCover : string.Empty) +
+                              " · bajas causadas: " + s.EnemyCasualties;
+                DrawSuppressionBar(new Rect(12f, y - 3f, 120f, 3f), s.Suppression.Level);
                 GUI.Label(new Rect(12f, y - 20f, 900f, 22f), text, _label);
                 y -= 22f;
             }
             GUI.Label(new Rect(12f, 10f, 1200f, 22f),
                 "Clic/recuadro: seleccionar (Mayús añade, Ctrl alterna) · Clic dcho.: mover (arrastrar: frente y orientación) · " +
                 "Clic dcho. sobre enemigo: atacar · 1 línea · 2 guerrilla · H alto · WASD/QE/rueda: cámara", _small);
+        }
+
+        public static string SuppressionName(SuppressionState state)
+        {
+            switch (state)
+            {
+                case SuppressionState.Pinned: return "Presionada";
+                case SuppressionState.Suppressed: return "SUPRIMIDA";
+                default: return "Serena";
+            }
+        }
+
+        /// <summary>Barra de supresión: verde por debajo de «presionada», ámbar hasta «suprimida», roja por encima.</summary>
+        private void DrawSuppressionBar(Rect rect, float level)
+        {
+            GUI.color = new Color(0f, 0f, 0f, 0.45f);
+            GUI.DrawTexture(rect, _white);
+            float fill = Mathf.Clamp01(level);
+            GUI.color = level >= SuppressionModel.SuppressEnter ? new Color(0.9f, 0.25f, 0.2f)
+                : level >= SuppressionModel.PinEnter ? new Color(0.95f, 0.7f, 0.2f)
+                : new Color(0.5f, 0.85f, 0.5f);
+            GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width * fill, rect.height), _white);
+            GUI.color = Color.white;
         }
 
         private void Mark(Vector3 world, Color color, float size)

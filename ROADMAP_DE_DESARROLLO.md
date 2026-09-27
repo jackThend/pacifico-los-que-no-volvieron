@@ -69,7 +69,7 @@
 - [X] **4.1 Selección y Mando de Escuadras**
   * *Criterio:* Selección múltiple por caja de arrastre y órdenes de movimiento/ataque sobre terreno irregular (NavMesh).
   * *Verificación:* Mando coordinado de escuadras de 8 a 12 soldados en formación de línea y guerrilla.
-- [ ] **4.2 Sistema de Supresión y Cobertura**
+- [X] **4.2 Sistema de Supresión y Cobertura**
   * *Criterio:* El fuego concentrado disminuye la velocidad de la escuadra enemiga y la obliga a tenderse en zanjas o parapetos.
   * *Verificación:* Comprobación de cambio de estado a *Suprimido* bajo volumen de fuego.
 - [ ] **4.3 Gestión de Cantimploras (Agua) y Munición**
