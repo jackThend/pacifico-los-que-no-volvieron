@@ -82,7 +82,7 @@
 - [X] **5.1 Visor 3D de Documentos Históricos**
   * *Criterio:* Modal interactivo para rotar cartas manuscritas, daguerrotipos y planos con zoom y transcripción textual conmutable.
   * *Verificación:* Inspección funcional del facsímil de la carta de Grau a Carmela Carvajal.
-- [ ] **5.2 Gestor de Cinemáticas y Voces de Corresponsales**
+- [X] **5.2 Gestor de Cinemáticas y Voces de Corresponsales**
   * *Criterio:* Sistema para reproducir las crónicas de Sir George F. Morice y Sir Spenser St. John con subtítulos en español sincronizados.
   * *Verificación:* Reproducción fluida del prólogo *El Ojo de Europa*.
 

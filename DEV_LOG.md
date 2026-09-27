@@ -335,3 +335,24 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
   * 2.000 operaciones aleatorias de zoom y desplazamiento sin que la vista se salga del documento; el zoom conserva el punto bajo el cursor; alejar recentra; mismo suavizado a 30 y 144 FPS.
   * Lectura de dimensiones de JPEG (con EXIF) y PNG del Archivo; medidas por soporte.
 * **Pendiente (tarea 0.3):** comprobar en Unity 6 la iluminación del pliego, la legibilidad del facsímil a 6× (la textura se importa a 2048 px) y el panel de transcripción.
+
+---
+
+### [2026-09-27] - Tarea 5.2: Gestor de Cinemáticas y Voces de Corresponsales — [X] (verificado fuera del motor; ver 0.3)
+* **Núcleo (`Pacifico.Core/Narrative/Cinematics.cs`):**
+  * `CinematicScriptParser`: lee del guion (`Historia_Completa_Guion.md`) la sección pedida, con ubicación, formato, voz en off, la indicación musical y los párrafos del narrador. **El texto no se copia en el código.** Del prólogo: 4 párrafos, voz de Sir George F. Morice (The Times) y el chelo con el oleaje.
+  * `SubtitleBuilder`: subtítulos con las normas habituales del castellano (42 caracteres por línea, dos líneas, ≤ 17 caracteres/s, de 1 a 7 s, dos fotogramas entre subtítulos). Parte en frases y las largas en unidades de sentido (comas, dos puntos, conjunciones); reparte en líneas equilibradas **sin dejar un artículo o preposición al final de línea** («las aguas / del Pacífico»); duración según el ritmo de la locución (13,5 car./s) con pausas de frase, de párrafo y una pausa dramática para «Cuán equivocados estábamos.». Con la voz grabada, todo se reescala a la duración de la pista.
+  * `CinematicTimeline`: fundido de entrada, rótulo, planos con movimiento lento de cámara («Ken Burns») y fundidos encadenados, subtítulos y fundido final. **Es una función pura del tiempo**: pausar, saltar o rebobinar da siempre el mismo fotograma.
+  * `PrologueCinematic`: montaje del prólogo con planos por párrafo y el movimiento de cada uno.
+* **Unity:** `CinematicDataSO` (el guion y las imágenes del Archivo, generado al construir la escena), `CinematicPlayer` (IMGUI, sin assets de interfaz: sepia, viñeta, bandas de cine, rótulo, subtítulos con contorno, voz y música opcionales). Si hay pista de voz, **su reloj manda**: los subtítulos no se desincronizan aunque el juego vaya a tirones. Espacio pausa y Esc salta. Si en `Assets/Audio` aparecen `vo_prologo_morice` o `mus_prologo_chelo`, se asignan solas.
+* **Escena `Proto_Prologo_Ojo_de_Europa`** (menú **Pacífico → Prototipos → Construir prólogo «El Ojo de Europa»**).
+* **Verificación (criterio del roadmap, «reproducción fluida del prólogo El Ojo de Europa»):** 11 pruebas nuevas (322 en total).
+  * **El prólogo entero, fotograma a fotograma a 60 FPS:** siempre hay imagen, sin negros a mitad; los fundidos, el rótulo y los movimientos de cámara no saltan; cada plano nuevo entra por fundido encadenado; los 18 subtítulos aparecen todos, en orden, sobre la imagen de su párrafo y sin coincidir con el rótulo; acaba en negro.
+  * Los subtítulos cumplen las normas de lectura y son, palabra por palabra, el texto del guion; se ajustan a una pista de voz de 100 s; la evaluación es idéntica al saltar o rebobinar; todas las imágenes existen en el Archivo.
+* **Incidencias resueltas con la previsualización en el navegador** (los fotogramas exactos del núcleo, sobre las imágenes reales):
+  * El rótulo no se leía sobre los grabados claros → la imagen se oscurece bajo el rótulo (`TitleDim`).
+  * El mapa general del Archivo es de la Biblioteca del Congreso, posterior a la guerra y con la leyenda de los tratados de 1883–1929: anacrónico para marzo de 1879.
+  * **Tres imágenes del Archivo son modernas:** `05_Campo_de_la_Alianza_Tacna_Intiorko.jpg` (el monumento, con la bandera), `06_Batallon_Colorados_de_Bolivia.jpg` (un desfile de recreación) y `06_Armamento_Aliado_Alto_Alianza.jpg` (una vitrina de museo). Se sustituyeron por fotografías y grabados de época (el Morro de Arica en 1880, el bombardeo de Pisagua, el óleo de Somerscales, el Huáscar, el Cochrane, un soldado del Aconcagua y un soldado boliviano en uniforme de campaña). **Aviso para el equipo narrativo:** conviene marcarlas en el índice del Archivo para que no se usen como material de época.
+  * En los retratos verticales, el encuadre panorámico solo mostraba el torso → cada plano tiene su propio movimiento, y en los retratos la cámara sube del pecho al rostro.
+* **Pendiente:** grabar la voz en off en inglés de Morice y la música (chelo y oleaje), y comprobar en Unity 6 (tarea 0.3) la legibilidad de los subtítulos IMGUI en distintas resoluciones.
+* **Con esto la Fase 5 queda completa fuera del motor.**

@@ -151,12 +151,12 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ## 🛠️ Desarrollo en Unity 6
 
-**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, la fase FPS (3.1–3.4), la fase RTS (4.1–4.3) y la 5.1: estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar), el cuerpo a cuerpo con bayoneta y corvo, el mando de escuadras en formación de línea y guerrilla sobre NavMesh, la supresión y la cobertura (zanjas y parapetos), la sed y los cartuchos con carros de vituallas, y el visor 3D de documentos históricos. Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
+**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, la fase FPS (3.1–3.4), la fase RTS (4.1–4.3) y la fase narrativa (5.1–5.2): estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar), el cuerpo a cuerpo con bayoneta y corvo, el mando de escuadras en formación de línea y guerrilla sobre NavMesh, la supresión y la cobertura (zanjas y parapetos), la sed y los cartuchos con carros de vituallas, el visor 3D de documentos históricos y las cinemáticas de corresponsal con subtítulos sincronizados. Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
 
 ### Abrir el proyecto
 1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
 2. Menú **Pacífico → Datos → Generar ScriptableObjects históricos**: crea los assets de armas, buques y coleccionables desde los catálogos y el Archivo Histórico.
-3. Menú **Pacífico → Prototipos → Construir escena naval de Iquique** (o **…FPS de Pisagua**, **…RTS de Tacna** o **…visor de documentos**) y pulsa Play.
+3. Menú **Pacífico → Prototipos → Construir escena naval de Iquique** (o **…FPS de Pisagua**, **…RTS de Tacna**, **…visor de documentos** o **…prólogo «El Ojo de Europa»**) y pulsa Play.
 
 **Naval (Iquique):**
 
