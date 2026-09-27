@@ -126,6 +126,38 @@ namespace Pacifico.Core.Weapons
             return true;
         }
 
+        /// <summary>
+        /// Avanza una bala en 3D <paramref name="dt"/> segundos con el mismo integrador (RK2, subpasos de 4 ms) que
+        /// usan <see cref="Sample"/> y el alza: la bala del juego cruza la línea de mira donde dice la graduación.
+        /// </summary>
+        public static void StepBullet(ref Vec3 position, ref Vec3 velocity, float dragFactor, float dt)
+        {
+            double px = position.X, py = position.Y, pz = position.Z;
+            double vx = velocity.X, vy = velocity.Y, vz = velocity.Z;
+            double remaining = dt;
+            while (remaining > 1e-9)
+            {
+                double h = Math.Min(IntegrationStep, remaining);
+                Accel3(vx, vy, vz, dragFactor, out double ax1, out double ay1, out double az1);
+                double mvx = vx + ax1 * h * 0.5, mvy = vy + ay1 * h * 0.5, mvz = vz + az1 * h * 0.5;
+                Accel3(mvx, mvy, mvz, dragFactor, out double ax2, out double ay2, out double az2);
+                px += mvx * h; py += mvy * h; pz += mvz * h;
+                vx += ax2 * h; vy += ay2 * h; vz += az2 * h;
+                remaining -= h;
+            }
+            position = new Vec3((float)px, (float)py, (float)pz);
+            velocity = new Vec3((float)vx, (float)vy, (float)vz);
+        }
+
+        private static void Accel3(double vx, double vy, double vz, double k, out double ax, out double ay, out double az)
+        {
+            double speed = Math.Sqrt(vx * vx + vy * vy + vz * vz);
+            double drag = k * DragCoefficient((float)speed) * speed;
+            ax = -drag * vx;
+            ay = -drag * vy - Gravity;
+            az = -drag * vz;
+        }
+
         private static void Accel(double vx, double vy, double k, out double ax, out double ay)
         {
             double speed = Math.Sqrt(vx * vx + vy * vy);

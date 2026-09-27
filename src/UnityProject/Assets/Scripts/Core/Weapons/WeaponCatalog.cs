@@ -53,6 +53,7 @@ namespace Pacifico.Core.Weapons
                 CaliberMm = 11f,
                 MuzzleVelocityMps = 440f,
                 BulletMassG = 24.7f,
+                PowderChargeG = 4.9f,
                 MassKg = 4.3f,
                 MaxSightRangeM = 1300f,
                 Source = new HistoricalSource
@@ -60,6 +61,7 @@ namespace Pacifico.Core.Weapons
                     References =
                     {
                         "Greve Moller, P. «Fusil Chileno Comblain II Modelo 1871, Calibre 11x50 R mm».",
+                        "The Black Powder Cartridge News / IAA: cartucho 11×50R Comblain con bala de 386 gr y 76 gr (≈4,9 g) de pólvora negra.",
                         "Wikipedia (en): «M1870 Belgian Comblain» — masa 4,3 kg sin bayoneta, alcance máximo 1.300 m.",
                     },
                     EstimatedFields = { nameof(WeaponSpec.MuzzleVelocityMps), nameof(WeaponSpec.BulletMassG), nameof(WeaponSpec.YearAdopted) },
@@ -93,13 +95,15 @@ namespace Pacifico.Core.Weapons
                 CaliberMm = 11f,
                 MuzzleVelocityMps = 410f,
                 BulletMassG = 25f,
+                PowderChargeG = 5.6f,
+                Case = CartridgeCase.Combustible,
                 MassKg = 4.635f,
                 MaxSightRangeM = 1200f,
                 Source = new HistoricalSource
                 {
                     References =
                     {
-                        "Wikipedia (en): «Chassepot» — velocidad en boca 410 m/s, bala de plomo de 25 g, masa 4,635 kg, alcance máximo 1.200 m.",
+                        "Wikipedia (en): «Chassepot» — velocidad en boca 410 m/s, bala de plomo de 25 g con 5,6 g de pólvora negra en cartucho de papel, masa 4,635 kg, alcance máximo 1.200 m.",
                         "Archivo Histórico: 04_Uniformes_y_Armamento/01 y 02 (planos de cerrojo y cañón).",
                     },
                     Notes = "Aguja percutora sobre cartucho de papel; el juego abstrae el ciclo como recarga de 2,2 s.",
@@ -131,6 +135,7 @@ namespace Pacifico.Core.Weapons
                 CaliberMm = 11f,
                 MuzzleVelocityMps = 450f,
                 BulletMassG = 25f,
+                PowderChargeG = 5.2f,
                 MassKg = 4.2f,
                 MaxSightRangeM = 1800f,
                 Source = new HistoricalSource
@@ -138,7 +143,7 @@ namespace Pacifico.Core.Weapons
                     References =
                     {
                         "Wikipedia (en): «Fusil Gras mle 1874» — velocidad en boca 450 m/s, masa 4,2 kg, cañón 795 mm.",
-                        "Wikipedia (en): «11×59mmR Gras» — bala de plomo encamisada en papel de 25,0 g.",
+                        "Wikipedia (en): «11×59mmR Gras» — bala de plomo encamisada en papel de 25,0 g con 5,2 g de pólvora negra F1.",
                         "Archivo Histórico: 04_Uniformes_y_Armamento/03 y 04 (cerrojo y cartucho metálico).",
                     },
                     EstimatedFields = { nameof(WeaponSpec.MaxSightRangeM) },
@@ -170,6 +175,7 @@ namespace Pacifico.Core.Weapons
                 CaliberMm = 11.15f,
                 MuzzleVelocityMps = 389f,
                 BulletMassG = 25.7f,
+                PowderChargeG = 5.0f,
                 MassKg = 4.2f,
                 MaxSightRangeM = 1000f,
                 Source = new HistoricalSource
@@ -209,6 +215,7 @@ namespace Pacifico.Core.Weapons
                 CaliberMm = 10.8f,
                 MuzzleVelocityMps = 379f,
                 BulletMassG = 13f,
+                PowderChargeG = 2.6f,
                 MassKg = 3.3f,
                 MaxSightRangeM = 500f,
                 Source = new HistoricalSource

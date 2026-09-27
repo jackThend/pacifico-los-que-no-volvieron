@@ -151,7 +151,7 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ## 🛠️ Desarrollo en Unity 6
 
-**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, y la 3.1 de la fase FPS: estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías) y controlador de infantería en primera persona con alzas graduadas de época. Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
+**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, y las 3.1 y 3.2 de la fase FPS: estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, y fusiles con su ciclo real de disparo y recarga. Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
 
 ### Abrir el proyecto
 1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
@@ -177,6 +177,7 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 | `C` / `Ctrl` | Agacharse; corriendo: deslizamiento táctico |
 | `Espacio` | Saltar |
 | Botón derecho | Encarar el fusil con las miras |
+| Clic izquierdo · `R` | Disparar · recargar (tras cada disparo se recarga solo: ~2 s) |
 | Rueda (al encarar) o `RePág`/`AvPág` | Graduar el alza (100 m por muesca) |
 | `Esc` | Liberar o capturar el ratón |
 

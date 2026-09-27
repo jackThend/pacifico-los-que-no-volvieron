@@ -200,3 +200,27 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
   * Constructor de escena: la altura de los peldaños era incorrecta y los carteles quedaban de espaldas.
 * **Revisión de código independiente (10 hallazgos, todos corregidos):** adherencia al suelo insuficiente cuesta abajo (despegues intermitentes); caída que heredaba el empuje de pegado al salir de un borde; deslizamiento que se reorientaba contra la pared; salto perdido al saltar desde un deslizamiento con C pulsada; cabeceo de pasos durante el deslizamiento; retraso del arma dependiente de la tasa de fotogramas; alza recorrida entera por un trackpad; `SightLadder` recalculada en cada cambio de arma (caché); `OverlapCapsule` que generaba basura cada fotograma (→ `NonAlloc`); y la hoja del alza, que se movía al revés.
 * **Pendiente (tarea 0.3):** jugar `Proto_Pisagua_FPS` en Unity 6 y comprobar con el contador del HUD que el movimiento es fluido a 60 FPS.
+
+---
+
+### [2026-09-27] - Tarea 3.2: Sistema de Fusiles de Época y Recarga Dinámica — [X] (verificado fuera del motor; ver 0.3)
+* **Datos:** `WeaponSpec.PowderChargeG` y `WeaponSpec.Case` (metálico o combustible). Cargas con fuente: Chassepot 5,6 g (cartucho de papel), Gras 5,2 g, Comblain 76 gr (≈4,9 g), .43 Spanish 77 gr (≈5,0 g) y .44-40 40 gr (≈2,6 g).
+* **Núcleo (`Pacifico.Core/Weapons`):**
+  * `RifleCycleProfile`: secuencia por mecanismo real. Comblain y Gras: percutir → abrir → expulsar → insertar → cerrar → encarar. Remington: amartilla a mano antes de abrir el bloque. **Chassepot: amartilla a mano y no expulsa vaina** (cartucho combustible). Winchester: ciclo de palanca (bajar = extrae y expulsa; subir = alimenta desde el depósito) y carga del depósito cartucho a cartucho. Las etapas de los monotiro suman **exactamente** la `ReloadSeconds` de la ficha (Comblain 2,0 s).
+  * `RifleCycleModel`: máquina de estados con munición (recámara, depósito, cartucheras), vaina en la recámara, martillo montado, recarga automática o manual (R), pausa al correr o deslizarse, bloqueo del encare solo mientras se manipula el fusil (no en el ciclo de palanca), sin munición → «clic», interrupción de la carga del depósito al disparar. Eventos con desfase dentro del paso: si un fotograma largo abarca varias etapas, se emiten todos, en orden y en su instante exacto.
+  * `RifleAnimationCurves`: apertura del cierre, martillo y retroceso visible derivados solo de la etapa y su progreso, sincronizados por construcción.
+  * `RecoilModel`: retroceso libre por conservación del momento, `(m_bala·v + m_pólvora·1.200 m/s) / M_fusil` (Gras: 4,16 m/s), con un muelle críticamente amortiguado avanzado por su solución exacta en forma cerrada.
+  * `RifleShotSolver`: elevación del alza + dispersión (encarado: el grupo de la ficha como ≈4σ; a la cadera, en movimiento o a medio encare, mucho mayor).
+  * `SmallArmsBallistics.StepBullet`: integrador 3D con el mismo RK2 que el alza.
+* **Unity (`Runtime/Infantry`):** `RifleController` (gatillo, R, cartucheras por calibre al cambiar de arma, `DefaultExecutionOrder(-50)`), `RifleBullet` (barrido por raycast, velocidad en el punto de impacto, `IBulletTarget`), `RifleViewModelAnimator` (palanca, martillo, cartucho visible, vaina expulsada en la capa «Ignore Raycast»; publica `Etapa` y `VelocidadEtapa` para un `Animator` futuro), `ShootingTarget`, `AmmoPickup` y HUD con cartuchos, etapa y último impacto. `FirstPersonController`: retroceso en cámara, `AimBlocked` y `HasInputFocus`.
+* **Escena `Proto_Pisagua_FPS`:** Comblain con palanca articulada, cartucho y ventana de expulsión; siluetas con `ShootingTarget` (el HUD indica distancia y desviación del impacto: «400 m · 32 cm bajo»); 20 cartuchos iniciales y una caja con 40 junto a la línea de fuego.
+* **Verificación (criterio del roadmap, «temporizador y animaciones sincronizados»):** 36 pruebas nuevas (192 en total).
+  * El ciclo dura exactamente la recarga de la ficha: 2,0/2,2/2,2/2,1 s.
+  * La línea temporal de eventos es idéntica con pasos de 1/240, 1/144, 1/60, 1/30 y 0,25 s (±0,1 ms).
+  * Cada etapa empieza cuando termina la anterior, y la vaina sale y el cartucho entra en el instante de fin de su etapa.
+  * Las curvas de animación no saltan entre etapas; el martillo tras el último disparo queda abatido y se monta desde abajo.
+  * Retroceso con pico exacto y a 30 = 144 FPS; la bala del juego (a 50 Hz) cruza la línea de mira a ±3 cm de la distancia graduada a 200, 500 y 1.000 m.
+* **Incidencias resueltas durante el desarrollo:**
+  * El muelle del retroceso integrado con Euler semi-implícito daba un pico un 9 % bajo → solución exacta.
+  * El martillo del Comblain saltaba de abatido a montado → en los cierres que se amartillan solos, se monta al abrir.
+* **Revisión de código independiente (10 hallazgos, todos corregidos):** cambiar de arma perdía o regalaba munición (→ cartucheras por calibre; el arma nueva se empuña descargada y se carga); sin captura del ratón no se podía disparar (→ `HasInputFocus`); se podía disparar en pausa; la palanca de la Winchester bajaba las miras en cada disparo (→ `BlocksAiming` en el modelo); cambio de arma con el componente desactivado; orden de ejecución entre fusil y controlador; martillo tras el último disparo; `FreeRecoilEnergy(null)`; velocidad de impacto al final del paso; `foreach` sobre `IReadOnlyList` que generaba basura cada fotograma. Al corregir el orden de ejecución apareció un fallo nuevo (el fusil se suscribía antes del equipamiento inicial y perdía la dotación), que también quedó resuelto.

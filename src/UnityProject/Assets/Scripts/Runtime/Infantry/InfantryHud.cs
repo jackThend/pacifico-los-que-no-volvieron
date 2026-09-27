@@ -1,4 +1,5 @@
 using Pacifico.Core.Infantry;
+using Pacifico.Core.Weapons;
 using UnityEngine;
 
 namespace Pacifico.Infantry
@@ -10,6 +11,7 @@ namespace Pacifico.Infantry
     public sealed class InfantryHud : MonoBehaviour
     {
         [SerializeField] private FirstPersonController player;
+        [SerializeField] private RifleController rifle;
         [SerializeField] private bool showDebug = true;
 
         private GUIStyle _label;
@@ -20,6 +22,12 @@ namespace Pacifico.Infantry
         {
             get => player;
             set => player = value;
+        }
+
+        public RifleController Rifle
+        {
+            get => rifle;
+            set => rifle = value;
         }
 
         private void Update()
@@ -59,10 +67,39 @@ namespace Pacifico.Infantry
                 GUI.Label(new Rect(x, y + 16f, 700f, 22f), player.Weapon.DisplayName + sight, _label);
             }
 
+            if (rifle != null && rifle.Model != null)
+            {
+                RifleCycleModel r = rifle.Model;
+                string rounds = (r.Chambered ? "1" : "0") + (r.MagazineCapacity > 0 ? " + " + r.MagazineRounds : string.Empty) + " | " + r.Reserve;
+                string state = r.TotalRounds == 0 ? "SIN MUNICIÓN"
+                    : r.IsReady && !r.Chambered ? "Vacío [R recargar]"
+                    : StageName(r.Stage);
+                GUI.Label(new Rect(Screen.width - 330f, Screen.height - 70f, 320f, 22f), "Cartuchos: " + rounds, _label);
+                GUI.Label(new Rect(Screen.width - 330f, Screen.height - 48f, 320f, 22f), state, _label);
+                string lastHit = ShootingTarget.DescribeLastHit();
+                if (lastHit.Length > 0) GUI.Label(new Rect(Screen.width - 330f, Screen.height - 94f, 320f, 22f), "Impacto: " + lastHit, _label);
+            }
+
             if (showDebug)
             {
                 GUI.Label(new Rect(Screen.width - 260f, 16f, 250f, 22f),
                     _smoothedFps.ToString("0") + " FPS · " + m.HorizontalSpeed.ToString("0.0") + " m/s", _label);
+            }
+        }
+
+        public static string StageName(RifleStage stage)
+        {
+            switch (stage)
+            {
+                case RifleStage.Firing: return "Disparo";
+                case RifleStage.Cocking: return "Amartillando…";
+                case RifleStage.OpeningAction: return "Abriendo el cierre…";
+                case RifleStage.Extracting: return "Expulsando la vaina…";
+                case RifleStage.InsertingCartridge: return "Cargando cartucho…";
+                case RifleStage.ClosingAction: return "Cerrando…";
+                case RifleStage.Shouldering: return "Encarando…";
+                case RifleStage.LoadingMagazine: return "Cargando el depósito…";
+                default: return "Listo";
             }
         }
 

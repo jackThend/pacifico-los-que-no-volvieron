@@ -29,6 +29,7 @@ namespace Pacifico.EditorTools
         private static readonly Color MarkerColor = new Color(0.85f, 0.82f, 0.75f);
         private static readonly Color WoodColor = new Color(0.36f, 0.24f, 0.14f);
         private static readonly Color SteelColor = new Color(0.16f, 0.16f, 0.17f);
+        private static readonly Color BrassColor = new Color(0.72f, 0.56f, 0.26f);
 
         [MenuItem("Pacífico/Prototipos/Construir escena FPS de Pisagua")]
         public static void Build()
@@ -37,7 +38,7 @@ namespace Pacifico.EditorTools
             BuildScene();
             EditorUtility.DisplayDialog("Pacífico", "Escena creada en " + ScenePath +
                 "\n\nWASD mover · ratón mirar · Mayús correr · C/Ctrl agacharse (corriendo: deslizarse) · Espacio saltar · " +
-                "botón derecho apuntar · rueda al apuntar: alza · Esc libera el ratón", "Aceptar");
+                "botón derecho apuntar · clic disparar · R recargar · rueda al apuntar: alza · Esc libera el ratón", "Aceptar");
         }
 
         public static void RunBatch()
@@ -69,6 +70,8 @@ namespace Pacifico.EditorTools
 
             var hud = new GameObject("HUD_Infanteria").AddComponent<InfantryHud>();
             hud.Player = player;
+            hud.Rifle = player.GetComponent<RifleController>();
+            CreateAmmoCrate(comblain.ToSpec().Cartridge);
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -151,7 +154,8 @@ namespace Pacifico.EditorTools
             {
                 float z = 20f + d;
                 float x = (d / 100 % 2 == 0 ? 1f : -1f) * 4f;
-                Box("Silueta_" + d + "m", root, new Vector3(x, 0.85f, z), new Vector3(0.5f, 1.7f, 0.1f), TargetColor, "Blanco");
+                Box("Silueta_" + d + "m", root, new Vector3(x, 0.85f, z), new Vector3(0.5f, 1.7f, 0.1f), TargetColor, "Blanco")
+                    .AddComponent<ShootingTarget>();
                 Box("Poste_" + d + "m", root, new Vector3(x + 1.2f, 1.5f, z), new Vector3(0.12f, 3f, 0.12f), WoodColor, "Madera");
                 GameObject board = Box("Cartel_" + d + "m", root, new Vector3(x + 1.2f, 3.2f, z), new Vector3(2.4f, 1f, 0.1f), MarkerColor, "Marca");
                 if (font != null) AddLabel(board.transform, d + " m", font);
@@ -192,40 +196,78 @@ namespace Pacifico.EditorTools
             var fps = player.AddComponent<FirstPersonController>();
             fps.Configure(pivot, camera, weapon);
 
-            CreateRifleViewModel(pivot, fps);
+            // Dotación corta a propósito: obliga a recoger la caja de cartuchos junto a la línea de fuego.
+            var rifle = player.AddComponent<RifleController>();
+            rifle.StartingReserve = 20;
+
+            CreateRifleViewModel(pivot, fps, rifle);
             return fps;
         }
 
         /// <summary>
         /// Fusil Comblain esquemático. Origen en la base del alza; la cresta del alza y el punto de mira quedan a 0,075 m,
         /// de modo que en la pose de encare (y = -0,075) la línea de mira pasa por el centro de la cámara.
+        /// Jerarquía: raíz (<see cref="IronSightViewModel"/>: cadera ↔ encare) → «Mecanica»
+        /// (<see cref="RifleViewModelAnimator"/>: retroceso y recarga) → piezas.
         /// </summary>
-        private static void CreateRifleViewModel(Transform pivot, FirstPersonController owner)
+        private static void CreateRifleViewModel(Transform pivot, FirstPersonController owner, RifleController rifle)
         {
             var root = new GameObject("Fusil_Comblain_Vista").transform;
             root.SetParent(pivot, false);
             root.localPosition = new Vector3(0.22f, -0.2f, 0.45f);
 
+            var body = new GameObject("Mecanica").transform;
+            body.SetParent(root, false);
+
             Material wood = PrototypeSceneKit.Material("Madera", WoodColor);
             Material steel = PrototypeSceneKit.Material("Acero", SteelColor, 0.5f);
+            Material brass = PrototypeSceneKit.Material("Laton", BrassColor, 0.6f);
 
-            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Culata", root, new Vector3(0f, -0.035f, -0.3f), new Vector3(0.05f, 0.09f, 0.42f), wood, keepCollider: false);
-            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Cajon_de_Mecanismos", root, new Vector3(0f, 0f, -0.02f), new Vector3(0.045f, 0.06f, 0.14f), steel, keepCollider: false);
-            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Palanca", root, new Vector3(0f, -0.06f, -0.04f), new Vector3(0.015f, 0.05f, 0.1f), steel, keepCollider: false);
-            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Guardamano", root, new Vector3(0f, 0.005f, 0.3f), new Vector3(0.04f, 0.04f, 0.5f), wood, keepCollider: false);
-            GameObject barrel = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Canon", root, new Vector3(0f, 0.035f, 0.37f),
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Culata", body, new Vector3(0f, -0.035f, -0.3f), new Vector3(0.05f, 0.09f, 0.42f), wood, keepCollider: false);
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Cajon_de_Mecanismos", body, new Vector3(0f, 0f, -0.02f), new Vector3(0.045f, 0.06f, 0.14f), steel, keepCollider: false);
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Guardamano", body, new Vector3(0f, 0.005f, 0.3f), new Vector3(0.04f, 0.04f, 0.5f), wood, keepCollider: false);
+            GameObject barrel = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Canon", body, new Vector3(0f, 0.035f, 0.37f),
                 new Vector3(0.022f, 0.4f, 0.022f), steel, keepCollider: false);
             barrel.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Punto_de_Mira", root, new Vector3(0f, 0.06f, 0.76f), new Vector3(0.004f, 0.03f, 0.006f), steel, keepCollider: false);
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Punto_de_Mira", body, new Vector3(0f, 0.06f, 0.76f), new Vector3(0.004f, 0.03f, 0.006f), steel, keepCollider: false);
 
-            // Alza de hoja: pivota en su base; su giro visual depende de la graduación.
+            // Palanca del Comblain (el guardamonte): pivota en su extremo delantero y su parte trasera baja al abrir,
+            // haciendo descender el bloque de cierre.
+            var lever = new GameObject("Palanca_Pivote").transform;
+            lever.SetParent(body, false);
+            lever.localPosition = new Vector3(0f, -0.04f, 0.03f);
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Palanca", lever, new Vector3(0f, -0.015f, -0.06f), new Vector3(0.015f, 0.02f, 0.12f), steel, keepCollider: false);
+
+            // Cartucho que el soldado saca de la cartuchera y mete en la recámara (visible solo al cargar).
+            GameObject round = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Cartucho", body, Vector3.zero,
+                new Vector3(0.012f, 0.035f, 0.012f), brass, keepCollider: false);
+            round.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+
+            // Ventana de expulsión: la vaina sale hacia arriba y a la derecha.
+            var port = new GameObject("Expulsion").transform;
+            port.SetParent(body, false);
+            port.localPosition = new Vector3(0.03f, 0.03f, 0f);
+
+            // Alza de escalera: la corredera sube R·tan(θ) con la graduación.
             var leafPivot = new GameObject("Alza_Hoja").transform;
-            leafPivot.SetParent(root, false);
+            leafPivot.SetParent(body, false);
             leafPivot.localPosition = new Vector3(0f, 0.045f, 0.06f);
             PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Alza_Lamina", leafPivot, new Vector3(0f, 0.015f, 0f), new Vector3(0.02f, 0.03f, 0.003f), steel, keepCollider: false);
 
             var viewModel = root.gameObject.AddComponent<IronSightViewModel>();
             viewModel.Configure(owner, leafPivot);
+
+            var animator = body.gameObject.AddComponent<RifleViewModelAnimator>();
+            // Giro negativo en X: la parte trasera de la palanca (z < 0 respecto al pivote) desciende.
+            animator.Configure(rifle, lever, new Vector3(-50f, 0f, 0f), null, round.transform, port);
+        }
+
+        /// <summary>Caja de cartuchos de Comblain junto a la línea de fuego (escasez de Tarapacá, GDD cap. 4).</summary>
+        private static void CreateAmmoCrate(string cartridge)
+        {
+            GameObject crate = Box("Caja_Cartuchos_Comblain", null, new Vector3(3f, 0.25f, 18f), new Vector3(0.6f, 0.5f, 0.4f), WoodColor, "Madera");
+            crate.GetComponent<BoxCollider>().isTrigger = true;
+            crate.AddComponent<AmmoPickup>().Configure(cartridge, 40);
         }
 
         // ------------------------------------------------------------------------------------------

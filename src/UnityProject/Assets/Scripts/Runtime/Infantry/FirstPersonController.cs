@@ -58,7 +58,21 @@ namespace Pacifico.Infantry
         public IronSightModel Sights { get; private set; }
         public SightLadder Ladder { get; private set; }
         public WeaponSpec Weapon { get; private set; }
+        public WeaponDataSO WeaponData => weapon;
         public Camera ViewCamera => viewCamera;
+        public RecoilModel Recoil { get; private set; }
+
+        /// <summary>
+        /// El fusil está en plena manipulación (recarga): no se puede encarar. Lo fija <see cref="RifleController"/>,
+        /// que se ejecuta antes que este componente (<c>DefaultExecutionOrder</c>) para que el valor sea el del fotograma.
+        /// </summary>
+        public bool AimBlocked { get; set; }
+
+        /// <summary>El jugador controla el personaje: ratón capturado, o captura desactivada (pruebas en el Editor).</summary>
+        public bool HasInputFocus => Cursor.lockState == CursorLockMode.Locked || !lockCursor;
+
+        /// <summary>Se emite al cambiar de arma (el fusil reconstruye su ciclo y su munición).</summary>
+        public event System.Action<FirstPersonController> WeaponChanged;
 
         /// <summary>Rayo de puntería: dirección de la mirada más la deriva de la respiración al apuntar.</summary>
         public Ray AimRay
@@ -83,6 +97,7 @@ namespace Pacifico.Infantry
             _controller = GetComponent<CharacterController>();
             Motor = new InfantryMotor();
             HeadBob = new HeadBobModel { ReferenceSpeed = Motor.Settings.SprintSpeed };
+            Recoil = new RecoilModel(GetInstanceID());
             EquipWeapon(weapon);
             _yaw = transform.eulerAngles.y;
             ApplyCapsule(Motor.Height);
@@ -96,6 +111,7 @@ namespace Pacifico.Infantry
             bool firearm = Weapon != null && Weapon.IsFirearm;
             Sights = firearm ? new IronSightModel(Weapon) : null;
             Ladder = firearm ? new SightLadder(Weapon) : null;
+            WeaponChanged?.Invoke(this);
         }
 
         private void OnEnable()
@@ -120,7 +136,7 @@ namespace Pacifico.Infantry
             if (dt <= 0f) return;
 
             if (GameInput.Pressed(GameKey.Escape)) SetCursorLocked(Cursor.lockState != CursorLockMode.Locked);
-            bool hasFocus = Cursor.lockState == CursorLockMode.Locked || !lockCursor;
+            bool hasFocus = HasInputFocus;
 
             if (hasFocus) UpdateLook();
             var input = ReadInput(hasFocus);
@@ -150,6 +166,7 @@ namespace Pacifico.Infantry
             // Deslizándose no hay pasos: el cabeceo se apaga (solo queda el alabeo por desplazamiento lateral).
             float stepSpeed = Motor.Stance == Stance.Sliding ? 0f : Motor.HorizontalSpeed;
             HeadBob.Step(stepSpeed, Motor.IsGrounded, aim01, input.MoveX, dt);
+            Recoil.Step(dt);
             ApplyCamera(aim01, dt);
         }
 
@@ -172,7 +189,7 @@ namespace Pacifico.Infantry
                 Sprint = GameInput.Held(GameKey.LeftShift),
                 Crouch = GameInput.Held(GameKey.C) || GameInput.Held(GameKey.LeftControl),
                 Jump = GameInput.Held(GameKey.Space),
-                Aim = GameInput.MouseHeld(1) && Sights != null,
+                Aim = GameInput.MouseHeld(1) && Sights != null && !AimBlocked,
             };
         }
 
@@ -229,7 +246,9 @@ namespace Pacifico.Infantry
             float swayYaw = Sights != null ? Sights.SwayYawDeg * aim01 : 0f;
             float swayPitch = Sights != null ? Sights.SwayPitchDeg * aim01 : 0f;
             cameraPivot.localPosition = new Vector3(HeadBob.OffsetX, Motor.EyeHeight + HeadBob.OffsetY, 0f);
-            cameraPivot.localRotation = Quaternion.Euler(_pitch + HeadBob.PitchDeg + swayPitch, swayYaw, HeadBob.RollDeg);
+            // El retroceso levanta la boca (pitch negativo en Unity) y la desvía un poco de lado.
+            float pitch = _pitch + HeadBob.PitchDeg + swayPitch - Recoil.PitchDeg;
+            cameraPivot.localRotation = Quaternion.Euler(pitch, swayYaw + Recoil.YawDeg, HeadBob.RollDeg);
 
             if (viewCamera != null)
             {

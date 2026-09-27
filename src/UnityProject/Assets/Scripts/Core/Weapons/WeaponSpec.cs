@@ -21,6 +21,16 @@ namespace Pacifico.Core.Weapons
         LeverAction = 4,    // Winchester 1873: palanca con depósito tubular
     }
 
+    /// <summary>
+    /// Tipo de cartucho. El Chassepot usaba cartucho combustible de papel: se consumía al disparar y no dejaba
+    /// vaina que extraer. Los demás fusiles de la guerra ya usaban vaina metálica.
+    /// </summary>
+    public enum CartridgeCase
+    {
+        Metallic = 0,
+        Combustible = 1,
+    }
+
     public enum AmmoFeed
     {
         None = 0,
@@ -53,6 +63,9 @@ namespace Pacifico.Core.Weapons
         public float MuzzleVelocityMps { get; set; }
         /// <summary>Masa de la bala (g). Determina la pérdida de velocidad por rozamiento y la caída.</summary>
         public float BulletMassG { get; set; }
+        /// <summary>Carga de pólvora negra (g). Junto con la bala determina el retroceso.</summary>
+        public float PowderChargeG { get; set; }
+        public CartridgeCase Case { get; set; } = CartridgeCase.Metallic;
         public float MassKg { get; set; }
         /// <summary>Alcance máximo del alza (o alcance máximo documentado).</summary>
         public float MaxSightRangeM { get; set; }
@@ -132,6 +145,9 @@ namespace Pacifico.Core.Weapons
                     "MuzzleVelocityMps fuera del rango de la pólvora negra (" + MuzzleVelocityMps + ")");
                 r.RequirePositive(MassKg, "MassKg");
                 r.Require(BulletMassG >= 5f && BulletMassG <= 40f, "BulletMassG fuera de rango (" + BulletMassG + ")");
+                r.Require(PowderChargeG >= 1f && PowderChargeG <= 10f, "PowderChargeG fuera de rango (" + PowderChargeG + ")");
+                r.Require(Case == CartridgeCase.Metallic || Feed == AmmoFeed.SingleShot,
+                    "un cartucho combustible no puede alimentarse desde un depósito");
                 r.RequirePositive(MaxSightRangeM, "MaxSightRangeM");
                 r.RequirePositive(ReloadSeconds, "ReloadSeconds");
                 r.RequirePositive(BaseDamage, "BaseDamage");
