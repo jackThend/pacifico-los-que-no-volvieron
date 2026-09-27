@@ -38,7 +38,7 @@
 - [X] **2.3 Sistema de Blindaje Angular y Balística**
   * *Criterio:* Disparos navales calculan ángulo de incidencia. Impactos oblicuos en hierro rebotan; impactos directos o en madera producen daño crítico.
   * *Verificación:* Test de impacto con proyectiles de 40 lbs vs 300 lbs comprobando rebote en el *Huáscar* y perforación en la *Esmeralda*.
-- [EN PROCESO] **2.4 Mecánica de Espolonazo y Control de Averías**
+- [X] **2.4 Mecánica de Espolonazo y Control de Averías**
   * *Criterio:* Colisión frontal a velocidad crítica aplica daño masivo de embestida; interfaz de control de averías (fuego, inundación, calderas).
   * *Verificación:* El *Huáscar* puede embestir y partir cuadernas simuladas.
 

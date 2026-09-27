@@ -36,6 +36,10 @@ namespace Pacifico.Naval
         private float _heel;
         private float _heldRudder;
         private int _pendingTelegraphSteps;
+        private float _baseY;
+        private float _sinkDepth;
+        private float _sinkPitch;
+        private float _sinkRoll;
 
         public ShipDataSO Data => data;
         public ShipSpec Spec { get; private set; }
@@ -72,6 +76,7 @@ namespace Pacifico.Naval
 
             Motion = new ShipMotionModel(Spec);
             Vector3 p = transform.position;
+            _baseY = p.y;
             Motion.SetPose(p.x, p.z, transform.eulerAngles.y);
             Motion.Telegraph.Set(initialOrder);
             Motion.SetSpeed(initialSpeedFraction * Motion.MaxSpeed);
@@ -110,8 +115,8 @@ namespace Pacifico.Naval
             }
 
             Motion.Step(Time.fixedDeltaTime);
-            _body.MovePosition(new Vector3(Motion.X, transform.position.y, Motion.Z));
-            _body.MoveRotation(Quaternion.Euler(0f, Motion.HeadingDeg, 0f));
+            _body.MovePosition(new Vector3(Motion.X, _baseY - _sinkDepth, Motion.Z));
+            _body.MoveRotation(Quaternion.Euler(_sinkPitch, Motion.HeadingDeg, _sinkRoll));
         }
 
         private void LateUpdate()
@@ -124,10 +129,19 @@ namespace Pacifico.Naval
             hullVisual.localRotation = Quaternion.Euler(pitch, 0f, _heel);
         }
 
+        /// <summary>Postura de hundimiento (la aplica el control de averías; 0 = a flote).</summary>
+        public void SetSinkPose(float depth, float pitchDeg, float rollDeg)
+        {
+            _sinkDepth = depth;
+            _sinkPitch = pitchDeg;
+            _sinkRoll = rollDeg;
+        }
+
         /// <summary>Sincroniza el modelo si otro sistema teletransporta el buque (p. ej. al reiniciar).</summary>
         public void Teleport(Vector3 position, float headingDeg)
         {
             transform.SetPositionAndRotation(position, Quaternion.Euler(0f, headingDeg, 0f));
+            _baseY = position.y;
             Motion?.SetPose(position.x, position.z, headingDeg);
         }
 

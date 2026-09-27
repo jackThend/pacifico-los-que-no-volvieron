@@ -131,3 +131,14 @@
   * Coherencia histórica adicional: los 250 lb del *Cochrane* perforan cinturón y torre de mando del *Huáscar* a 1.000 m (Angamos); el *Huáscar* no perfora el cinturón central de 9" del *Cochrane*, pero sí sus extremos; presentarse a 60° convierte esa perforación en no-perforación (guion, cap. 2: «posicionar el blindado a 45 grados»).
 * **Corrección de robustez:** `NavalShell` buscaba el blanco con `GetComponentInParent<IShellTarget>()?.` (en el Editor puede devolver un «null falso» de Unity). Ahora recorre `GetComponentsInParent<MonoBehaviour>()`.
 * **Nota de diseño:** la trayectoria visual no aplica rozamiento (tiro tenso a < 2 km); la pérdida de velocidad solo se aplica al calcular la perforación. Es una simplificación documentada.
+
+---
+
+### [2026-09-27] - Tarea 2.4: Mecánica de Espolonazo y Control de Averías — [X]
+* **Archivos creados:**
+  * `Core/Naval/RamModel.cs`: energía ½·m·v² con la velocidad de cierre sobre la proa del atacante y el seno del ángulo de cruce; umbral de velocidad crítica (1,5 m/s ≈ 3 nudos) bajo el cual solo hay roce; cascos de madera ×2,5; cuadernas partidas si un solo golpe supera el 15 % del desplazamiento; daño propio mayor sin espolón; pérdida de arrancada del atacante.
+  * `Core/Naval/ShipDamageState.cs`: estructura, incendios (crecen, consumen el casco, se apagan solos muy despacio), inundación (vías de agua contra bombas; hundimiento al agotar la flotabilidad de reserva del 30 %), calderas (reducen la potencia) y **una sola brigada** para incendios, achique o vapor (15 s activa + 25 s de descanso). Azar con semilla.
+  * `Runtime/Naval/ShipDamageController.cs` (teclas 1/2/3, líneas de HUD, escora por inundación y hundimiento), `RamBow.cs` (trigger en la roda, con rearme por blanco), y en `ShipController` la API `SetSinkPose`, que evita que dos componentes peleen por la rotación.
+  * `Tests/EditMode/Naval/RamAndDamageControlTests.cs`: 16 pruebas.
+* **Verificación (criterio del roadmap):** 105/105 pruebas OK. El *Huáscar* a 10 nudos y 90° **parte las cuadernas** de la *Esmeralda* (daño > 30 % de su desplazamiento, vía de agua superior a las bombas, hundida en < 3 min sin achique) y recibe < 5 % de daño propio. A 2 nudos o en paralelo solo hay roce. La brigada apaga incendios, tapona vías y repara calderas; no puede hacer dos tareas a la vez.
+* **Incidencia de diseño corregida:** la primera versión del hundimiento modificaba `transform.rotation` desde el control de averías, pero `ShipController` la reescribe en cada `FixedUpdate`. Ahora la postura de hundimiento pasa por `ShipController.SetSinkPose`.
