@@ -154,3 +154,11 @@
 * **Controles:** W/S telégrafo · A/D timón · ratón apunta la torre · clic/Espacio dispara · R/F convergencia · Mayús telémetro · 1/2/3 brigada de averías · botón derecho + ratón orbita la cámara · rueda para el zoom.
 * **Verificación:** 109/109 pruebas OK; el constructor compila contra la API de `UnityEditor`. **Pendiente de validar dentro de Unity 6** (no hay Editor en este entorno): ejecutar el constructor y jugar la escena.
 * **Revisión:** un `CapsuleCollider` sobre un cilindro achatado degeneraba en una esfera enorme → se usa `BoxCollider`. Se sustituyeron los `??` restantes sobre objetos de Unity (`Shader`, `Texture2D`) por comprobaciones explícitas.
+
+---
+
+### [2026-09-27] - Integración continua y documentación
+* `.github/workflows/ci.yml`: en cada push o PR se compila y prueba el C# (`tools/verify/verify.sh`), se ejecutan las pruebas Python y se verifica la integridad SHA-256 del Archivo Histórico.
+* `README.md`: nueva sección «Desarrollo en Unity 6» (abrir el proyecto, generar datos, construir el prototipo, controles, arquitectura y verificación), estructura del repositorio actualizada y aclaración sobre licencias de las imágenes modernas.
+* **Estado:** Fases 0, 1 y 2 completadas (109 pruebas C# + 17 Python).
+* **Próximos pasos:** 1) abrir el proyecto en Unity 6, ejecutar el Test Runner y el constructor de la escena de Iquique para validar en el motor; 2) Fase 3.1, controlador FPS.

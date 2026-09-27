@@ -1,0 +1,31 @@
+name: Verificación
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+jobs:
+  csharp:
+    name: C# (Core, Runtime, Editor) + pruebas EditMode
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Compilar y probar fuera de Unity
+        run: tools/verify/verify.sh
+
+  python:
+    name: Herramientas Python y manifiesto de assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Pruebas de tools/assets_manager.py
+        run: python -m unittest discover -s tools/tests -v
+      - name: Integridad del Archivo Histórico (hashes del manifiesto)
+        run: python tools/assets_manager.py verify

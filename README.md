@@ -115,22 +115,23 @@ El repositorio cuenta con una base documental de **48 archivos de alta definici�
 ## 📂 Estructura del Repositorio
 
 ```text
-├── Archivo_Historico/
-│   ├── 01_Barcos_y_Combate_Naval/        # Fotografías, planos y grabados navales
-│   ├── 02_Fotos_Soldados_y_Personajes/   # Daguerrotipos y retratos de combatientes
-│   ├── 03_Lugares_y_Campos_de_Batalla/   # Fotografías de campamentos y campos de batalla
-│   ├── 04_Uniformes_y_Armamento/         # Planos técnicos de fusilería y uniformología
-│   ├── 05_Cartas_y_Documentos/           # Facsímiles, cartas y crónicas transcritas
-│   └── README_Indice_Archivo_Historico.md # Índice catalogado con resolución y metadatos
-├── AGENTS.md                             # Protocolo y directivas de desarrollo para Agentes de IA
-├── ROADMAP_DE_DESARROLLO.md              # Plan maestro de trabajo, fases y criterios de verificación
-├── DEV_LOG.md                            # Bitácora de iteraciones autónomas y resolución de errores
-├── CLAUDE.md                             # Guía rápida para asistentes de codificación en terminal
-├── GDD_Narrativo_y_Misiones.md           # Game Design Document técnico y narrativo (Unity URP)
-├── Historia_Completa_Guion.md            # Guion narrativo detallado con diálogos y cinemáticas
-├── download_historical_archive.py        # Herramienta de sincronización con Wikimedia Commons
-├── .gitignore                            # Exclusiones de Python, SO y previsión para Unity
-└── README.md                             # Documento maestro del proyecto
+├── Archivo_Historico/                    # 48 fuentes primarias (fotos, planos, facsímiles, cartas transcritas)
+├── src/UnityProject/                     # Proyecto Unity 6 (URP)
+│   ├── Assets/Scripts/Core/              # Simulación en C# puro, sin motor (armas, buques, balística, narrativa)
+│   ├── Assets/Scripts/Runtime/           # MonoBehaviours y ScriptableObjects (WeaponDataSO, ShipDataSO...)
+│   ├── Assets/Scripts/Editor/            # Generadores de datos y de escenas de prototipo
+│   ├── Assets/Tests/EditMode/            # Pruebas NUnit de Core (Unity Test Runner y dotnet)
+│   ├── Assets/Tests/EditModeUnity/       # Pruebas que requieren el motor (serialización de assets)
+│   └── Assets/{Prefabs,Scenes,ScriptableObjects,Audio,Materials,UI}/
+├── tools/
+│   ├── assets_manager.py                 # Manifiesto de assets con SHA-256, sync y Google Drive
+│   ├── tests/                            # Pruebas de las herramientas Python
+│   └── verify/                           # Arnés de compilación y pruebas fuera de Unity (dotnet)
+├── assets_manifest.json                  # Inventario de assets con hashes, tamaños y origen
+├── .github/workflows/ci.yml              # Verificación automática en cada push
+├── AGENTS.md · ROADMAP_DE_DESARROLLO.md · DEV_LOG.md · CLAUDE.md
+├── GDD_Narrativo_y_Misiones.md · Historia_Completa_Guion.md
+└── download_historical_archive.py        # Descarga del archivo desde Wikimedia Commons
 ```
 
 ---
@@ -148,10 +149,50 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ---
 
+## 🛠️ Desarrollo en Unity 6
+
+**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas: estructura del proyecto, datos históricos con fuentes y módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
+
+### Abrir el proyecto
+1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
+2. Menú **Pacífico → Datos → Generar ScriptableObjects históricos**: crea los assets de armas, buques y coleccionables desde los catálogos y el Archivo Histórico.
+3. Menú **Pacífico → Prototipos → Construir escena naval de Iquique** y pulsa Play.
+
+| Control | Acción |
+| :--- | :--- |
+| `W` / `S` | Telégrafo de máquinas (Atrás media · Detener · 1/4 · Media · Toda) |
+| `A` / `D` | Timón a babor / estribor |
+| Ratón · clic o `Espacio` | Apuntar la torre Coles · disparar |
+| `R` / `F` | Convergencia de las piezas · `Mayús`: telémetro |
+| `1` / `2` / `3` | Brigada de averías: incendios · achique · vapor |
+
+### Arquitectura
+* **`Pacifico.Core`** (`noEngineReferences`) contiene toda la lógica de simulación: se prueba sin abrir Unity y es determinista.
+* **Datos con procedencia:** cada arma y buque separa los datos históricos (con referencias y la lista de campos estimados) de los ajustes de jugabilidad del GDD.
+* **Los coleccionables leen el texto del propio Archivo Histórico** (`05_Cartas_y_Documentos/*.md`): no se duplica en código.
+
+### Verificación sin Unity
+```bash
+tools/verify/verify.sh                          # compila Core/Runtime/Editor y ejecuta las pruebas (requiere .NET 8)
+python -m unittest discover -s tools/tests      # pruebas del gestor de assets
+python tools/assets_manager.py test             # integridad del Archivo Histórico (SHA-256)
+```
+El arnés compila `Runtime` y `Editor` contra ensamblados de referencia de UnityEngine/UnityEditor para detectar errores de API. La validación final sigue siendo el **Test Runner** de Unity (Window → General → Test Runner).
+
+### Assets pesados
+Los binarios > 50 MB no van a git: se registran en `assets_manifest.json` y se guardan en `assets_cache/` o en Google Drive.
+```bash
+python tools/assets_manager.py add assets_cache/audio/canon.wav --gdrive-id <ID> --license CC0
+python tools/assets_manager.py sync             # descarga lo que falte y verifica el hash
+python tools/assets_manager.py push --remote gdrive:Pacifico/assets_cache   # requiere rclone
+```
+
+---
+
 ## ⚖️ Licencia y Rigor Histórico
 
 * **Documentación y Guion:** Los textos creativos, guiones y documentos de diseño son obra de autor original basada en investigación histórica.
-* **Material Gráfico y Documental:** Todas las fotografías de época, planos, facsímiles y pinturas pertenecen al **Dominio Público** internacional (obras de más de 140 años de antigüedad originadas entre 1879 y 1884, albergadas en museos nacionales y bibliotecas públicas).
+* **Material Gráfico y Documental:** Las fotografías de época, planos, facsímiles y pinturas de 1879–1884 son de **dominio público**. Algunas imágenes del archivo son fotografías modernas (réplicas de uniformes, monumentos) que pueden tener licencias Creative Commons: la ficha de Wikimedia Commons de cada archivo figura en `assets_manifest.json` (`source.page`) y debe consultarse antes de usarlas en el juego.
 
 ---
 *«La contienda es desigual, pero en las sombras de la historia todos los caídos comparten la misma tierra y el mismo mar.»*
