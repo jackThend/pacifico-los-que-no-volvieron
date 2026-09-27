@@ -89,7 +89,7 @@
 ---
 
 ## 📌 FASE 6: INTEGRACIÓN DE CAMPAÑA Y PULIDO
-- [ ] **6.1 Escenario Capítulo 1: Rada de Iquique (Naval 3D)**
+- [X] **6.1 Escenario Capítulo 1: Rada de Iquique (Naval 3D)**
 - [ ] **6.2 Escenario Capítulo 4: Desembarco de Pisagua (FPS)**
 - [ ] **6.3 Escenario Capítulo 6: Alto de la Alianza / Tacna (RTS)**
 - [ ] **6.4 Escenario Capítulo 7: Morro de Arica (RTS + Asalto)**

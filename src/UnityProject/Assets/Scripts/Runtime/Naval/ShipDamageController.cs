@@ -49,11 +49,12 @@ namespace Pacifico.Naval
             _hull = GetComponent<ArmoredHull>();
             if (_hull != null) _hull.ImpactResolved += OnImpact;
 
-            if (playerControlled && NavalHud.Active != null)
+            // Se registran siempre; solo hablan mientras el jugador manda este buque (el capítulo 1 cambia de bando).
+            if (NavalHud.Active != null)
             {
-                NavalHud.Active.ExtraLines.Add(StatusLine);
-                NavalHud.Active.ExtraLines.Add(BrigadeLine);
-                NavalHud.Active.ExtraLines.Add(() => _lastEvent);
+                NavalHud.Active.ExtraLines.Add(() => Shown ? StatusLine() : string.Empty);
+                NavalHud.Active.ExtraLines.Add(() => Shown ? BrigadeLine() : string.Empty);
+                NavalHud.Active.ExtraLines.Add(() => Shown ? _lastEvent : string.Empty);
             }
         }
 
@@ -69,6 +70,11 @@ namespace Pacifico.Naval
             _lastEvent = ArmoredHull.Describe(impact);
             _listSide = Mathf.Sign(Vector3.Dot(impact.Hit.Point - transform.position, transform.right));
         }
+
+        private bool Shown => playerControlled && NavalHud.Active != null && NavalHud.Active.Ship == _ship;
+
+        /// <summary>Hunde el buque ya (desenlace fijado por el guion). Ver <see cref="ShipDamageState.Founder"/>.</summary>
+        public void Founder() => State?.Founder();
 
         /// <summary>Recibe una embestida (llamado por el <see cref="RamBow"/> del atacante).</summary>
         public void ReceiveRam(RamResult ram)

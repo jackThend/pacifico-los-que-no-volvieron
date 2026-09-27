@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Pacifico.Core.Naval;
 using UnityEngine;
@@ -18,6 +19,9 @@ namespace Pacifico.Naval
         private readonly Dictionary<ShipController, float> _lastRam = new Dictionary<ShipController, float>();
 
         public RamResult? LastResult { get; private set; }
+
+        /// <summary>Embestida con arrancada: espolón, buque embestido y resultado.</summary>
+        public event Action<RamBow, ShipController, RamResult> Rammed;
 
         public ShipController Owner
         {
@@ -56,6 +60,7 @@ namespace Pacifico.Naval
             if (ownDamage != null) ownDamage.DealtRam(ram);
 
             owner.Motion.ApplySpeedImpulse(owner.Motion.Speed * (ram.RammerSpeedRetained - 1f));
+            Rammed?.Invoke(this, target, ram);
         }
 
         /// <summary>

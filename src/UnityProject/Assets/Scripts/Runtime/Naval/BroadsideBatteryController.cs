@@ -1,3 +1,4 @@
+using System;
 using Pacifico.Core.Naval;
 using UnityEngine;
 
@@ -13,6 +14,9 @@ namespace Pacifico.Naval
         private ShipController _ship;
 
         public BroadsideBatteryModel Model { get; private set; }
+
+        /// <summary>Andanada disparada (batería y número de piezas).</summary>
+        public event Action<BroadsideBatteryController, int> Fired;
 
         public NavalShell ShellPrefab
         {
@@ -31,8 +35,11 @@ namespace Pacifico.Naval
             Model?.Step(Time.fixedDeltaTime);
         }
 
-        /// <summary>Intenta una andanada contra <paramref name="target"/> con adelanto por su movimiento.</summary>
-        public bool TryFireAt(ShipController target)
+        /// <summary>
+        /// Intenta una andanada contra <paramref name="target"/> con adelanto por su movimiento.
+        /// <paramref name="elevationErrorDeg"/> suma un error de elevación común (el balanceo de la cubierta).
+        /// </summary>
+        public bool TryFireAt(ShipController target, float elevationErrorDeg = 0f)
         {
             if (Model == null || target == null || target.Motion == null || shellPrefab == null) return false;
 
@@ -50,12 +57,14 @@ namespace Pacifico.Naval
             for (int i = 0; i < launches.Count; i++)
             {
                 ShellLaunch launch = launches[i];
+                launch.ElevationDeg += elevationErrorDeg;
                 float along = (i - (launches.Count - 1) * 0.5f) * spacing;
                 // Las piezas se reparten a lo largo de la banda que dispara (launch.Side).
                 Vector3 origin = transform.position + transform.forward * along +
                                  transform.right * ((int)launch.Side * _ship.Spec.BeamM * 0.55f) + Vector3.up * muzzleHeight;
                 ShellLauncher.Launch(shellPrefab, origin, launch, _ship.Velocity, gameObject);
             }
+            Fired?.Invoke(this, launches.Count);
             return true;
         }
     }

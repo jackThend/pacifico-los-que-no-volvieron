@@ -20,13 +20,13 @@ namespace Pacifico.EditorTools
     public static class IquiquePrototypeBuilder
     {
         public const string ScenePath = ProjectPaths.Scenes + "/Proto_Iquique.unity";
-        private const string ShellPrefabPath = ProjectPaths.Prefabs + "/Proto_NavalShell.prefab";
+        internal const string ShellPrefabPath = ProjectPaths.Prefabs + "/Proto_NavalShell.prefab";
 
-        private static readonly Color SeaColor = new Color(0.16f, 0.28f, 0.34f);
-        private static readonly Color CoastColor = new Color(0.72f, 0.64f, 0.5f);
-        private static readonly Color IronColor = new Color(0.12f, 0.12f, 0.13f);
-        private static readonly Color WoodColor = new Color(0.36f, 0.24f, 0.14f);
-        private static readonly Color BrassColor = new Color(0.55f, 0.45f, 0.25f);
+        internal static readonly Color SeaColor = new Color(0.16f, 0.28f, 0.34f);
+        internal static readonly Color CoastColor = new Color(0.72f, 0.64f, 0.5f);
+        internal static readonly Color IronColor = new Color(0.12f, 0.12f, 0.13f);
+        internal static readonly Color WoodColor = new Color(0.36f, 0.24f, 0.14f);
+        internal static readonly Color BrassColor = new Color(0.55f, 0.45f, 0.25f);
 
         [MenuItem("Pacífico/Prototipos/Construir escena naval de Iquique")]
         public static void Build()
@@ -87,7 +87,7 @@ namespace Pacifico.EditorTools
         // Entorno
         // ------------------------------------------------------------------------------------------
 
-        private static void CreateEnvironment()
+        internal static void CreateEnvironment()
         {
             var sun = new GameObject("Sol_Neblina_de_Iquique").AddComponent<Light>();
             sun.type = LightType.Directional;
@@ -111,10 +111,13 @@ namespace Pacifico.EditorTools
         // Huáscar
         // ------------------------------------------------------------------------------------------
 
-        private static ShipController CreateHuascar(ShipDataSO data, NavalShell shellPrefab)
+        internal static ShipController CreateHuascar(ShipDataSO data, NavalShell shellPrefab) =>
+            CreateHuascar(data, shellPrefab, new Vector3(0f, 0f, -1400f), 0f);
+
+        internal static ShipController CreateHuascar(ShipDataSO data, NavalShell shellPrefab, Vector3 position, float heading)
         {
             ShipSpec spec = data.ToSpec();
-            GameObject root = ShipRoot("Huascar", data, new Vector3(0f, 0f, -1400f), 0f, player: true, EngineOrder.HalfAhead, 0.5f);
+            GameObject root = ShipRoot("Huascar", data, position, heading, player: true, EngineOrder.HalfAhead, 0.5f);
             Transform hull = root.transform.Find("Casco");
 
             float length = spec.LengthM;
@@ -170,10 +173,13 @@ namespace Pacifico.EditorTools
         // Esmeralda
         // ------------------------------------------------------------------------------------------
 
-        private static ShipController CreateEsmeralda(ShipDataSO data, NavalShell shellPrefab, ShipController enemy)
+        internal static ShipController CreateEsmeralda(ShipDataSO data, NavalShell shellPrefab, ShipController enemy) =>
+            CreateEsmeralda(data, shellPrefab, enemy, new Vector3(900f, 0f, 0f), 200f);
+
+        internal static ShipController CreateEsmeralda(ShipDataSO data, NavalShell shellPrefab, ShipController enemy, Vector3 position, float heading)
         {
             ShipSpec spec = data.ToSpec();
-            GameObject root = ShipRoot("Esmeralda", data, new Vector3(900f, 0f, 0f), 200f, player: false, EngineOrder.QuarterAhead, 0.5f);
+            GameObject root = ShipRoot("Esmeralda", data, position, heading, player: false, EngineOrder.QuarterAhead, 0.5f);
             Transform hull = root.transform.Find("Casco");
 
             Primitive(PrimitiveType.Cube, "Casco_Visual", hull, Vector3.zero, new Vector3(spec.BeamM, 5f, spec.LengthM), WoodColor, keepCollider: false);
@@ -194,7 +200,7 @@ namespace Pacifico.EditorTools
         // Piezas comunes
         // ------------------------------------------------------------------------------------------
 
-        private static GameObject ShipRoot(string name, ShipDataSO data, Vector3 position, float heading, bool player,
+        internal static GameObject ShipRoot(string name, ShipDataSO data, Vector3 position, float heading, bool player,
                                            EngineOrder order, float speedFraction)
         {
             var root = new GameObject(name);
@@ -247,7 +253,7 @@ namespace Pacifico.EditorTools
             marker.BelowWaterline = belowWaterline;
         }
 
-        private static GameObject Primitive(PrimitiveType type, string name, Transform parent, Vector3 localPosition,
+        internal static GameObject Primitive(PrimitiveType type, string name, Transform parent, Vector3 localPosition,
                                             Vector3 localScale, Color color, bool keepCollider = true)
         {
             return PrototypeSceneKit.Primitive(type, name, parent, localPosition, localScale, MaterialFor(name, color), keepCollider);
@@ -260,7 +266,7 @@ namespace Pacifico.EditorTools
             return PrototypeSceneKit.Material(key, color, key == "Mar" ? 0.8f : 0.25f);
         }
 
-        private static NavalShell CreateShellPrefab()
+        internal static NavalShell CreateShellPrefab()
         {
             var existing = AssetDatabase.LoadAssetAtPath<NavalShell>(ShellPrefabPath);
             if (existing != null) return existing;

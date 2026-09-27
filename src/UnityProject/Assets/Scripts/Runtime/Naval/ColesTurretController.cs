@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Pacifico.Core.Common;
 using Pacifico.Core.Naval;
@@ -37,6 +38,9 @@ namespace Pacifico.Naval
 
         public ColesTurretModel Model => _model;
 
+        /// <summary>La torre ha disparado (una o las dos piezas).</summary>
+        public event Action<ColesTurretController> Fired;
+
         public bool PlayerControlled
         {
             get => playerControlled;
@@ -67,8 +71,10 @@ namespace Pacifico.Naval
             NavalHud hud = NavalHud.Active;
             if (hud != null)
             {
-                hud.ExtraLines.Add(() => "Torre:      " + _model.TrainDeg.ToString("+000;-000") + "°  elev " + _model.ElevationDeg.ToString("0.0") + "°");
-                hud.ExtraLines.Add(() => "Convergencia: " + _model.ConvergenceRangeM.ToString("0") + " m   [R/F]");
+                hud.ExtraLines.Add(() => !playerControlled || hud.Ship != ship ? string.Empty
+                    : "Torre:      " + _model.TrainDeg.ToString("+000;-000") + "°  elev " + _model.ElevationDeg.ToString("0.0") + "°");
+                hud.ExtraLines.Add(() => !playerControlled || hud.Ship != ship ? string.Empty
+                    : "Convergencia: " + _model.ConvergenceRangeM.ToString("0") + " m   [R/F]");
             }
         }
 
@@ -132,6 +138,7 @@ namespace Pacifico.Naval
             {
                 ShellLauncher.Launch(shellPrefab, MuzzlePosition(launch.GunIndex, launch.LateralOffsetM), launch, ship.Velocity, ship.gameObject);
             }
+            Fired?.Invoke(this);
         }
 
         private Vector3 MuzzlePosition(int gunIndex, float lateralOffset)

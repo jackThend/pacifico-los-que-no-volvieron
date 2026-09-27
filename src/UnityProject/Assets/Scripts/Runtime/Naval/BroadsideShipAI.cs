@@ -22,6 +22,7 @@ namespace Pacifico.Naval
         private BroadsideBatteryController _battery;
         private ShipDamageController _damage;
         private Vector3 _anchor;
+        private bool _anchorSet;
         private float _nextThink;
 
         public ShipController Enemy
@@ -30,13 +31,33 @@ namespace Pacifico.Naval
             set => enemy = value;
         }
 
+        /// <summary>Si es falso, maniobra pero no dispara (el jugador sirve la batería).</summary>
+        public bool AutoFire { get; set; } = true;
+
+        /// <summary>Centro de la zona de maniobra (por defecto, la posición inicial).</summary>
+        public Vector3 Anchor
+        {
+            get => _anchor;
+            set
+            {
+                _anchor = value;
+                _anchorSet = true;
+            }
+        }
+
+        public float LeashRadius
+        {
+            get => leashRadiusM;
+            set => leashRadiusM = value;
+        }
+
         private void Start()
         {
             _ship = GetComponent<ShipController>();
             _battery = GetComponent<BroadsideBatteryController>();
             _damage = GetComponent<ShipDamageController>();
             _ship.PlayerControlled = false;
-            _anchor = transform.position;
+            if (!_anchorSet) _anchor = transform.position;
         }
 
         private void Update()
@@ -64,7 +85,7 @@ namespace Pacifico.Naval
             float error = Mathf.DeltaAngle(_ship.Motion.HeadingDeg, desired);
             _ship.Command(cruiseOrder, Mathf.Clamp(error / 25f, -1f, 1f));
 
-            if (_battery != null && range <= maxRangeM) _battery.TryFireAt(enemy);
+            if (AutoFire && _battery != null && range <= maxRangeM) _battery.TryFireAt(enemy);
         }
     }
 }

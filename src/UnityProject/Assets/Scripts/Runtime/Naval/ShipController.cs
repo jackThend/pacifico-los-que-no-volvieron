@@ -41,6 +41,9 @@ namespace Pacifico.Naval
         private float _sinkPitch;
         private float _sinkRoll;
 
+        /// <summary>Balanceo impuesto desde fuera (°, + estribor arriba): el oleaje que sienten los artilleros.</summary>
+        public float ExtraRollDeg { get; set; }
+
         public ShipDataSO Data => data;
         public ShipSpec Spec { get; private set; }
         public ShipMotionModel Motion { get; private set; }
@@ -126,7 +129,7 @@ namespace Pacifico.Naval
             float targetHeel = Mathf.Clamp(Motion.YawRateDegPerSecond * Motion.Speed * heelPerTurn * 0.1f, -maxHeelDeg, maxHeelDeg);
             _heel = Mathf.Lerp(_heel, targetHeel, 1f - Mathf.Exp(-Time.deltaTime * 1.5f));
             float pitch = Mathf.Sin(Time.time * 2f * Mathf.PI / swellPeriodSeconds) * swellPitchDeg;
-            hullVisual.localRotation = Quaternion.Euler(pitch, 0f, _heel);
+            hullVisual.localRotation = Quaternion.Euler(pitch, 0f, _heel + ExtraRollDeg);
         }
 
         /// <summary>Postura de hundimiento (la aplica el control de averías; 0 = a flote).</summary>

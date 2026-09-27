@@ -45,14 +45,20 @@ namespace Pacifico.Naval
 
             ShipMotionModel m = ship.Motion;
             const float width = 290f;
-            float height = 150f + ExtraLines.Count * 22f;
+            var lines = new System.Collections.Generic.List<string>(ExtraLines.Count);
+            foreach (var line in ExtraLines)
+            {
+                string text = line();
+                if (!string.IsNullOrEmpty(text)) lines.Add(text); // las líneas de otro buque o de un sistema inactivo vienen vacías
+            }
+            float height = 150f + lines.Count * 22f;
             GUILayout.BeginArea(new Rect(16f, Screen.height - height - 16f, width, height), GUI.skin.box);
             GUILayout.Label(ship.Spec.Name, _title);
             GUILayout.Label("Telégrafo:  " + EngineTelegraph.DisplayName(m.Telegraph.Order) + "   [W/S]", _label);
             GUILayout.Label("Velocidad:  " + m.SpeedKnots.ToString("0.0") + " nudos", _label);
             GUILayout.Label("Rumbo:      " + m.HeadingDeg.ToString("000") + "°", _label);
             GUILayout.Label("Timón:      " + RudderBar(m.Rudder) + "   [A/D]", _label);
-            foreach (var line in ExtraLines) GUILayout.Label(line(), _label);
+            foreach (string line in lines) GUILayout.Label(line, _label);
             GUILayout.EndArea();
         }
 

@@ -217,9 +217,37 @@ namespace Pacifico.Core.Naval
             StructuralDamage = Math.Min(StructureCapacity, StructuralDamage + Math.Max(0f, amount));
         }
 
+        /// <summary>
+        /// Se va a pique ya: el agua llena la reserva de flotabilidad. Para desenlaces fijados por la historia
+        /// (la Esmeralda tras el tercer espolonazo) que el modelo de daños no tiene por qué reproducir al segundo.
+        /// </summary>
+        public void Founder()
+        {
+            if (IsSunk) return;
+            KeepAfloat = false;
+            WaterTonnes = Math.Max(WaterTonnes, ReserveBuoyancy);
+            CheckSunk();
+        }
+
+        /// <summary>Tope de agua y de daño estructural mientras <see cref="KeepAfloat"/> está activo (fracción).</summary>
+        public const float KeepAfloatMaxFraction = 0.92f;
+
+        /// <summary>
+        /// El guion la mantiene a flote: el agua y el daño se quedan por debajo del límite (el buque escora, pierde
+        /// máquina y apenas gobierna, pero no se hunde) hasta que la historia lo decida con <see cref="Founder"/>.
+        /// Sin esto, la Esmeralda del modelo se iría a pique tras el primer espolonazo y no habría un tercero.
+        /// </summary>
+        public bool KeepAfloat { get; set; }
+
         private void CheckSunk()
         {
             if (IsSunk) return;
+            if (KeepAfloat)
+            {
+                WaterTonnes = Math.Min(WaterTonnes, ReserveBuoyancy * KeepAfloatMaxFraction);
+                StructuralDamage = Math.Min(StructuralDamage, StructureCapacity * KeepAfloatMaxFraction);
+                return;
+            }
             if (WaterTonnes >= ReserveBuoyancy || StructuralDamage >= StructureCapacity)
             {
                 IsSunk = true;

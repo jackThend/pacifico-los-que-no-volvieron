@@ -356,3 +356,50 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
   * En los retratos verticales, el encuadre panorámico solo mostraba el torso → cada plano tiene su propio movimiento, y en los retratos la cámara sube del pecho al rostro.
 * **Pendiente:** grabar la voz en off en inglés de Morice y la música (chelo y oleaje), y comprobar en Unity 6 (tarea 0.3) la legibilidad de los subtítulos IMGUI en distintas resoluciones.
 * **Con esto la Fase 5 queda completa fuera del motor.**
+
+
+---
+
+### [2026-09-27] - Tarea 6.1: Escenario Capítulo 1, Rada de Iquique (Naval 3D) — [X] (verificado fuera del motor; ver 0.3)
+* **Motor de misiones (`Pacifico.Core/Campaign`):**
+  * `MissionRunner`: máquina de estados determinista. Maneja etapas con perspectiva, objetivos con progreso («2/3»), reacciones que se disparan una vez (pueden interrumpir el diálogo), transiciones por orden de prioridad y fracasos. La escena solo escribe **hechos** (`MissionFacts`, contadores y marcas); qué significan lo decide el guion. `MissionScript.Validate` rechaza transiciones a etapas inexistentes y etapas sin salida al final.
+  * `DialogueQueue`: líneas en orden, cada una el tiempo que exige leerla (15 car./s, mínimo 2,5 s). Una etapa puede esperar a que acabe el diálogo, para no cortar a Prat.
+  * `GuionQuotes`: extrae las citas «…» de un capítulo de `Historia_Completa_Guion.md`. **Las frases de Prat y de Grau no se copian en el código**: se buscan por su comienzo. Si el guion cambia, la escena no se construye.
+  * `IquiqueChapter`: el capítulo según el guion y el GDD.
+    * Acto I en la Esmeralda: arenga de Prat, tres andanadas (las balas rebotan en la coraza) y las baterías de tierra.
+    * Primer espolonazo: «¡Al abordaje, muchachos!» y la caída de Prat. El cambio de perspectiva se hace a oscuras.
+    * Acto II en la torre Coles: «¡Fuego a la línea de flotación!…» y el tercer espolonazo.
+    * Náufragos: «¡Fuego no! ¡Arriad los botes…!». Disparar contra ellos trae la reprimenda de Grau; a los tres disparos, fracaso.
+    * La carta de Grau cierra la misión y se desbloquea como coleccionable (`CampaignProgress`).
+    * Hay salidas de seguridad: la historia avanza aunque el jugador no dispare, y salta al rescate si la Esmeralda se hunde antes de tiempo.
+  * `SurvivorRescue`: para arriar un bote hay que quedarse a menos de 45 m de la borda, con menos de 3 nudos, durante 4 s. Si el buque se aleja, el progreso se deshace poco a poco.
+  * `DeckRollModel` (Naval): balanceo armónico exacto (±2°, 9 s). Las piezas de costado heredan el error de elevación de su banda. A 500 m, un grado son unos 9 m de altura en el blanco. La ventana de acierto es el 9 % del ciclo (unos 0,4 s en cada paso por la horizontal), la mitad a 1.000 m.
+  * `ShipDamageState.Founder` / `KeepAfloat`: el guion mantiene la Esmeralda a flote, escorada y casi sin máquina, hasta el tercer espolonazo, y entonces la echa a pique.
+* **Unity (`Runtime/Campaign`):**
+  * `IquiqueMissionDirector` traduce los sucesos a hechos: andanadas, impactos en la flotación, espolonazos (solo los de verdad, `RamModel.Critical`, con 20 s entre uno y otro), hundimientos, rescates y disparos. También traduce las etapas a cámara, mandos, HUD e IA.
+    * Dibuja los objetivos y los diálogos: citas entre comillas latinas, acotaciones en cursiva y ayudas de control.
+    * Abre la carta en el `DocumentViewer` y guarda el progreso.
+  * `PlayerBroadsideGunner`: batería del jugador con clinómetro. La zona verde es el balanceo con el que se acierta, y anuncia «CORTO / AL BLANCO / LARGO».
+  * `RammingShipAI`: el Huáscar de Grau. Cañonea a distancia; en la carrera de embestida apunta al punto de encuentro; tras cada choque da atrás hasta separarse 100 m, se abre y vuelve a la carga. El primer espolonazo va a media máquina.
+  * `ShoreBattery`: piezas de campaña en lo alto de la costa, con ángulo de situación. Dejan de tirar cuando la Esmeralda sale de su alcance.
+  * `SurvivorGroup`: grupos de náufragos que flotan con la marejada. Muestran la distancia y por qué aún no se puede arriar el bote.
+  * Eventos nuevos:
+    * `BroadsideBatteryController.Fired` (con error de elevación opcional), `ColesTurretController.Fired` y `RamBow.Rammed`.
+    * `BroadsideShipAI.AutoFire`, `Anchor` y `LeashRadius`, y `ShipController.ExtraRollDeg`.
+    * El `NavalHud` omite las líneas vacías: el daño y la torre solo se muestran para el buque que lleva el jugador.
+* **Escena `Capitulo1_Rada_de_Iquique`** (menú **Pacífico → Capítulos → Capítulo 1: Rada de Iquique**): la neblina de Iquique, dos baterías de tierra, la Esmeralda bajo la costa, el Huáscar entrando desde el sur y, al fondo, la Independencia persiguiendo a la Covadonga hacia Punta Gruesa. La sección del guion viaja dentro de la escena (la build no lee el repositorio).
+* **Verificación:** 19 pruebas nuevas (341 en total).
+  * Partida completa con el desenlace histórico: la secuencia de etapas y de perspectivas, la arenga antes del espolón, Prat sin cortar, el tercer espolonazo que la echa a pique, el rescate y la carta desbloqueada.
+  * Partida sin disparar (los plazos hacen avanzar la historia), hundimiento prematuro, reprimenda y relevo, y fracaso si se hunde el Huáscar.
+  * Citas literales del guion; balanceo (se acierta con la cubierta horizontal y no en el extremo; ventana exigente pero jugable; independiente del paso); rescate; `KeepAfloat`; progreso guardado.
+* **Incidencias resueltas con una simulación de la maniobra fuera del motor** (los mismos modelos y la lógica de las IA, paso a paso):
+  * El Huáscar empezaba a 1,8 km: tardaba más de 4 minutos en embestir → se acerca a unos 900 m.
+  * Tras cada choque se abría a media máquina hasta 450 m (2,5 minutos por ciclo) → a toda máquina hasta 200 m.
+  * Al virar para abrirse volvía a tocar a la Esmeralda y contaba como tercer espolonazo → da atrás hasta separarse 100 m, y los roces no cuentan.
+  * **El modelo de daños hundía la Esmeralda 25–70 s después del primer espolonazo**, así que el tercero nunca llegaba → `KeepAfloat` hasta el tercero.
+  * Resultado: tres espolonazos a 7,3, 9,4 y 9,4 nudos, a los 200, 375 y 559 s.
+* **Licencias de diseño documentadas:** amplitud y periodo del balanceo, seis grupos de náufragos, piezas de las baterías de tierra (≈ 4 kg, estimadas) y tiempos comprimidos (la batalla real duró unas cuatro horas).
+* **Pendiente:**
+  * Comprobar en Unity 6 (tarea 0.3) la escena, el ritmo del combate y la legibilidad del HUD.
+  * Humo de artillería: el modelo de humo está calibrado para fusiles y crece linealmente con la carga, así que no se usa en los cañones hasta darle una escala naval.
+  * Voces de Prat y Grau.
