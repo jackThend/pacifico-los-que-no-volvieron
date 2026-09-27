@@ -72,7 +72,7 @@
 - [X] **4.2 Sistema de Supresión y Cobertura**
   * *Criterio:* El fuego concentrado disminuye la velocidad de la escuadra enemiga y la obliga a tenderse en zanjas o parapetos.
   * *Verificación:* Comprobación de cambio de estado a *Suprimido* bajo volumen de fuego.
-- [ ] **4.3 Gestión de Cantimploras (Agua) y Munición**
+- [X] **4.3 Gestión de Cantimploras (Agua) y Munición**
   * *Criterio:* Desgaste gradual de reservas de agua y cartuchos en el desierto; reposición mediante carros de vituallas.
   * *Verificación:* Las tropas pierden efectividad si se agota el agua bajo el sol salitrero.
 

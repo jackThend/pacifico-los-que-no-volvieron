@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 namespace Pacifico.EditorTools
 {
     /// <summary>
-    /// Construye la escena de prototipo RTS «Tacna» (ROADMAP 4.1–4.2): la meseta del Intiorko con dunas, la zanja y los
+    /// Construye la escena de prototipo RTS «Tacna» (ROADMAP 4.1–4.3): la meseta del Intiorko con dunas, la zanja y los
     /// parapetos de la línea aliada, tres escuadras del Batallón Colorados de Bolivia (el jugador, con Remington) y
     /// tres escuadras chilenas (Comblain) al pie de la meseta. El NavMesh se genera al cargar la escena.
     /// Modo batch:
@@ -81,6 +81,10 @@ namespace Pacifico.EditorTools
             smokeSerialized.FindProperty("maxPuffs").intValue = 160;
             smokeSerialized.FindProperty("muzzleFlash").boolValue = false;
             smokeSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            // Clima: camanchaca que se levanta y deja el sol del desierto (ROADMAP 4.3).
+            new GameObject("Clima_Camanchaca").AddComponent<BattlefieldClimate>();
+            CreateLogistics(terrain);
 
             Camera camera = CreateCamera();
             new GameObject("Mando_del_Jugador").AddComponent<RtsCommander>().ViewCamera = camera;
@@ -253,6 +257,40 @@ namespace Pacifico.EditorTools
             position.y = Ground(terrain, position);
             go.transform.SetPositionAndRotation(position, Quaternion.Euler(0f, headingDeg, 0f));
             go.AddComponent<CoverPoint>().Protection = protection;
+        }
+
+        /// <summary>
+        /// Depósitos de retaguardia de ambos bandos y un carro de vituallas por bando (ROADMAP 4.3). El aliado está a
+        /// ~130 m de la zanja: mantenerlo conectado con la línea es parte del juego.
+        /// </summary>
+        private static void CreateLogistics(Terrain terrain)
+        {
+            Material wood = PrototypeSceneKit.Material("Madera_Carro", new Color(0.4f, 0.28f, 0.17f));
+            Material barrels = PrototypeSceneKit.Material("Pipas", new Color(0.5f, 0.38f, 0.24f));
+            Material canvas = PrototypeSceneKit.Material("Lona", new Color(0.86f, 0.83f, 0.74f));
+            Depot(terrain, "Deposito_Aliado", Faction.Bolivia, new Vector3(20f, 0f, 225f), canvas);
+            Depot(terrain, "Deposito_Chileno", Faction.Chile, new Vector3(0f, 0f, -238f), canvas);
+            Cart(terrain, "Carro_Vituallas_Aliado", Faction.Bolivia, new Vector3(28f, 0f, 215f), wood, barrels);
+            Cart(terrain, "Carro_Vituallas_Chileno", Faction.Chile, new Vector3(10f, 0f, -232f), wood, barrels);
+        }
+
+        private static void Depot(Terrain terrain, string name, Faction faction, Vector3 position, Material canvas)
+        {
+            position.y = Ground(terrain, position);
+            var go = new GameObject(name);
+            go.transform.position = position;
+            go.AddComponent<SupplyDepot>().Faction = faction;
+            // Tienda de intendencia y pila de cajones.
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Tienda", go.transform, new Vector3(0f, 1.3f, 0f), new Vector3(6f, 2.6f, 4f), canvas);
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Cajones", go.transform, new Vector3(5f, 0.5f, 0f), new Vector3(2f, 1f, 1.5f), canvas);
+        }
+
+        private static void Cart(Terrain terrain, string name, Faction faction, Vector3 position, Material wood, Material barrels)
+        {
+            position.y = Ground(terrain, position);
+            var go = new GameObject(name);
+            go.transform.position = position;
+            go.AddComponent<SupplyCart>().Configure(faction, wood, barrels);
         }
 
         private static Camera CreateCamera()

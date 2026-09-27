@@ -114,6 +114,13 @@ namespace Pacifico.Tactics
         /// <summary>Hombres que ocupan un puesto a cubierto.</summary>
         public int InCover { get; private set; }
 
+        /// <summary>Agua y cartuchos (ROADMAP 4.3): la sed bajo el sol resta efectividad; sin cartuchos no hay fuego.</summary>
+        public SquadSupply Supply { get; private set; }
+
+        private float _lastShotTime = float.NegativeInfinity;
+        /// <summary>Tras este tiempo sin disparar, la escuadra deja de contar como «combatiendo» para la sudoración.</summary>
+        private const float FightingMemorySeconds = 6f;
+
         /// <summary>Último resultado del fuego propio (para el HUD).</summary>
         public VolleyResult LastVolley { get; private set; }
         public int ShotsFired { get; private set; }
@@ -165,6 +172,7 @@ namespace Pacifico.Tactics
             InitialStrength = _soldiers.Count;
             Command = new SquadCommand(formation, _positions, ToVec3(anchor), ToVec3(facing));
             Fire = new SquadFireControl(Weapon, _soldiers.Count, GetInstanceID());
+            Supply = new SquadSupply(_soldiers.Count, new SupplySettings { TimeScale = BattlefieldClimate.TimeScale }, GetInstanceID());
         }
 
         // ------------------------------------------------------------------------------------------
@@ -227,7 +235,18 @@ namespace Pacifico.Tactics
             SyncPositions();
             Suppression.Step(dt);
             SuppressionState state = Suppression.State;
-            Command.March.SpeedFactor = SuppressionModel.SpeedFactor(state);
+
+            // Sed (ROADMAP 4.3): se suda según lo que se hace y el calor del momento; los que caen por el calor son bajas.
+            Exertion exertion = Time.time - _lastShotTime < FightingMemorySeconds ? Exertion.Fighting
+                : Command.March.Moving ? Exertion.Marching
+                : Exertion.Resting;
+            int collapsed = Supply.Step(dt, exertion, BattlefieldClimate.Heat);
+            if (collapsed > 0)
+            {
+                TakeCasualties(collapsed, CenterOfMass() + Random.insideUnitSphere);
+                if (!IsAlive) return;
+            }
+            Command.March.SpeedFactor = SuppressionModel.SpeedFactor(state) * Supply.SpeedFactor;
 
             // Llegada: la escuadra queda a la espera y responde al fuego por su cuenta.
             if (Order == SquadOrderKind.Move && !Command.March.Moving) Order = SquadOrderKind.Hold;
@@ -236,11 +255,16 @@ namespace Pacifico.Tactics
             Command.Step(dt, _positions);
             DriveSoldiers();
 
-            VolleyResult volley = Fire.Step(dt, canFire, distance, target != null ? target.Posture : Posture.Standing, target != null ? target.Cover : 0f,
-                                            SuppressionModel.AccuracyPenalty(state), SuppressionModel.RateFactor(state));
+            VolleyResult volley = Fire.Step(dt, canFire && Supply.HasAmmo, distance, target != null ? target.Posture : Posture.Standing,
+                                            target != null ? target.Cover : 0f,
+                                            SuppressionModel.AccuracyPenalty(state) * Supply.DispersionScale,
+                                            SuppressionModel.RateFactor(state) * Supply.RateFactor);
+            // En el mismo paso pueden salir unos pocos disparos más que cartuchos quedaban: se descuentan hasta cero.
+            Supply.ConsumeCartridges(volley.Shots);
             LastVolley = volley;
             if (volley.Shots > 0)
             {
+                _lastShotTime = Time.time;
                 ShotsFired += volley.Shots;
                 EmitShots(volley.Shots, target);
             }
@@ -497,6 +521,7 @@ namespace Pacifico.Tactics
             }
             if (fallen == 0) return 0;
             SyncPositions();
+            Supply?.SetMen(_soldiers.Count);
             if (_soldiers.Count > 0)
             {
                 Command.RemoveSoldier(_positions);

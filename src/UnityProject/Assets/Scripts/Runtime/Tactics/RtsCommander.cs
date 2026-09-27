@@ -238,14 +238,34 @@ namespace Pacifico.Tactics
                 string text = (selected ? "> " : "   ") + s.DisplayName + " — " + s.Strength + "/" + s.InitialStrength + " · " +
                               (s.Formation == FormationType.Line ? "Línea" : "Guerrilla") + " · " + state +
                               " · " + SuppressionName(s.Suppression.State) + (s.InCover > 0 ? " · a cubierto " + s.InCover : string.Empty) +
-                              " · bajas causadas: " + s.EnemyCasualties;
+                              " · " + SupplyText(s.Supply) + " · bajas causadas: " + s.EnemyCasualties;
                 DrawSuppressionBar(new Rect(12f, y - 3f, 120f, 3f), s.Suppression.Level);
                 GUI.Label(new Rect(12f, y - 20f, 900f, 22f), text, _label);
                 y -= 22f;
             }
+            foreach (SupplyCart cart in SupplyCart.All)
+            {
+                if (cart.Faction == Faction.Chile) continue;
+                GUI.Label(new Rect(12f, y - 20f, 900f, 22f), "   Carro de vituallas — agua " + cart.Model.WaterLiters.ToString("0") + " L · cartuchos " +
+                          cart.Model.Cartridges + " · " + cart.Status, _label);
+                y -= 22f;
+            }
+            string climate = BattlefieldClimate.Active != null
+                ? (BattlefieldClimate.Heat < 0.7f ? "Camanchaca" : "Sol del desierto") + " (calor " + (BattlefieldClimate.Heat * 100f).ToString("0") + " %)"
+                : string.Empty;
+            if (climate.Length > 0) GUI.Label(new Rect(Screen.width - 330f, 10f, 320f, 22f), climate, _label);
             GUI.Label(new Rect(12f, 10f, 1200f, 22f),
                 "Clic/recuadro: seleccionar (Mayús añade, Ctrl alterna) · Clic dcho.: mover (arrastrar: frente y orientación) · " +
                 "Clic dcho. sobre enemigo: atacar · 1 línea · 2 guerrilla · H alto · WASD/QE/rueda: cámara", _small);
+        }
+
+        /// <summary>«agua 60 % · 74 cart./hombre · sed» (ROADMAP 4.3).</summary>
+        public static string SupplyText(SquadSupply supply)
+        {
+            if (supply == null) return string.Empty;
+            int perMan = supply.Men > 0 ? supply.Cartridges / supply.Men : 0;
+            string thirst = supply.Effectiveness < 0.6f ? " · SED EXTREMA" : supply.Effectiveness < 0.95f ? " · sed" : string.Empty;
+            return "agua " + (supply.WaterFraction * 100f).ToString("0") + " % · " + perMan + " cart./hombre" + thirst;
         }
 
         public static string SuppressionName(SuppressionState state)
