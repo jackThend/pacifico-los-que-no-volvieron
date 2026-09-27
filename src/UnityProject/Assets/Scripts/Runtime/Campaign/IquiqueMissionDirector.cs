@@ -67,11 +67,7 @@ namespace Pacifico.Campaign
         private bool _newCollectible;
         private readonly List<SurvivorGroup> _survivors = new List<SurvivorGroup>();
 
-        private GUIStyle _title;
-        private GUIStyle _text;
-        private GUIStyle _speaker;
-        private GUIStyle _line;
-        private GUIStyle _center;
+        private readonly MissionHud _hud = new MissionHud();
 
         public MissionRunner Runner => _runner;
 
@@ -337,23 +333,19 @@ namespace Pacifico.Campaign
         private void OnGUI()
         {
             if (_runner == null) return;
-            EnsureStyles();
             GUI.depth = -100;
             bool viewerOpen = viewer != null && viewer.IsOpen;
-
             if (!viewerOpen && _runner.State == MissionState.Running)
             {
-                DrawObjectives();
-                DrawDialogue();
+                _hud.DrawObjectives(_runner, "CAPÍTULO 1", Who());
+                _hud.DrawDialogue(_runner, 300f);
             }
-            if (_runner.State != MissionState.Running && !viewerOpen) DrawEnd();
-
-            if (_fade >= 0f)
+            if (_runner.State != MissionState.Running && !viewerOpen)
             {
-                GUI.color = new Color(0f, 0f, 0f, 1f - Mathf.Abs(_fade - 1f));
-                GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), Texture2D.whiteTexture);
-                GUI.color = Color.white;
+                string detail = letter != null ? (_newCollectible ? "Coleccionable desbloqueado: " : "Coleccionable: ") + letter.title : string.Empty;
+                _hud.DrawEnd(_runner, "CAPÍTULO 1", detail);
             }
+            if (_fade >= 0f) MissionHud.DrawFade(1f - Mathf.Abs(_fade - 1f), Color.black);
         }
 
         private string Who()
@@ -365,85 +357,6 @@ namespace Pacifico.Campaign
                 case P.HuascarBridge: return "Huáscar · a las órdenes de Grau";
                 default: return string.Empty;
             }
-        }
-
-        private void DrawObjectives()
-        {
-            MissionStage stage = _runner.CurrentStage;
-            float height = 86f + stage.Objectives.Count * 22f;
-            GUI.color = new Color(0f, 0f, 0f, 0.55f);
-            GUI.DrawTexture(new Rect(12f, 12f, 430f, height), Texture2D.whiteTexture);
-            GUI.color = Color.white;
-            GUI.Label(new Rect(22f, 16f, 410f, 22f), "CAPÍTULO 1 · " + _runner.Script.Title.ToUpperInvariant(), _title);
-            GUI.Label(new Rect(22f, 38f, 410f, 20f), _runner.Script.Date + " · " + _runner.Script.Location + " — " + stage.Title, _text);
-            GUI.Label(new Rect(22f, 58f, 410f, 20f), Who(), _text);
-            float y = 82f;
-            foreach (MissionObjective objective in stage.Objectives)
-            {
-                bool done = _runner.IsObjectiveComplete(objective);
-                GUI.color = done ? new Color(0.6f, 1f, 0.65f) : objective.Optional ? new Color(0.8f, 0.8f, 0.75f) : Color.white;
-                GUI.Label(new Rect(22f, y, 410f, 20f), (done ? "☑ " : "☐ ") + _runner.Describe(objective) + (objective.Optional ? " (opcional)" : string.Empty), _text);
-                y += 22f;
-            }
-            GUI.color = Color.white;
-        }
-
-        private void DrawDialogue()
-        {
-            MissionLine line = _runner.Dialogue.Current;
-            if (line == null) return;
-            float width = Mathf.Min(900f, Screen.width - 40f);
-            var rect = new Rect((Screen.width - width) * 0.5f, Screen.height - 300f, width, 76f);
-            GUI.color = new Color(0f, 0f, 0f, 0.6f);
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
-            float alpha = Mathf.Clamp01(_runner.Dialogue.CurrentElapsed / 0.25f);
-            switch (line.Kind)
-            {
-                case LineKind.Quote:
-                    GUI.color = new Color(1f, 0.85f, 0.5f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 6f, width - 28f, 20f), line.Speaker.ToUpperInvariant(), _speaker);
-                    GUI.color = new Color(1f, 1f, 1f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 26f, width - 28f, 46f), "«" + line.Text + "»", _line);
-                    break;
-                case LineKind.Hint:
-                    GUI.color = new Color(0.75f, 0.9f, 1f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 10f, width - 28f, 56f), line.Text, _line);
-                    break;
-                default:
-                    GUI.color = new Color(0.92f, 0.88f, 0.78f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 10f, width - 28f, 56f), line.Text, _center);
-                    break;
-            }
-            GUI.color = Color.white;
-        }
-
-        private void DrawEnd()
-        {
-            var rect = new Rect(Screen.width * 0.5f - 300f, Screen.height * 0.5f - 90f, 600f, 180f);
-            GUI.color = new Color(0f, 0f, 0f, 0.75f);
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
-            GUI.color = Color.white;
-            bool complete = _runner.State == MissionState.Complete;
-            GUI.Label(new Rect(rect.x, rect.y + 20f, rect.width, 30f), complete ? "CAPÍTULO 1 COMPLETADO" : "MISIÓN FRACASADA", _title);
-            string detail = complete
-                ? (letter != null ? (_newCollectible ? "Coleccionable desbloqueado: " : "Coleccionable: ") + letter.title : string.Empty)
-                : _runner.FailureReason;
-            GUI.Label(new Rect(rect.x + 20f, rect.y + 64f, rect.width - 40f, 60f), detail, _center);
-            GUI.Label(new Rect(rect.x, rect.y + 130f, rect.width, 24f), complete ? "[R] volver a jugar" : "[R] reintentar", _center);
-        }
-
-        private void EnsureStyles()
-        {
-            if (_title != null) return;
-            _title = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
-            _title.normal.textColor = new Color(1f, 0.93f, 0.8f);
-            _text = new GUIStyle(GUI.skin.label) { fontSize = 14 };
-            _text.normal.textColor = Color.white;
-            _speaker = new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold };
-            _speaker.normal.textColor = Color.white;
-            _line = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
-            _line.normal.textColor = Color.white;
-            _center = new GUIStyle(_line) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Italic };
         }
     }
 }

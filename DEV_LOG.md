@@ -403,3 +403,47 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
   * Comprobar en Unity 6 (tarea 0.3) la escena, el ritmo del combate y la legibilidad del HUD.
   * Humo de artillería: el modelo de humo está calibrado para fusiles y crece linealmente con la carga, así que no se usa en los cañones hasta darle una escala naval.
   * Voces de Prat y Grau.
+
+
+---
+
+### [2026-09-27] - Tarea 6.2: Escenario Capítulo 4 en primera persona — [X] (verificado fuera del motor; ver 0.3)
+* **Qué capítulo es:**
+  * El roadmap llama a esta tarea «Capítulo 4: Desembarco de Pisagua (FPS)», pero el guion y el GDD no coinciden.
+  * Según ellos, el Capítulo 4 en primera persona es **«Sed en la quebrada» (Tarapacá, 27 de noviembre de 1879)**, y Pisagua es el Capítulo 3, en RTS.
+  * Se implementó Tarapacá y se anotó en el roadmap. Los rótulos de 6.3 a 6.5 tampoco coinciden con la numeración del GDD; se resolverá en cada tarea.
+* **Núcleo:**
+  * `RiflemanBrain` (Infantry): el fusilero de la IA en primera persona.
+    * Avanza, apunta tras un tiempo de reacción con la cadencia de `FireModel`, carga, carga a la bayoneta (por orden, o sin cartucho a menos de 18 m) y golpea cada 1,1 s.
+    * Los sirvientes de una pieza no se mueven. La supresión lo hace arrodillarse y apuntar más despacio.
+    * `EngageRangeM` es configurable: las tropas de asalto no se paran a tirar desde lo alto.
+    * El error angular del disparo reproduce la probabilidad de impacto del modelo de escuadras (comprobado con 40.000 disparos).
+  * `Vitality`: salud en la escala del daño de las fichas; la cabeza cuenta doble. El jugador recobra salud tras 6 s sin daño, hasta el 60 % (licencia de jugabilidad: un vendaje).
+  * `CapturePoint`: una posición se toma sin enemigos en pie cerca; en disputa se congela, y abandonada retrocede despacio.
+  * `TarapacaChapter`: la sorpresa y la frase de Cáceres (leída del guion) → las callejuelas (12 chilenos; aviso de pocos cartuchos; el cambio al Comblain) → los Krupp de la pampa (carga a la bayoneta) → victoria sin agua (el tambor herido, opcional, y la columna hacia Arica). Fracaso si cae Mariano Santos.
+  * **No hay coleccionable:** el GDD pide la carta de un oficial chileno a su prometida, pero el Archivo no la tiene, y no se inventa.
+  * `MissionCondition.Not`.
+* **Unity:**
+  * `Combatant`: bando, salud, balas y bayonetazos sobre las formas exactas de cabeza y cuerpo. Al caer, se tumba y suelta su fusil con los cartuchos que le quedaban.
+  * `RiflemanAI`: percibe y ejecuta. Busca al enemigo vivo más cercano con línea de visión, camina por el NavMesh generado en tiempo de ejecución y dispara balas reales con la elevación que pide la distancia. Recarga con el ciclo de su arma y hiere a la bayoneta.
+  * `WeaponPickup`: `E` empuña el fusil de un caído y toma sus cartuchos (las cartucheras se guardan por calibre).
+  * `SoldierFactory`: soldados de primitivas con colores de prototipo, no reconstrucción de uniformes.
+  * `KruppGun`: cañonea la quebrada con metralla hasta que se toma. `DustBurst` levanta la tierra de cada granada.
+  * `WoundedDrummer` y `ScriptedRider` (Cáceres a caballo).
+  * `TarapacaMissionDirector`: el Zepita, las dos oleadas chilenas, los sirvientes y la escolta de los Krupp, y los hechos para el guion. En pantalla, objetivos y diálogo, más el viñeteado rojo al recibir daño y la barra de salud.
+  * `MissionHud`: la interfaz de misión, compartida ahora con el capítulo 1.
+* **Escena `Capitulo4_Quebrada_de_Tarapaca`** (menú **Pacífico → Capítulos → Capítulo 4: Quebrada de Tarapacá**):
+  * El fondo de la quebrada con el pueblo de adobe, la iglesia y su campanario, pircas, sauces secos junto al cauce sin agua y laderas de 30°.
+  * En la pampa, a 40 m de altura, dos Krupp tras sus sacos. Al sur, el camino a Arica con el tambor contra una tapia de barro y la columna.
+  * El jugador empieza con el Chassepot y 10 cartuchos.
+* **Ajuste con una simulación de la escaramuza fuera del motor** (300 partidas por variante con los mismos modelos):
+  * Con 18 cartuchos y la vanguardia parándose a tirar desde lo alto de la ladera, el jugador nunca se quedaba sin munición: la escasez del guion no aparecía.
+  * Elegido: 12 chilenos que no se paran hasta los 70 m y 10 cartuchos. El jugador se queda sin munición en el 41 % de las partidas simuladas. En la simulación cae en el 23 %, pero ahí no se cubre ni recoge fusiles.
+* **Verificación:** 14 pruebas nuevas (355 en total).
+  * Fusilero: reacción y puntería, alcance de asalto, avance sin línea de visión, puesto fijo, carga y golpes, supresión, puntería frente al modelo de fuego y determinismo.
+  * Salud y recuperación; captura.
+  * Partida completa del capítulo, llegada adelantada de los chilenos y caída del jugador.
+* **Pendiente:**
+  * Comprobar en Unity 6 (tarea 0.3) el NavMesh de las laderas, la IA entre las casas y el ritmo.
+  * La vista del fusil en primera persona es la del Comblain también para el Chassepot (greybox).
+  * Faltan audio (campanas, voz de Cáceres) y supresión recibida por la IA a partir de las balas que le pasan cerca.

@@ -176,10 +176,13 @@ namespace Pacifico.EditorTools
         // Jugador
         // ------------------------------------------------------------------------------------------
 
-        private static FirstPersonController CreatePlayer(WeaponDataSO weapon, WeaponDataSO sidearm)
+        private static FirstPersonController CreatePlayer(WeaponDataSO weapon, WeaponDataSO sidearm) =>
+            CreatePlayer(weapon, sidearm, new Vector3(0f, 0.05f, 16f), 0f, 20);
+
+        internal static FirstPersonController CreatePlayer(WeaponDataSO weapon, WeaponDataSO sidearm, Vector3 position, float heading, int reserve)
         {
             var player = new GameObject("Jugador_Infante");
-            player.transform.position = new Vector3(0f, 0.05f, 16f);
+            player.transform.SetPositionAndRotation(position, Quaternion.Euler(0f, heading, 0f));
 
             var controller = player.AddComponent<CharacterController>();
             controller.height = 1.75f;
@@ -208,7 +211,7 @@ namespace Pacifico.EditorTools
 
             // Dotación corta a propósito: obliga a recoger la caja de cartuchos junto a la línea de fuego.
             var rifle = player.AddComponent<RifleController>();
-            rifle.StartingReserve = 20;
+            rifle.StartingReserve = reserve;
 
             // Cuerpo a cuerpo (ROADMAP 3.4): bayoneta calada en el fusil y corvo al cinto.
             var melee = player.AddComponent<MeleeController>();
@@ -357,7 +360,7 @@ namespace Pacifico.EditorTools
         /// Humo de pólvora negra (ROADMAP 3.3) con la brisa marina que sopla de través sobre la línea de tiro, y el banco
         /// de pruebas de la descarga (tecla V). El material se guarda como asset para que la build incluya el sombreador.
         /// </summary>
-        private static void CreateSmoke(Transform eye)
+        internal static void CreateSmoke(Transform eye)
         {
             var go = new GameObject("Humo_Polvora_Negra");
             go.AddComponent<ParticleSystem>();

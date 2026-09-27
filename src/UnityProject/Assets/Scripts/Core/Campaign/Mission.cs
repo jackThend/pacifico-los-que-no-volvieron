@@ -76,6 +76,9 @@ namespace Pacifico.Core.Campaign
         /// <summary>No queda ninguna línea de diálogo por decir (para cambiar de escena sin cortar a nadie).</summary>
         public static MissionCondition DialogueIdle() => new MissionCondition(c => c.DialogueIdle, "diálogo terminado");
 
+        public static MissionCondition Not(MissionCondition condition) =>
+            new MissionCondition(c => !condition.IsMet(c), "no " + condition.Description);
+
         public static MissionCondition All(params MissionCondition[] all) =>
             new MissionCondition(c => all.All(x => x.IsMet(c)), "(" + string.Join(" y ", all.Select(x => x.Description)) + ")");
 
