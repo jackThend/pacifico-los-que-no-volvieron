@@ -151,12 +151,12 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ## 🛠️ Desarrollo en Unity 6
 
-**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, y la fase FPS (3.1–3.4): estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar) y el cuerpo a cuerpo con bayoneta y corvo. Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
+**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, la fase FPS (3.1–3.4) y la 4.1 del RTS: estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar), el cuerpo a cuerpo con bayoneta y corvo, y el mando de escuadras en formación de línea y guerrilla sobre NavMesh. Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
 
 ### Abrir el proyecto
 1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
 2. Menú **Pacífico → Datos → Generar ScriptableObjects históricos**: crea los assets de armas, buques y coleccionables desde los catálogos y el Archivo Histórico.
-3. Menú **Pacífico → Prototipos → Construir escena naval de Iquique** (o **…FPS de Pisagua**) y pulsa Play.
+3. Menú **Pacífico → Prototipos → Construir escena naval de Iquique** (o **…FPS de Pisagua**, o **…RTS de Tacna**) y pulsa Play.
 
 **Naval (Iquique):**
 
@@ -182,6 +182,16 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 | `F` · `G` | Estocada con la bayoneta · tajo con el corvo (al acercarte a un enemigo, el fusil se pone en guardia) |
 | `V` | Prueba del humo: descarga de 20 fusiles a tu lado (arriba a la izquierda, la claridad de la vista) |
 | `Esc` | Liberar o capturar el ratón |
+
+**RTS (Tacna):**
+
+| Control | Acción |
+| :--- | :--- |
+| Clic izquierdo · recuadro | Seleccionar escuadras (`Mayús` añade, `Ctrl` alterna) |
+| Clic derecho | Mover (arrastrando: el trazo marca el frente y la orientación) |
+| Clic derecho sobre el enemigo | Atacar |
+| `1` / `2` · `H` | Formar en línea / en guerrilla · alto |
+| `WASD` · `Q`/`E` · rueda | Desplazar, girar y acercar la cámara |
 
 ### Arquitectura
 * **`Pacifico.Core`** (`noEngineReferences`) contiene toda la lógica de simulación: se prueba sin abrir Unity y es determinista.

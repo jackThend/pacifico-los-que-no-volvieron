@@ -66,7 +66,7 @@
 ---
 
 ## 📌 FASE 4: MÓDULO RTS TÁCTICO SIN BASES (PROTOTIPO TACNA)
-- [ ] **4.1 Selección y Mando de Escuadras**
+- [X] **4.1 Selección y Mando de Escuadras**
   * *Criterio:* Selección múltiple por caja de arrastre y órdenes de movimiento/ataque sobre terreno irregular (NavMesh).
   * *Verificación:* Mando coordinado de escuadras de 8 a 12 soldados en formación de línea y guerrilla.
 - [ ] **4.2 Sistema de Supresión y Cobertura**

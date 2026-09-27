@@ -97,6 +97,18 @@ namespace Pacifico.Input
 #endif
         }
 
+        public static bool MouseReleased(int button)
+        {
+#if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
+            if (Mouse.current == null) return false;
+            return button == 0 ? Mouse.current.leftButton.wasReleasedThisFrame : Mouse.current.rightButton.wasReleasedThisFrame;
+#elif ENABLE_LEGACY_INPUT_MANAGER
+            return UnityEngine.Input.GetMouseButtonUp(button);
+#else
+            return false;
+#endif
+        }
+
         /// <summary>Posición del ratón en píxeles de pantalla.</summary>
         public static Vector3 MousePosition
         {
