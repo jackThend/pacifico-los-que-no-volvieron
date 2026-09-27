@@ -1,4 +1,5 @@
 using System;
+using Pacifico.Core.Common;
 using Pacifico.Core.Naval;
 using Pacifico.Input;
 using UnityEngine;
@@ -79,7 +80,7 @@ namespace Pacifico.Naval
         public void DealtRam(RamResult ram)
         {
             State?.ApplyRamDealt(ram);
-            _lastEvent = ram.Critical ? "Espolonazo a " + (ram.ClosingSpeed * 1.944f).ToString("0.0") + " nudos" : "Roce";
+            _lastEvent = ram.Critical ? "Espolonazo a " + Units.MetersPerSecondToKnots(ram.ClosingSpeed).ToString("0.0") + " nudos" : "Roce";
         }
 
         private void Update()
@@ -94,7 +95,11 @@ namespace Pacifico.Naval
         {
             if (State == null) return;
             State.Step(Time.fixedDeltaTime);
-            if (_ship.Motion != null) _ship.Motion.PropulsionFactor = State.PropulsionFactor;
+            if (_ship.Motion != null)
+            {
+                _ship.Motion.PropulsionFactor = State.PropulsionFactor;
+                _ship.Motion.RudderJammed = State.SteeringJammed;
+            }
 
             // Escora progresiva por inundación y, una vez hundido, descenso bajo el agua.
             if (State.IsSunk) _sinkProgress = Mathf.Min(1f, _sinkProgress + Time.fixedDeltaTime / sinkDurationSeconds);
@@ -117,7 +122,9 @@ namespace Pacifico.Naval
             if (State == null) return string.Empty;
             return "Casco " + (State.IntegrityFraction * 100f).ToString("0") + "%  ·  Agua " + State.WaterTonnes.ToString("0") + "/" +
                    State.ReserveBuoyancy.ToString("0") + " t  ·  " + (State.OnFire ? "FUEGO" : "sin fuego") +
-                   "  ·  Vapor " + ((1f - State.BoilerDamage) * 100f).ToString("0") + "%";
+                   "  ·  Vapor " + ((1f - State.BoilerDamage) * 100f).ToString("0") + "%" +
+                   (State.SteeringJammed ? "  ·  TIMÓN TRABADO" : string.Empty) +
+                   (State.FramesBroken ? "  ·  CUADERNAS PARTIDAS" : string.Empty);
         }
 
         private string BrigadeLine()

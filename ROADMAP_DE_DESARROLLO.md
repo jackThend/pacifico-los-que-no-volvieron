@@ -13,6 +13,11 @@
   * *Criterio:* Crear script `tools/assets_manager.py` y archivo `assets_manifest.json` para gestionar la descarga y sincronización de assets pesados desde Google Drive o fuentes CC0.
   * *Verificación:* Ejecución del script en modo test reportando hashes y estado de sincronización.
 
+- [ ] **0.3 Validación en el Editor de Unity 6** *(requiere una máquina con Unity; el entorno de agentes en la nube no lo tiene)*
+  * *Criterio:* Abrir `src/UnityProject` en Unity 6000.0 LTS, ejecutar **Pacífico → Datos → Generar ScriptableObjects históricos** y **Pacífico → Prototipos → Construir escena naval de Iquique**, y correr el Test Runner (EditMode: `Pacifico.Tests.EditMode` y `Pacifico.Tests.Unity`).
+  * *Verificación:* Consola sin errores de compilación; todas las pruebas en verde; en `Proto_Iquique` se comprueban a mano los criterios de 2.1 a 2.4 (W/S/A/D con inercia, torre y retícula, rebotes de 40 lb en el *Huáscar*, espolonazo y brigada 1/2/3).
+  * *Nota:* hasta completarla, las tareas marcadas `[X]` de las fases 1 y 2 están verificadas **fuera del motor**: arnés `tools/verify` con referencias de API de Unity y 115 pruebas NUnit de la lógica.
+
 ---
 
 ## 📌 FASE 1: ARQUITECTURA DE DATOS (SCRIPTABLE OBJECTS)

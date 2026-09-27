@@ -56,12 +56,24 @@ namespace Pacifico.EditorTools
             EnsureFolder(assetPath.Substring(0, assetPath.LastIndexOf('/')));
 
             string destination = Path.GetFullPath(assetPath);
-            if (!File.Exists(destination) || new FileInfo(destination).Length != new FileInfo(source).Length)
+            if (!File.Exists(destination) || !SameContent(source, destination))
             {
                 File.Copy(source, destination, true);
             }
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceSynchronousImport);
             return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+        }
+
+        /// <summary>Compara tamaño y SHA-256 (un facsímil corregido puede conservar el mismo tamaño).</summary>
+        private static bool SameContent(string a, string b)
+        {
+            if (new FileInfo(a).Length != new FileInfo(b).Length) return false;
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+            using (FileStream fa = File.OpenRead(a))
+            using (FileStream fb = File.OpenRead(b))
+            {
+                return System.Linq.Enumerable.SequenceEqual(sha.ComputeHash(fa), sha.ComputeHash(fb));
+            }
         }
     }
 }

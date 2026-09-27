@@ -57,5 +57,17 @@ namespace Pacifico.Naval
 
             owner.Motion.ApplySpeedImpulse(owner.Motion.Speed * (ram.RammerSpeedRetained - 1f));
         }
+
+        /// <summary>
+        /// Los buques son Rigidbody cinemáticos y no se empujan entre sí: mientras la roda siga dentro de otro casco
+        /// se anula cualquier avance, para que el atacante no lo atraviese.
+        /// </summary>
+        private void OnTriggerStay(Collider other)
+        {
+            if (owner == null || owner.Motion == null || owner.Motion.Speed <= 0f) return;
+            ShipController target = other.GetComponentInParent<ShipController>();
+            if (target == null || target == owner) return;
+            owner.Motion.SetSpeed(0f);
+        }
     }
 }

@@ -77,12 +77,8 @@ namespace Pacifico.Naval
         {
             if (_model == null) return;
             Vector3 origin = PivotPosition;
-            if (Ballistics.TryLead(origin.x, origin.z, worldPoint.x, worldPoint.z, targetVelocity.x, targetVelocity.z,
-                    _model.Gun.MuzzleVelocityMps, out float ax, out float az, out _))
-            {
-                worldPoint = new Vector3(ax, worldPoint.y, az);
-            }
-            _model.OrderAtPoint(origin.x, origin.z, ship.Motion.HeadingDeg, worldPoint.x, worldPoint.z);
+            Vector3 aim = ShellLauncher.Lead(origin, worldPoint, targetVelocity, _model.Gun.MuzzleVelocityMps);
+            _model.OrderAtPoint(origin.x, origin.z, ship.Motion.HeadingDeg, aim.x, aim.z);
         }
 
         public void RequestFire() => _fireRequested = true;
@@ -134,12 +130,7 @@ namespace Pacifico.Naval
 
             foreach (ShellLaunch launch in launches)
             {
-                Vector3 origin = MuzzlePosition(launch.GunIndex, launch.LateralOffsetM);
-                Quaternion direction = Quaternion.Euler(-launch.ElevationDeg, launch.AzimuthDeg, 0f);
-                // El proyectil hereda la velocidad del buque.
-                Vector3 velocity = direction * Vector3.forward * launch.MuzzleVelocity + ship.Velocity;
-                NavalShell shell = Instantiate(shellPrefab, origin, direction);
-                shell.Launch(velocity, launch.ShellMassKg, launch.CaliberMm, ship.gameObject);
+                ShellLauncher.Launch(shellPrefab, MuzzlePosition(launch.GunIndex, launch.LateralOffsetM), launch, ship.Velocity, ship.gameObject);
             }
         }
 

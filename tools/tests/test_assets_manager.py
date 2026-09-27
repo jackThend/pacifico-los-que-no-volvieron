@@ -158,6 +158,23 @@ class SyncTests(unittest.TestCase):
         self.assertFalse(target.exists())
         self.assertFalse(target.with_name(target.name + ".part").exists())
 
+    def test_sin_hash_previo_rechaza_paginas_html(self):
+        entry = self.manifest.find("assets_cache/audio/canon_300lb.wav")
+        del entry["sha256"]
+        del entry["size_bytes"]
+        self.repo.remote_files[self.url] = b"<!DOCTYPE html><html><body>Inicia sesion</body></html>"
+        counters = am.sync(self.manifest, self.repo.root, downloader=self.repo.downloader, log=lambda _: None)
+        self.assertEqual(counters["fallidos"], 1)
+        self.assertNotIn("sha256", entry, "no se registra la huella de una respuesta basura")
+        self.assertFalse((self.repo.root / "assets_cache/audio/canon_300lb.wav").exists())
+
+    def test_sin_hash_previo_registra_la_huella_de_la_primera_descarga(self):
+        entry = self.manifest.find("assets_cache/audio/canon_300lb.wav")
+        del entry["sha256"]
+        self.repo.remote_files[self.url] = self.content
+        am.sync(self.manifest, self.repo.root, downloader=self.repo.downloader, log=lambda _: None)
+        self.assertEqual(entry["sha256"], hashlib.sha256(self.content).hexdigest())
+
     def test_dry_run_no_descarga(self):
         self.repo.remote_files[self.url] = self.content
         am.sync(self.manifest, self.repo.root, downloader=self.repo.downloader, dry_run=True, log=lambda _: None)

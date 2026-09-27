@@ -91,7 +91,7 @@ namespace Pacifico.Core.Naval
                 launches.Add(new ShellLaunch
                 {
                     GunIndex = i,
-                    LateralOffsetM = (int)side * 4f,
+                    Side = side,
                     AzimuthDeg = MathUtil.WrapAngle360(shipHeadingDeg + relativeBearingDeg + Noise() * DispersionDeg),
                     ElevationDeg = elevation + Noise() * DispersionDeg * 0.5f,
                     MuzzleVelocity = _gun.MuzzleVelocityMps,

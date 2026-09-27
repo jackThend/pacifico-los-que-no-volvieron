@@ -19,7 +19,10 @@ namespace Pacifico.Core.Naval
         /// <summary>Se parten las cuadernas: el casco pierde su integridad (ROADMAP 2.4).</summary>
         public bool FramesBroken;
         public float RammerDamage;
-        /// <summary>Velocidad que conserva el atacante tras el choque (fracción).</summary>
+        /// <summary>
+        /// Fracción de su velocidad que conserva el atacante tras el choque. Negativa en una embestida crítica:
+        /// el buque rebota y se desengancha (el Huáscar daba atrás tras cada espolonazo).
+        /// </summary>
         public float RammerSpeedRetained;
     }
 
@@ -81,7 +84,7 @@ namespace Pacifico.Core.Naval
                 TargetFloodingRate = critical ? damage * FloodingPerDamageTonne : 0f,
                 FramesBroken = critical && damage >= FramesBrokenThreshold * target.DisplacementTonnes,
                 RammerDamage = damage * selfFraction,
-                RammerSpeedRetained = critical ? 0.2f : 0.7f,
+                RammerSpeedRetained = critical ? -0.15f : 0.3f,
             };
         }
     }

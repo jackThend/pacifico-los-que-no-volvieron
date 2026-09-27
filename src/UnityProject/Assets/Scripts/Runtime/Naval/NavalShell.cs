@@ -33,6 +33,8 @@ namespace Pacifico.Naval
         [SerializeField] private float seaLevel;
         [SerializeField] private LayerMask hitMask = ~0;
 
+        private static readonly RaycastHit[] HitBuffer = new RaycastHit[16];
+
         private Vector3 _velocity;
         private float _massKg;
         private float _caliberMm;
@@ -70,8 +72,7 @@ namespace Pacifico.Naval
             Vector3 end = start + (_velocity + nextVelocity) * 0.5f * dt;
             Vector3 segment = end - start;
 
-            if (Physics.Raycast(start, segment.normalized, out RaycastHit hit, segment.magnitude, hitMask, QueryTriggerInteraction.Ignore)
-                && !IsShooter(hit.collider))
+            if (TryFirstHit(start, segment, out RaycastHit hit))
             {
                 var shellHit = new ShellHit
                 {
@@ -101,6 +102,31 @@ namespace Pacifico.Naval
             _distance += segment.magnitude;
             transform.SetPositionAndRotation(end, Quaternion.LookRotation(nextVelocity));
             _velocity = nextVelocity;
+        }
+
+        /// <summary>
+        /// Impacto más cercano del segmento que no pertenezca al propio buque. Se usa RaycastNonAlloc en lugar de
+        /// Raycast porque este devuelve solo el primer colisionador: si fuera el del tirador, el blanco que hubiera
+        /// detrás en el mismo paso se perdería.
+        /// </summary>
+        private bool TryFirstHit(Vector3 start, Vector3 segment, out RaycastHit best)
+        {
+            best = default;
+            float length = segment.magnitude;
+            if (length <= 0f) return false;
+            int count = Physics.RaycastNonAlloc(start, segment / length, HitBuffer, length, hitMask, QueryTriggerInteraction.Ignore);
+            bool found = false;
+            for (int i = 0; i < count; i++)
+            {
+                RaycastHit candidate = HitBuffer[i];
+                if (IsShooter(candidate.collider)) continue;
+                if (!found || candidate.distance < best.distance)
+                {
+                    best = candidate;
+                    found = true;
+                }
+            }
+            return found;
         }
 
         /// <summary>

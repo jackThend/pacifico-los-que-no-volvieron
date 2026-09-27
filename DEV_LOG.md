@@ -162,3 +162,19 @@
 * `README.md`: nueva sección «Desarrollo en Unity 6» (abrir el proyecto, generar datos, construir el prototipo, controles, arquitectura y verificación), estructura del repositorio actualizada y aclaración sobre licencias de las imágenes modernas.
 * **Estado:** Fases 0, 1 y 2 completadas (109 pruebas C# + 17 Python).
 * **Próximos pasos:** 1) abrir el proyecto en Unity 6, ejecutar el Test Runner y el constructor de la escena de Iquique para validar en el motor; 2) Fase 3.1, controlador FPS.
+
+---
+
+### [2026-09-27] - Revisión de código independiente y correcciones
+Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto nivel de exigencia. Se aceptaron y corrigieron los 10 hallazgos:
+1. **Incendios sin cota:** con dos focos la intensidad crecía exponencialmente y la brigada dejaba de dominarla. Ahora el crecimiento es logístico, con tope `MaxFireIntensity = 2`; solo los rescoldos (< ~0,23) se apagan solos y la brigada siempre supera al crecimiento máximo. Pruebas: fuego acotado tras 30 min, la brigada apaga un fuego al máximo y un rescoldo se extingue solo.
+2. **El atacante atravesaba al blanco tras el espolonazo** (Rigidbody cinemáticos sin respuesta de colisión): una embestida crítica ahora hace retroceder al atacante (`RammerSpeedRetained = -0,15`) y `RamBow.OnTriggerStay` anula cualquier avance mientras la roda siga dentro de otro casco.
+3. **La cubierta no oponía resistencia** (`DeckMm = 0` en todo el catálogo): ahora opone al menos la chapa del casco de hierro, o la tablazón en madera. Prueba: un 12 lb rasante no atraviesa la cubierta del *Huáscar*.
+4. **«Cuadernas partidas» y el timón trabado no tenían efecto:** con las cuadernas partidas la brigada tapona al 20 % de su eficacia; las perforaciones en los extremos pueden trabar el servomotor (10 %), que la brigada de vapor libera en 5 s, y `ShipDamageController` lo traslada a `ShipMotionModel.RudderJammed`.
+5. **Túnel de proyectiles:** si el primer colisionador del segmento era el del propio buque se perdía el blanco que hubiera detrás. Ahora se usa `RaycastNonAlloc` y se toma el impacto ajeno más cercano.
+6. **Estado `[X]` sin validación en el motor:** nueva tarea **0.3 Validación en el Editor de Unity 6** en el ROADMAP, pendiente y explícita.
+7. **`sync` sin hash previo aceptaba cualquier respuesta:** ahora rechaza páginas HTML y avisa cuando registra la huella de la primera descarga. 2 pruebas nuevas.
+8. **Facsímil comparado solo por tamaño:** ahora compara tamaño y SHA-256.
+9. **Constante mágica `1.944f`** sustituida por `Units.MetersPerSecondToKnots`.
+10. **Lógica de disparo duplicada y `LateralOffsetM` sin uso en las baterías:** nuevo `ShellLauncher` compartido por torre y batería; `ShellLaunch.Side` indica la banda.
+* **Verificación:** 115/115 pruebas C# y 19/19 Python; manifiesto 48/48 OK.

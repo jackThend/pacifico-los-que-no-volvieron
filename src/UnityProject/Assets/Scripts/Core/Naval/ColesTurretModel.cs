@@ -8,8 +8,10 @@ namespace Pacifico.Core.Naval
     public struct ShellLaunch
     {
         public int GunIndex;
-        /// <summary>Desplazamiento lateral de la boca respecto al eje de la torre (m, + estribor de la torre).</summary>
+        /// <summary>Desplazamiento lateral de la boca respecto al eje de la torre (m, + estribor). Solo torres.</summary>
         public float LateralOffsetM;
+        /// <summary>Banda que dispara. Solo baterías de costado (None en torres).</summary>
+        public BroadsideSide Side;
         public float AzimuthDeg;
         public float ElevationDeg;
         public float MuzzleVelocity;

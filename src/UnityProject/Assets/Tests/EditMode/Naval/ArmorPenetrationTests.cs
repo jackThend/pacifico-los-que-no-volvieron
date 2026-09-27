@@ -120,6 +120,17 @@ namespace Pacifico.Tests.Naval
         }
 
         [Test]
+        public void Cubierta_DeCascoDeHierro_OponeAlMenosSuChapa()
+        {
+            var huascar = ShipCatalog.Huascar();
+            Assert.That(huascar.Armor.IronThicknessFor(ArmorZone.Deck), Is.EqualTo(huascar.Armor.HullPlatingMm));
+            var light = ShipCatalog.Esmeralda().Guns.Find(g => g.ShellWeightLb == 12f);
+            var plunging = ArmorPenetrationModel.ResolveAgainstShip(light, 600f, 80f, huascar, ArmorZone.Deck);
+            Assert.That(plunging.Penetrated, Is.False, "un 12 lb rasante no atraviesa la cubierta");
+            Assert.That(ShipCatalog.Esmeralda().Armor.WoodFor(ArmorZone.Deck), Is.GreaterThan(0f));
+        }
+
+        [Test]
         public void PlanchaGruesaRespectoAlCalibre_RebotaAntes()
         {
             float thin = ArmorPenetrationModel.RicochetAngle(50f, 254f, HullMaterial.Iron);

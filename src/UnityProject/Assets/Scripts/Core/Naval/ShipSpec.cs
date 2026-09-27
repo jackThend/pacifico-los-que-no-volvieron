@@ -53,7 +53,8 @@ namespace Pacifico.Core.Naval
                 case ArmorZone.BeltEnds: return BeltEndsMm;
                 case ArmorZone.MainBattery: return MainBatteryMm;
                 case ArmorZone.ConningTower: return ConningTowerMm;
-                case ArmorZone.Deck: return DeckMm;
+                // Sin cubierta blindada, la cubierta de un casco de hierro es al menos su chapa.
+                case ArmorZone.Deck: return System.Math.Max(DeckMm, HullPlatingMm);
                 default: return HullPlatingMm;
             }
         }
@@ -69,6 +70,9 @@ namespace Pacifico.Core.Naval
                     return WoodBackingMm;
                 case ArmorZone.Unarmored:
                     return HullPlatingMm > 0f ? 0f : WoodBackingMm;
+                case ArmorZone.Deck:
+                    // Tablazón de cubierta: en los cascos de madera es la propia estructura (más delgada que el costado).
+                    return HullPlatingMm > 0f ? 0f : WoodBackingMm * 0.5f;
                 default:
                     return 0f;
             }

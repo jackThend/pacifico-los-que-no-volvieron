@@ -104,6 +104,13 @@ def to_posix(path: Path) -> str:
     return path.as_posix()
 
 
+def looks_like_html(path: Path) -> bool:
+    """Detecta respuestas HTML (páginas de error, de login o de aviso) servidas con código 200."""
+    with path.open("rb") as handle:
+        head = handle.read(512).lstrip().lower()
+    return head.startswith(b"<!doctype html") or head.startswith(b"<html")
+
+
 def gdrive_download_url(file_id: str) -> str:
     return "https://drive.google.com/uc?export=download&id=" + urllib.parse.quote(file_id)
 
@@ -408,11 +415,18 @@ def sync(manifest: Manifest, repo_root: Path, downloader: Downloader = http_down
         try:
             downloader(url, partial)
             digest = sha256_of(partial)
-            if entry.get("sha256") and digest != entry["sha256"]:
-                raise IOError(f"hash inesperado {digest[:12]}… (esperado {entry['sha256'][:12]}…)")
+            expected = entry.get("sha256")
+            if expected and digest != expected:
+                raise IOError(f"hash inesperado {digest[:12]}… (esperado {expected[:12]}…)")
+            if not expected and looks_like_html(partial) and target.suffix.lower() not in (".html", ".htm"):
+                # Sin hash de referencia, una página de error o de inicio de sesión (HTTP 200) no debe
+                # aceptarse como el asset ni quedar registrada como su huella.
+                raise IOError("el servidor devolvió una página HTML en lugar del archivo")
             os.replace(partial, target)
-            entry.setdefault("size_bytes", target.stat().st_size)
-            entry.setdefault("sha256", digest)
+            entry["size_bytes"] = target.stat().st_size
+            if not expected:
+                entry["sha256"] = digest
+                log(f"  [AVISO] {entry['path']}: sin hash previo; se registra el de esta descarga (primer uso)")
             log(f"  [DESCARGADO] {entry['path']} ({human_size(target.stat().st_size)})")
             counters["descargados"] += 1
         except Exception as exc:  # noqa: BLE001 — se informa y se continúa con el resto

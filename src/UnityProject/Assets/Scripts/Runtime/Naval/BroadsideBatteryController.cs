@@ -37,13 +37,7 @@ namespace Pacifico.Naval
             if (Model == null || target == null || target.Motion == null || shellPrefab == null) return false;
 
             Vector3 from = transform.position;
-            Vector3 aim = target.transform.position;
-            Vector3 targetVelocity = target.Velocity;
-            if (Ballistics.TryLead(from.x, from.z, aim.x, aim.z, targetVelocity.x, targetVelocity.z,
-                    Model.Gun.MuzzleVelocityMps, out float ax, out float az, out _))
-            {
-                aim = new Vector3(ax, aim.y, az);
-            }
+            Vector3 aim = ShellLauncher.Lead(from, target.transform.position, target.Velocity, Model.Gun.MuzzleVelocityMps);
 
             float bearing = Ballistics.Bearing(from.x, from.z, aim.x, aim.z);
             float relative = Mathf.DeltaAngle(_ship.Motion.HeadingDeg, bearing);
@@ -57,11 +51,10 @@ namespace Pacifico.Naval
             {
                 ShellLaunch launch = launches[i];
                 float along = (i - (launches.Count - 1) * 0.5f) * spacing;
+                // Las piezas se reparten a lo largo de la banda que dispara (launch.Side).
                 Vector3 origin = transform.position + transform.forward * along +
-                                 transform.right * (Mathf.Sign(relative) * _ship.Spec.BeamM * 0.55f) + Vector3.up * muzzleHeight;
-                Quaternion direction = Quaternion.Euler(-launch.ElevationDeg, launch.AzimuthDeg, 0f);
-                NavalShell shell = Instantiate(shellPrefab, origin, direction);
-                shell.Launch(direction * Vector3.forward * launch.MuzzleVelocity + _ship.Velocity, launch.ShellMassKg, launch.CaliberMm, gameObject);
+                                 transform.right * ((int)launch.Side * _ship.Spec.BeamM * 0.55f) + Vector3.up * muzzleHeight;
+                ShellLauncher.Launch(shellPrefab, origin, launch, _ship.Velocity, gameObject);
             }
             return true;
         }

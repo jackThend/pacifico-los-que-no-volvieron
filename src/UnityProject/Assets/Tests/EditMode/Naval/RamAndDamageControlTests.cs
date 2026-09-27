@@ -71,9 +71,10 @@ namespace Pacifico.Tests.Naval
         }
 
         [Test]
-        public void TrasElChoque_ElAtacantePierdeLaArrancada()
+        public void TrasUnEspolonazo_ElAtacanteRebotaYNoAtraviesaAlBlanco()
         {
-            Assert.That(HuascarRamsEsmeralda(10f, 90f).RammerSpeedRetained, Is.LessThan(0.5f));
+            Assert.That(HuascarRamsEsmeralda(10f, 90f).RammerSpeedRetained, Is.LessThan(0f), "retrocede para desengancharse");
+            Assert.That(HuascarRamsEsmeralda(2f, 90f).RammerSpeedRetained, Is.InRange(0f, 0.5f), "un roce también frena");
         }
     }
 
@@ -150,6 +151,77 @@ namespace Pacifico.Tests.Naval
             float intensity = burning.FireIntensity;
             Run(burning, 30f);
             Assert.That(burning.FireIntensity, Is.GreaterThanOrEqualTo(intensity));
+        }
+
+        [Test]
+        public void Incendio_EstaAcotadoAunqueNadieLoAtienda()
+        {
+            var state = new ShipDamageState(ShipCatalog.Cochrane(), seed: 1);
+            for (int i = 0; i < 6; i++) state.ApplyImpact(Penetration(1f), ArmorZone.Unarmored, false, 254f);
+            Assert.That(state.FireIntensity, Is.LessThanOrEqualTo(ShipDamageState.MaxFireIntensity));
+            Run(state, 1800f);
+            Assert.That(state.FireIntensity, Is.LessThanOrEqualTo(ShipDamageState.MaxFireIntensity));
+        }
+
+        [Test]
+        public void Incendio_AlMaximo_LaBrigadaSiempreLoDomina()
+        {
+            var state = new ShipDamageState(ShipCatalog.Cochrane(), seed: 1);
+            for (int i = 0; i < 6; i++) state.ApplyImpact(Penetration(1f), ArmorZone.Unarmored, false, 254f);
+            state.Activate(DamageControlAction.FireFighting);
+            Run(state, ShipDamageState.BrigadeActiveSeconds + ShipDamageState.BrigadeCooldownSeconds + 1f);
+            state.Activate(DamageControlAction.FireFighting);
+            Run(state, ShipDamageState.BrigadeActiveSeconds);
+            Assert.That(state.OnFire, Is.False);
+        }
+
+        [Test]
+        public void FocoPequeno_SeApagaSolo()
+        {
+            var state = new ShipDamageState(ShipCatalog.Huascar(), seed: 1);
+            state.ApplyImpact(Penetration(1f), ArmorZone.Unarmored, false, 254f);
+            state.Activate(DamageControlAction.FireFighting);
+            Run(state, 3.5f); // la brigada lo reduce a un rescoldo...
+            Assert.That(state.FireIntensity, Is.InRange(0.01f, 0.2f));
+            Run(state, 120f); // ...que se extingue sin ayuda
+            Assert.That(state.OnFire, Is.False);
+        }
+
+        [Test]
+        public void CuadernasPartidas_DificultanTaponarLaViaDeAgua()
+        {
+            var ram = RamModel.Resolve(ShipCatalog.Huascar(), 0f, Units.KnotsToMetersPerSecond(10f), ShipCatalog.Esmeralda(), 90f, 0f);
+            var broken = new ShipDamageState(ShipCatalog.Esmeralda());
+            broken.ApplyRamReceived(ram);
+            Assert.That(broken.FramesBroken, Is.True);
+
+            var holed = new ShipDamageState(ShipCatalog.Esmeralda());
+            holed.ApplyImpact(Penetration(), ArmorZone.BeltMidships, true, 800f);
+
+            float brokenBefore = broken.InflowRate;
+            float holedBefore = holed.InflowRate;
+            foreach (var s in new[] { broken, holed })
+            {
+                s.Activate(DamageControlAction.Pumping);
+                Run(s, 10f);
+            }
+            Assert.That(broken.InflowRate / brokenBefore, Is.GreaterThan(holed.InflowRate / holedBefore));
+        }
+
+        [Test]
+        public void ImpactoEnLosExtremos_PuedeTrabarElTimon_YElVaporLoRepara()
+        {
+            var state = new ShipDamageState(ShipCatalog.Huascar(), seed: 5);
+            for (int i = 0; i < 100 && !state.SteeringJammed; i++)
+            {
+                state.ApplyImpact(new ArmorImpactResult { Outcome = ImpactOutcome.Penetration }, ArmorZone.BeltEnds, false, 229f);
+            }
+            Assert.That(state.SteeringJammed, Is.True);
+            if (state.IsSunk) Assert.Inconclusive("hundido antes de trabar el timón");
+
+            state.Activate(DamageControlAction.SteamRepair);
+            Run(state, ShipDamageState.SteeringRepairSeconds + 0.2f);
+            Assert.That(state.SteeringJammed, Is.False);
         }
 
         [Test]
