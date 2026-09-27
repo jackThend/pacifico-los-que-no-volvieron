@@ -30,7 +30,8 @@ namespace Pacifico.EditorTools
                 asset.CopyFrom(record);
                 if (!string.IsNullOrEmpty(record.FacsimileImage))
                 {
-                    asset.facsimile = ImportArchiveTexture(root, record.FacsimileImage) ?? asset.facsimile;
+                    Texture2D texture = ImportArchiveTexture(root, record.FacsimileImage);
+                    if (texture != null) asset.facsimile = texture;
                 }
                 Finish(asset, record.Validate().IsValid, report);
             }

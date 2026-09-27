@@ -142,3 +142,15 @@
   * `Tests/EditMode/Naval/RamAndDamageControlTests.cs`: 16 pruebas.
 * **Verificación (criterio del roadmap):** 105/105 pruebas OK. El *Huáscar* a 10 nudos y 90° **parte las cuadernas** de la *Esmeralda* (daño > 30 % de su desplazamiento, vía de agua superior a las bombas, hundida en < 3 min sin achique) y recibe < 5 % de daño propio. A 2 nudos o en paralelo solo hay roce. La brigada apaga incendios, tapona vías y repara calderas; no puede hacer dos tareas a la vez.
 * **Incidencia de diseño corregida:** la primera versión del hundimiento modificaba `transform.rotation` desde el control de averías, pero `ShipController` la reescribe en cada `FixedUpdate`. Ahora la postura de hundimiento pasa por `ShipController.SetSinkPose`.
+
+---
+
+### [2026-09-27] - Prototipo jugable de la Fase 2: «Rada de Iquique» (greybox)
+* **Objetivo:** poder comprobar en el motor, en una sola escena, las cuatro tareas de la Fase 2.
+* **Archivos creados:**
+  * `Core/Naval/BroadsideBatteryModel.cs` (+ 4 pruebas): batería de costado por bandas con sector de ±40° alrededor del través, recarga independiente por banda y elevación resuelta por distancia.
+  * `Runtime/Naval/BroadsideBatteryController.cs` y `BroadsideShipAI.cs`: la *Esmeralda* presenta el través al enemigo, se mantiene cerca de su fondeadero y dispara con adelanto.
+  * `Editor/IquiquePrototypeBuilder.cs`: menú «Pacífico/Prototipos/Construir escena naval de Iquique» (también en modo batch). Genera los datos, crea materiales y el prefab del proyectil, y monta el *Huáscar* (torre Coles con cuna y dos piezas, espolón, zonas de blindaje, flotación que abre vías de agua), la *Esmeralda* con IA, el mar, la costa, la niebla, la cámara y el HUD. Guarda `Assets/Scenes/Proto_Iquique.unity` y la añade a Build Settings.
+* **Controles:** W/S telégrafo · A/D timón · ratón apunta la torre · clic/Espacio dispara · R/F convergencia · Mayús telémetro · 1/2/3 brigada de averías · botón derecho + ratón orbita la cámara · rueda para el zoom.
+* **Verificación:** 109/109 pruebas OK; el constructor compila contra la API de `UnityEditor`. **Pendiente de validar dentro de Unity 6** (no hay Editor en este entorno): ejecutar el constructor y jugar la escena.
+* **Revisión:** un `CapsuleCollider` sobre un cilindro achatado degeneraba en una esfera enorme → se usa `BoxCollider`. Se sustituyeron los `??` restantes sobre objetos de Unity (`Shader`, `Texture2D`) por comprobaciones explícitas.
