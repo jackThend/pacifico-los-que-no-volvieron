@@ -1,0 +1,680 @@
+{
+  "schema_version": 1,
+  "description": "Manifiesto de assets de «Pacífico: Los que no volvieron». Generado y mantenido por tools/assets_manager.py.",
+  "cache_dir": "assets_cache",
+  "git_size_limit_bytes": 52428800,
+  "assets": [
+    {
+      "name": "01_Monitor_Huascar_1879",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/01_Monitor_Huascar_1879.jpg",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:HuáscarValparaiso.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Hu%C3%A1scarValparaiso.jpg"
+      },
+      "size_bytes": 98859,
+      "sha256": "681ea6a7605c5bb80e9984681d8add9014c8ba834135bae8afbc94db4ebdcec4"
+    },
+    {
+      "name": "02_Corbeta_Esmeralda_1879",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/02_Corbeta_Esmeralda_1879.jpg",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:CorbetaEsmeralda.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:CorbetaEsmeralda.jpg"
+      },
+      "size_bytes": 35837,
+      "sha256": "d47f987036958f07a6b9c660506942e2b8a0d104c25752e052170f8de81c76e0"
+    },
+    {
+      "name": "03_Combate_Naval_de_Iquique_Somerscales",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/03_Combate_Naval_de_Iquique_Somerscales.jpg",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Combate_Naval_Iquique-Thomas_Somerscales.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Combate_Naval_Iquique-Thomas_Somerscales.jpg"
+      },
+      "size_bytes": 4013307,
+      "sha256": "0152626c3ff9a8ac787033d5f84bb89d1ccef6105ab835e49d0633adde292ef1"
+    },
+    {
+      "name": "04_Fragata_Blindada_Cochrane",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/04_Fragata_Blindada_Cochrane.jpg",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Fragata_Cochrane.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Fragata_Cochrane.jpg"
+      },
+      "size_bytes": 57767,
+      "sha256": "945f6aea36c3d72251999ac77a8234bb3fce851e9716d675db37e67163cac331"
+    },
+    {
+      "name": "05_Blindado_Blanco_Encalada",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/05_Blindado_Blanco_Encalada.jpg",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:BlancoEncalada.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:BlancoEncalada.jpg"
+      },
+      "size_bytes": 31761,
+      "sha256": "9e292782c2a3cdf9a0e5ee9cad195b1b4f3d41b927d9e503c901da3ccbaf6f04"
+    },
+    {
+      "name": "06_Goleta_Covadonga",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/06_Goleta_Covadonga.jpg",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Goleta_Covadonga.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Goleta_Covadonga.jpg"
+      },
+      "size_bytes": 32306,
+      "sha256": "930d0d6e351041bf8401de308efde1faa6cf9987197a20c3dcd90cd6b54d61a9"
+    },
+    {
+      "name": "07_Covadonga_Punta_Gruesa",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/07_Covadonga_Punta_Gruesa.jpg",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Covadonga_Punta_Gruesa.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Covadonga_Punta_Gruesa.jpg"
+      },
+      "size_bytes": 46833,
+      "sha256": "6a4e47f3cefa116e71293445854d05c217f3311eab999651dfa788be4d1e661d"
+    },
+    {
+      "name": "08_Fragata_Blindada_Independencia",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/08_Fragata_Blindada_Independencia.jpg",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Fragata_independencia_perfil.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Fragata_independencia_perfil.jpg"
+      },
+      "size_bytes": 72630,
+      "sha256": "94fe15a5aeba620df837c14cb8095c84b83cbc7f9a919dd3e92f26bbbebbe4d1"
+    },
+    {
+      "name": "09_Huascar_Danio_Combate_Angamos",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/09_Huascar_Danio_Combate_Angamos.jpg",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Damageshuascar.JPG",
+        "page": "https://commons.wikimedia.org/wiki/File:Damageshuascar.JPG"
+      },
+      "size_bytes": 51519,
+      "sha256": "cee35506cb54556f96a599b05d26e7b54c036cc84cf6385326ee5a39864898be"
+    },
+    {
+      "name": "10_Captura_del_Huascar_Blanco_y_Cochrane",
+      "path": "Archivo_Historico/01_Barcos_y_Combate_Naval/10_Captura_del_Huascar_Blanco_y_Cochrane.png",
+      "category": "01_Barcos_y_Combate_Naval",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Lisle-Captura_del_Huáscar_por_el_blindado_chileno_Blanco_Encalada_y_Cochrane.png",
+        "page": "https://commons.wikimedia.org/wiki/File:Lisle-Captura_del_Hu%C3%A1scar_por_el_blindado_chileno_Blanco_Encalada_y_Cochrane.png"
+      },
+      "size_bytes": 553237,
+      "sha256": "6ce5877b20e5b006ec6acd852e1f9efb330f3657839353f4f8cb9b4a2fb54669"
+    },
+    {
+      "name": "01_Arturo_Prat_Chacon",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/01_Arturo_Prat_Chacon.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Arturo_Prat.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Arturo_Prat.jpg"
+      },
+      "size_bytes": 71662,
+      "sha256": "3051d419c80e2adb78ad83558527dd2ea0ae84a97279bcd97660675c5740ba60"
+    },
+    {
+      "name": "02_Miguel_Grau_Seminario",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/02_Miguel_Grau_Seminario.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:M_Grau(2).jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:M_Grau%282%29.jpg"
+      },
+      "size_bytes": 94547,
+      "sha256": "f8b0225e379b12e5a2b79298d1c61fdf5e90fd85e23f04287268b6efb7e16857"
+    },
+    {
+      "name": "03_Francisco_Bolognesi",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/03_Francisco_Bolognesi.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Francisco_Bolognesi.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Francisco_Bolognesi.jpg"
+      },
+      "size_bytes": 2211884,
+      "sha256": "e5560ff0ce54ce1ee9da3e63905aec1c3d00fc3bc4dd6ef01f93b3df0e3ac771"
+    },
+    {
+      "name": "04_Andres_Avelino_Caceres",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/04_Andres_Avelino_Caceres.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Andrés_Avelino_Cáceres_2.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Andr%C3%A9s_Avelino_C%C3%A1ceres_2.jpg"
+      },
+      "size_bytes": 649912,
+      "sha256": "2a01e8edafe09c61f6c36bf9f72c735a14eab1bcbc8142715d65ec02e69919bc"
+    },
+    {
+      "name": "05_Coronel_Alfonso_Ugarte",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/05_Coronel_Alfonso_Ugarte.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Alfonso_Ugarte.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Alfonso_Ugarte.jpg"
+      },
+      "size_bytes": 670176,
+      "sha256": "315481a9a1b70e693f36f1dc3c4c64641ef1d178b16e681be6ae265771dcb695"
+    },
+    {
+      "name": "06_Batallon_Colorados_de_Bolivia",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/06_Batallon_Colorados_de_Bolivia.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Colorados_de_bolivia.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Colorados_de_bolivia.jpg"
+      },
+      "size_bytes": 33709,
+      "sha256": "3fdbb8ef856df13fddfa9c5028f34e0482dae8dbb2b0cade6584749dabc7cfd0"
+    },
+    {
+      "name": "07_Patricio_Lynch",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/07_Patricio_Lynch.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Patricio_Lynch_Solo_de_Zaldivar.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Patricio_Lynch_Solo_de_Zaldivar.jpg"
+      },
+      "size_bytes": 33729,
+      "sha256": "590992160f93aa0c23964a913945088565388852c021e502d79e55f4c65d454c"
+    },
+    {
+      "name": "08_Cantinera_Irene_Morales",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/08_Cantinera_Irene_Morales.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Cantinera_Irene_Morales(1865-1890).jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Cantinera_Irene_Morales%281865-1890%29.jpg"
+      },
+      "size_bytes": 144416,
+      "sha256": "f6176e33c2b2bae594b43e9ab772f0514dacbf9fb4f7aa78415aeaed2dba99de"
+    },
+    {
+      "name": "09_Culi_Chino_Esclavizado_Peru_1881",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/09_Culi_Chino_Esclavizado_Peru_1881.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Enslaved_Chinese_coolie_in_Peru_1881.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Enslaved_Chinese_coolie_in_Peru_1881.jpg"
+      },
+      "size_bytes": 348967,
+      "sha256": "b2de5954dd775a82399aad24dd1c051e7b415b223cbe754eb05164fcccbb224d"
+    },
+    {
+      "name": "10_Soldado_Boliviano_Uniforme_Campania",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/10_Soldado_Boliviano_Uniforme_Campania.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Soldado_Boliviano,_viste_uniforme_de_campaña.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Soldado_Boliviano%2C_viste_uniforme_de_campa%C3%B1a.jpg"
+      },
+      "size_bytes": 45332,
+      "sha256": "a3af2ea324db421c123c322d03f6548c5626e482abed250f6b5dbdf629efc014"
+    },
+    {
+      "name": "11_Soldados_Chilenos_Regimiento_Aconcagua_Comblain",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/11_Soldados_Chilenos_Regimiento_Aconcagua_Comblain.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Reg-civ-mov-aconcagua.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Reg-civ-mov-aconcagua.jpg"
+      },
+      "size_bytes": 108809,
+      "sha256": "cdbda31d0bccb3d3df963dc72c6cc0843997d7c0fb50130439309f0fb54be2a7"
+    },
+    {
+      "name": "12_Mutilado_de_Guerra_1880",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/12_Mutilado_de_Guerra_1880.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Mutilado-en-la-GdP-21.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Mutilado-en-la-GdP-21.jpg"
+      },
+      "size_bytes": 118132,
+      "sha256": "71bae31fd280fdcce6b9edd52fa05614b1c5a3616c9c35056e446a61bf86e15d"
+    },
+    {
+      "name": "13_Spencer_St_John_Observador_Britanico",
+      "path": "Archivo_Historico/02_Fotos_Soldados_y_Personajes/13_Spencer_St_John_Observador_Britanico.jpg",
+      "category": "02_Fotos_Soldados_y_Personajes",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Spenser_Buckingham_St._John_-_st.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Spenser_Buckingham_St._John_-_st.jpg"
+      },
+      "size_bytes": 23353,
+      "sha256": "4015fe0451b00487a3caf17126c394aa7e46f1c9168ce21c0b83b3c8937a64be"
+    },
+    {
+      "name": "01_Desembarco_de_Pisagua_1879",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/01_Desembarco_de_Pisagua_1879.jpg",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Desembarco_en_Pisagua.JPG",
+        "page": "https://commons.wikimedia.org/wiki/File:Desembarco_en_Pisagua.JPG"
+      },
+      "size_bytes": 156859,
+      "sha256": "9c20f06c46e7ca9fe1a8a2d92d6c988ccc1ceca726c96beec0aaa930154282a4"
+    },
+    {
+      "name": "02_Desembarco_y_Toma_de_Pisagua_Grabado",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/02_Desembarco_y_Toma_de_Pisagua_Grabado.jpg",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Desembarco_y_toma_de_Pisagua,_1879.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Desembarco_y_toma_de_Pisagua%2C_1879.jpg"
+      },
+      "size_bytes": 97294,
+      "sha256": "655ccfbe2d52ecdfb163cbf737284cb56bad29b407ef6c84e6eff4a3b0c2926f"
+    },
+    {
+      "name": "03_Bombardeo_de_Pisagua_1879",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/03_Bombardeo_de_Pisagua_1879.jpg",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Bombardeo_de_pisagua_18_abril_1879.JPG",
+        "page": "https://commons.wikimedia.org/wiki/File:Bombardeo_de_pisagua_18_abril_1879.JPG"
+      },
+      "size_bytes": 157129,
+      "sha256": "ecd0034106de077da3841271ab7c8c359b2adb53c9df64f54f8c88bb5f804094"
+    },
+    {
+      "name": "04_Batalla_de_Tarapaca_Jose_Effio",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/04_Batalla_de_Tarapaca_Jose_Effio.jpg",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Batalla_Tarapaca_Jose_Effio_1887.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Batalla_Tarapaca_Jose_Effio_1887.jpg"
+      },
+      "size_bytes": 230089,
+      "sha256": "caafea35e962a455a5429fa7d82027cbd90fe58034b7ef9e800d38502588d4ce"
+    },
+    {
+      "name": "05_Campo_de_la_Alianza_Tacna_Intiorko",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/05_Campo_de_la_Alianza_Tacna_Intiorko.jpg",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Tacna_Pampa_Del_Cerro_Intiorko.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Tacna_Pampa_Del_Cerro_Intiorko.jpg"
+      },
+      "size_bytes": 332364,
+      "sha256": "4a21acc845701cb477f688afddc1be6ad4b449e39435e262163d6c0630b67980"
+    },
+    {
+      "name": "06_Batalla_de_Tacna_Grabado",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/06_Batalla_de_Tacna_Grabado.png",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Batalla_tacna.png",
+        "page": "https://commons.wikimedia.org/wiki/File:Batalla_tacna.png"
+      },
+      "size_bytes": 2330273,
+      "sha256": "23b7c1494e3aff3e8068c23aeb4aff697c3bff3956225beacc36760fa3f743bc"
+    },
+    {
+      "name": "07_Morro_de_Arica_Foto_Historica_1880",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/07_Morro_de_Arica_Foto_Historica_1880.jpg",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:ALMORRODESDEFUERTESANJOSE.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:ALMORRODESDEFUERTESANJOSE.jpg"
+      },
+      "size_bytes": 87302,
+      "sha256": "17abbcd81760400f25c14ed67db279ad9d6733a93cd752437733728f3512076c"
+    },
+    {
+      "name": "08_Batalla_del_Morro_de_Arica",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/08_Batalla_del_Morro_de_Arica.png",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Batalla_del_Morro_de_Arica.png",
+        "page": "https://commons.wikimedia.org/wiki/File:Batalla_del_Morro_de_Arica.png"
+      },
+      "size_bytes": 1554552,
+      "sha256": "65fb4f773b7fe8a11794455bce26e223e874c93a16860e3ab3715c7a238ecaad"
+    },
+    {
+      "name": "09_Reducto_Numero_3_Miraflores_1881",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/09_Reducto_Numero_3_Miraflores_1881.jpg",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:El_tercer_reducto.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:El_tercer_reducto.jpg"
+      },
+      "size_bytes": 7028919,
+      "sha256": "9fd1abd7462b0653628af9d5ede05719e45936d82a95c7c6c0af7368b1960767"
+    },
+    {
+      "name": "10_Ruinas_de_Chorrillos_1881",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/10_Ruinas_de_Chorrillos_1881.jpg",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Chorrillos_pared_destruida.JPG",
+        "page": "https://commons.wikimedia.org/wiki/File:Chorrillos_pared_destruida.JPG"
+      },
+      "size_bytes": 1279116,
+      "sha256": "03d8063ad67a02c88685b92af8081920e05914f519680b796c4375c980650e5f"
+    },
+    {
+      "name": "11_Batalla_de_Miraflores_1881",
+      "path": "Archivo_Historico/03_Lugares_y_Campos_de_Batalla/11_Batalla_de_Miraflores_1881.jpg",
+      "category": "03_Lugares_y_Campos_de_Batalla",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:BATALLA-DE-MIRAFLORES2.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:BATALLA-DE-MIRAFLORES2.jpg"
+      },
+      "size_bytes": 52574,
+      "sha256": "15d90e161761cc1656e40e3947d9db9c116ac68adb0c0cc95cc9c502eff69987"
+    },
+    {
+      "name": "01_Fusil_Chassepot_1866_Cerrojo",
+      "path": "Archivo_Historico/04_Uniformes_y_Armamento/01_Fusil_Chassepot_1866_Cerrojo.jpg",
+      "category": "04_Uniformes_y_Armamento",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Chassepot_rifle_1866_technical_drawing_-_Bolt_assembly.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Chassepot_rifle_1866_technical_drawing_-_Bolt_assembly.jpg"
+      },
+      "size_bytes": 574953,
+      "sha256": "aa0126febb38925c01f4d042328244c9e103b0e70b88ace80474b149177e7117"
+    },
+    {
+      "name": "02_Fusil_Chassepot_1866_Canon",
+      "path": "Archivo_Historico/04_Uniformes_y_Armamento/02_Fusil_Chassepot_1866_Canon.jpg",
+      "category": "04_Uniformes_y_Armamento",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Chassepot_rifle_1866_technical_drawing_-_Barrel.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Chassepot_rifle_1866_technical_drawing_-_Barrel.jpg"
+      },
+      "size_bytes": 2765028,
+      "sha256": "bf0b9b5dfc8948d35078e04a21e8b6dad9867bf50640c318e48d8026f1048536"
+    },
+    {
+      "name": "03_Fusil_Gras_1874_Cerrojo",
+      "path": "Archivo_Historico/04_Uniformes_y_Armamento/03_Fusil_Gras_1874_Cerrojo.jpg",
+      "category": "04_Uniformes_y_Armamento",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Fusil_Gras_M80_1874_culasse.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Fusil_Gras_M80_1874_culasse.jpg"
+      },
+      "size_bytes": 419614,
+      "sha256": "0f5c31a3c3f7fbbdfe8a455b807eff0e4bbb143abbc4d252e764376c59064e78"
+    },
+    {
+      "name": "04_Fusil_Gras_Cartucho_Metalico",
+      "path": "Archivo_Historico/04_Uniformes_y_Armamento/04_Fusil_Gras_Cartucho_Metalico.jpg",
+      "category": "04_Uniformes_y_Armamento",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Fusil_Gras_M80_1874_metallic_cartridge.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Fusil_Gras_M80_1874_metallic_cartridge.jpg"
+      },
+      "size_bytes": 393354,
+      "sha256": "0a2fa53785ccac9b4d9b919bd2747977d323515a55f9f19b5866b8c8ab3c9c56"
+    },
+    {
+      "name": "05_Fusil_Remington_Rolling_Block",
+      "path": "Archivo_Historico/04_Uniformes_y_Armamento/05_Fusil_Remington_Rolling_Block.jpg",
+      "category": "04_Uniformes_y_Armamento",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Remington_Rolling_Block.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Remington_Rolling_Block.jpg"
+      },
+      "size_bytes": 69780,
+      "sha256": "4c9c258f36e202ff8966dac437b3c35aabae7da26a7188635ebda8a05172c026"
+    },
+    {
+      "name": "06_Armamento_Aliado_Alto_Alianza",
+      "path": "Archivo_Historico/04_Uniformes_y_Armamento/06_Armamento_Aliado_Alto_Alianza.jpg",
+      "category": "04_Uniformes_y_Armamento",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Alto_alianza_armamento_aliado.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Alto_alianza_armamento_aliado.jpg"
+      },
+      "size_bytes": 356286,
+      "sha256": "4648617e59b5a5dc1236f4149926ace29017c32588387e10b871ad28f2b480a0"
+    },
+    {
+      "name": "07_Uniforme_Soldado_Chileno_Replica",
+      "path": "Archivo_Historico/04_Uniformes_y_Armamento/07_Uniforme_Soldado_Chileno_Replica.jpg",
+      "category": "04_Uniformes_y_Armamento",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Réplica_de_vestimenta_de_soldado_chileno_de_la_Guerra_del_Pacifico.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:R%C3%A9plica_de_vestimenta_de_soldado_chileno_de_la_Guerra_del_Pacifico.jpg"
+      },
+      "size_bytes": 3508285,
+      "sha256": "31c760a5770f9d96bfbe79febf3823e5c13f934c4f65ad8a2106b9c49dab89e9"
+    },
+    {
+      "name": "08_Ilustracion_Soldados_Chilenos",
+      "path": "Archivo_Historico/04_Uniformes_y_Armamento/08_Ilustracion_Soldados_Chilenos.jpg",
+      "category": "04_Uniformes_y_Armamento",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Ilustración_soldados_chilenos_-_Guerra_del_Pacifico.JPG",
+        "page": "https://commons.wikimedia.org/wiki/File:Ilustraci%C3%B3n_soldados_chilenos_-_Guerra_del_Pacifico.JPG"
+      },
+      "size_bytes": 201589,
+      "sha256": "270478b18abc24446ddf25af326b53d2884a4ea018fa233969f37370c4ef2de8"
+    },
+    {
+      "name": "01_Facsimil_Monumento_Carta_Grau_a_Carmela_Carvajal",
+      "path": "Archivo_Historico/05_Cartas_y_Documentos/01_Facsimil_Monumento_Carta_Grau_a_Carmela_Carvajal.jpg",
+      "category": "05_Cartas_y_Documentos",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Carta_de_Grau_a_viuda_de_Prat_en_monumento_chileno.JPG",
+        "page": "https://commons.wikimedia.org/wiki/File:Carta_de_Grau_a_viuda_de_Prat_en_monumento_chileno.JPG"
+      },
+      "size_bytes": 2465350,
+      "sha256": "6e12d9d6a589c2ed1ad0b6d0f5e2ef4e2df7129adca2f1d21f1f93af40e0e070"
+    },
+    {
+      "name": "02_Carmela_Carvajal_Briones",
+      "path": "Archivo_Historico/05_Cartas_y_Documentos/02_Carmela_Carvajal_Briones.jpg",
+      "category": "05_Cartas_y_Documentos",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Carmela_Carvajal_Briones.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Carmela_Carvajal_Briones.jpg"
+      },
+      "size_bytes": 69631,
+      "sha256": "288b92c056ad28f2dbdbbc92fd2792dee8d652f8fe31a89cbd0527cfeeff2361"
+    },
+    {
+      "name": "03_La_Respuesta_de_Bolognesi",
+      "path": "Archivo_Historico/05_Cartas_y_Documentos/03_La_Respuesta_de_Bolognesi.jpg",
+      "category": "05_Cartas_y_Documentos",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:La_respuesta_de_Bolognesi.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:La_respuesta_de_Bolognesi.jpg"
+      },
+      "size_bytes": 162528,
+      "sha256": "6f8608d6e8836cdc7da7f218b76e0fc170e30a5abd41c2f06c0bebed595aa8c2"
+    },
+    {
+      "name": "04_Firma_Francisco_Bolognesi",
+      "path": "Archivo_Historico/05_Cartas_y_Documentos/04_Firma_Francisco_Bolognesi.jpg",
+      "category": "05_Cartas_y_Documentos",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Firma_de_Francisco_Bolognesi_en_1859.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Firma_de_Francisco_Bolognesi_en_1859.jpg"
+      },
+      "size_bytes": 28717,
+      "sha256": "44779d6c2dd5ed58ceaf3a5f615133bececd02d1fe426af181dd30ca6713da3a"
+    },
+    {
+      "name": "05_Plano_Militar_Batalla_de_Arica_1880",
+      "path": "Archivo_Historico/05_Cartas_y_Documentos/05_Plano_Militar_Batalla_de_Arica_1880.jpg",
+      "category": "05_Cartas_y_Documentos",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:Plano_aricae-0001.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Plano_aricae-0001.jpg"
+      },
+      "size_bytes": 364468,
+      "sha256": "d4a48e8ab1a5d26c96a25d37976313fed5dd654992009b41a49ddacb5c291afc"
+    },
+    {
+      "name": "06_Mapa_Historico_Guerra_del_Pacifico_LOC",
+      "path": "Archivo_Historico/05_Cartas_y_Documentos/06_Mapa_Historico_Guerra_del_Pacifico_LOC.png",
+      "category": "05_Cartas_y_Documentos",
+      "storage": "git",
+      "license": "Por verificar en la ficha de Wikimedia Commons (source.page)",
+      "source": {
+        "type": "wikimedia",
+        "title": "File:War_of_the_Pacific_LOC_map.png",
+        "page": "https://commons.wikimedia.org/wiki/File:War_of_the_Pacific_LOC_map.png"
+      },
+      "size_bytes": 22984,
+      "sha256": "9a5e4d2e056e09f4737305168854ff76030a36e44c824a962ebbddb99e4e9365"
+    }
+  ]
+}
