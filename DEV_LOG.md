@@ -51,3 +51,17 @@
   * `print_report` fijaba `sys.stdout` al definirse y no respetaba `redirect_stdout` (lo detectó una prueba) → se resuelve al llamar.
   * El primer borrador marcaba todo el archivo como «dominio público». Es incorrecto: hay fotos modernas (réplica de uniforme, monumento con la carta de Grau) que suelen estar bajo CC BY-SA. Ahora la licencia queda «por verificar» con el enlace a la ficha de Commons (`source.page`).
 * **Pendiente fuera del alcance del agente:** `sync` contra Google Drive/Commons no se pudo probar con red real (el proxy del entorno bloquea esos dominios); está cubierto con un downloader simulado.
+
+---
+
+### [2026-09-27] - Tarea 1.1: Definición de Armamento Histórico (WeaponDataSO) — [X]
+* **Archivos creados:**
+  * `Core/Common/HistoricalSource.cs`: referencias, campos estimados y notas de cada dato (trazabilidad histórica).
+  * `Core/Weapons/WeaponSpec.cs`: especificación con **datos históricos** (cartucho, calibre, velocidad en boca, masa, alza) separados de los **ajustes de juego** (recarga, daño, dispersión MOA, alcance eficaz, cuerpo a cuerpo). Incluye caída de daño con la distancia, radio de dispersión, cadencia sostenida y `Validate()`.
+  * `Core/Weapons/WeaponCatalog.cs`: Comblain II, Chassepot 1866, Gras 1874, Remington Rolling Block, Winchester 1873 (Quintín, cap. 7), corvo y bayoneta triangular.
+  * `Runtime/Data/WeaponDataSO.cs` (+ `SerializableHistoricalSource.cs`): asset editable con `ToSpec()`/`CopyFrom()` y validación en `OnValidate`.
+  * `Editor/HistoricalDataAssetGenerator.cs`: menú «Pacífico/Datos/Generar ScriptableObjects históricos» (idempotente, invocable en modo batch).
+  * Pruebas: `Tests/EditMode/Weapons/WeaponCatalogTests.cs` (recargas del GDD 2,0/2,2/2,2/2,1 s, validez, jerarquía de daño y precisión, bandos, copias independientes) y `Tests/EditModeUnity/DataAssetSerializationTests.cs` (ida y vuelta por `JsonUtility`; solo corre dentro de Unity).
+* **Fuentes consultadas:** Chassepot 410 m/s, 4,635 kg y 1.200 m; Gras 450 m/s y 4,2 kg; .43 Spanish ≈389 m/s; Comblain belga 4,3 kg y 1.300 m. Los valores sin fuente directa quedan listados en `EstimatedFields`.
+* **Verificación:** `tools/verify/verify.sh` → 5 pasos en verde, 26/26 pruebas OK.
+* **Cambio en el arnés:** nuevo paso que compila `Pacifico.Tests.Unity` (pruebas que necesitan el motor).
