@@ -79,7 +79,7 @@
 ---
 
 ## 📌 FASE 5: SISTEMA NARRATIVO Y COLECCIONABLES
-- [ ] **5.1 Visor 3D de Documentos Históricos**
+- [X] **5.1 Visor 3D de Documentos Históricos**
   * *Criterio:* Modal interactivo para rotar cartas manuscritas, daguerrotipos y planos con zoom y transcripción textual conmutable.
   * *Verificación:* Inspección funcional del facsímil de la carta de Grau a Carmela Carvajal.
 - [ ] **5.2 Gestor de Cinemáticas y Voces de Corresponsales**

@@ -12,7 +12,7 @@ namespace Pacifico.EditorTools
         private const string ArchiveRootPrefix = "Archivo_Historico/";
 
         /// <summary>Raíz del repositorio (el proyecto de Unity vive en src/UnityProject).</summary>
-        private static string RepositoryRoot =>
+        internal static string RepositoryRoot =>
             Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), ProjectPaths.HistoricalArchiveFromProjectRoot, ".."));
 
         private static void GenerateCollectibles(List<string> report)
@@ -40,7 +40,7 @@ namespace Pacifico.EditorTools
         /// <summary>
         /// Copia una imagen del Archivo Histórico a Assets/ArchivoImportado (ignorado por git) y la importa como textura.
         /// </summary>
-        private static Texture2D ImportArchiveTexture(string repositoryRoot, string repositoryRelativePath)
+        internal static Texture2D ImportArchiveTexture(string repositoryRoot, string repositoryRelativePath)
         {
             string source = Path.Combine(repositoryRoot, repositoryRelativePath.Replace('/', Path.DirectorySeparatorChar));
             if (!File.Exists(source))
