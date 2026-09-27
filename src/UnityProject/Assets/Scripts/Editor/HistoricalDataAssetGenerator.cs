@@ -20,6 +20,7 @@ namespace Pacifico.EditorTools
         {
             var report = new List<string>();
             GenerateWeapons(report);
+            GenerateShips(report);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[Pacífico] Datos generados:\n  " + string.Join("\n  ", report));

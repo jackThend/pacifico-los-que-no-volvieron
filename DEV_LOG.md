@@ -65,3 +65,16 @@
 * **Fuentes consultadas:** Chassepot 410 m/s, 4,635 kg y 1.200 m; Gras 450 m/s y 4,2 kg; .43 Spanish ≈389 m/s; Comblain belga 4,3 kg y 1.300 m. Los valores sin fuente directa quedan listados en `EstimatedFields`.
 * **Verificación:** `tools/verify/verify.sh` → 5 pasos en verde, 26/26 pruebas OK.
 * **Cambio en el arnés:** nuevo paso que compila `Pacifico.Tests.Unity` (pruebas que necesitan el motor).
+
+---
+
+### [2026-09-27] - Tarea 1.2: Definición de Buques y Blindajes (ShipDataSO) — [X]
+* **Archivos creados:**
+  * `Core/Naval/ShipSpec.cs`: `ShipSpec` con `ArmorLayout` por zona (cinturón central/extremos, torre o reducto, torre de mando, cubierta, respaldo de teca, chapa), `GunMount`, `TurretSpec` (giro, elevación, sector ciego) y `ShipHandling` (aceleración, pérdida de arrancada, caída del timón). Validación de coherencia (madera sin coraza, cinturón de extremos ≤ central, velocidad de 1879 ≤ diseño, piezas en torre ⇔ `TurretSpec`...).
+  * `Core/Naval/ShipCatalog.cs`: *Huáscar*, *Esmeralda*, *Covadonga*, *Independencia*, *Almirante Cochrane* y *Blanco Encalada*.
+  * `Runtime/Data/ShipDataSO.cs` y `Editor/HistoricalDataAssetGenerator.Ships.cs`.
+  * Pruebas: `Tests/EditMode/Naval/ShipCatalogTests.cs` (12 pruebas) y ida y vuelta de `ShipDataSO` por `JsonUtility` en `Tests/EditModeUnity`.
+* **Datos verificados en fuentes:** *Huáscar* 59,4 × 10,6 m, cinturón 114,3/63,5 mm, torre 139,7 mm, torre de mando 76,2 mm, 2 × Armstrong de 300 lb; *Esmeralda* 850 t, 64 × 9,75 m, 201 hombres, 8 nudos de diseño y 2 en el combate; *Covadonga* 412 t, 48,5 m, 2 × 70 lb; *Independencia* 2.004 t, 4,5" sobre 10" de teca, 2 × 150 + 12 × 70; *Cochrane* 3.540 t, cinturón 4,5–9", 6 × 9".
+* **Estimaciones declaradas:** calados, dotaciones, velocidades en boca de la artillería naval, respaldos de teca y reducto del *Cochrane* figuran en `Source.EstimatedFields`; una prueba exige que las velocidades de artillería se declaren estimadas.
+* **Decisiones de diseño:** la torre Coles se giraba a mano (se usan 6 °/s como licencia jugable); la *Esmeralda* navega a 3 nudos (las fuentes citan 2–3) para que la maniobra sea jugable.
+* **Verificación:** `tools/verify/verify.sh` → 5 pasos en verde, 38/38 pruebas OK.

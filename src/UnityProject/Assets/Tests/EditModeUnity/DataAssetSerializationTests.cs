@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Reflection;
 using NUnit.Framework;
+using Pacifico.Core.Naval;
 using Pacifico.Core.Weapons;
 using Pacifico.Data;
 using UnityEngine;
@@ -36,6 +37,36 @@ namespace Pacifico.Tests.Unity
             }
         }
 
+        [Test]
+        public void ShipDataSO_IdaYVueltaPorElSerializadorDeUnity_ConservaLosDatos()
+        {
+            foreach (var spec in ShipCatalog.All())
+            {
+                var asset = ScriptableObject.CreateInstance<ShipDataSO>();
+                var restored = ScriptableObject.CreateInstance<ShipDataSO>();
+                try
+                {
+                    asset.CopyFrom(spec);
+                    JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(asset), restored);
+
+                    ShipSpec roundTrip = restored.ToSpec();
+                    AssertSameProperties(spec, roundTrip, spec.Id);
+                    Assert.That(roundTrip.Guns, Has.Count.EqualTo(spec.Guns.Count), spec.Id);
+                    for (int i = 0; i < spec.Guns.Count; i++)
+                    {
+                        AssertSameProperties(spec.Guns[i], roundTrip.Guns[i], spec.Id + ".Guns[" + i + "]");
+                    }
+                    Assert.That(roundTrip.Turret == null, Is.EqualTo(spec.Turret == null), spec.Id + ".Turret");
+                    Assert.That(restored.Validate().IsValid, Is.True, restored.Validate().ToString());
+                }
+                finally
+                {
+                    Object.DestroyImmediate(asset);
+                    Object.DestroyImmediate(restored);
+                }
+            }
+        }
+
         /// <summary>Compara propiedades públicas escalares y colecciones (una capa de profundidad).</summary>
         internal static void AssertSameProperties(object expected, object actual, string context)
         {
@@ -52,7 +83,8 @@ namespace Pacifico.Tests.Unity
                 }
                 else if (a is IEnumerable enumerable)
                 {
-                    Assert.That((IEnumerable)b, Is.EqualTo(enumerable), where);
+                    // Las listas de objetos (p. ej. Guns) se comparan elemento a elemento en cada prueba.
+                    if (IsListOfScalars(enumerable)) Assert.That((IEnumerable)b, Is.EqualTo(enumerable), where);
                 }
                 else
                 {
@@ -60,6 +92,17 @@ namespace Pacifico.Tests.Unity
                     AssertSameProperties(a, b, where);
                 }
             }
+        }
+
+        private static bool IsListOfScalars(IEnumerable items)
+        {
+            foreach (object item in items)
+            {
+                if (item == null) continue;
+                System.Type t = item.GetType();
+                return t.IsPrimitive || t.IsEnum || item is string;
+            }
+            return true;
         }
     }
 }

@@ -19,10 +19,10 @@
 - [X] **1.1 Definición de Armamento Histórico (WeaponDataSO)**
   * *Criterio:* ScriptableObjects con datos balísticos, tiempo de recarga (Comblain: 2.0s, Chassepot: 2.2s, Remington: 2.1s), daño, dispersión y alcance.
   * *Verificación:* Test unitario validando los valores contra las especificaciones del GDD.
-- [EN PROCESO] **1.2 Definición de Buques y Blindajes (ShipDataSO)**
+- [X] **1.2 Definición de Buques y Blindajes (ShipDataSO)**
   * *Criterio:* Configuración del monitor *Huáscar* (torreta giratoria Coles, blindaje de 4.5"), corbeta *Esmeralda*, fragatas *Cochrane* e *Independencia*.
   * *Verificación:* ScriptableObjects instanciables y serializables sin errores.
-- [ ] **1.3 Definición de Coleccionables "La Memoria Rota" (CollectibleDataSO)**
+- [EN PROCESO] **1.3 Definición de Coleccionables "La Memoria Rota" (CollectibleDataSO)**
   * *Criterio:* Estructura de datos para cartas históricas, remitente, facsímil 3D, texto traducido/transcrito y audio asociado.
   * *Verificación:* Carga de las cartas de Abraham Quiroz y Miguel Grau desde los archivos Markdown existentes.
 
