@@ -93,3 +93,15 @@
 * **Observaciones para el equipo narrativo:**
   * README/ROADMAP y GDD numeran distinto los capítulos (p. ej. Tacna es el 6 en el README y el 5 en el GDD). El catálogo usa el GDD.
   * El texto de `Carta_Miguel_Grau_a_Carmela_Carvajal_1879.md` se presenta como «auténtico», pero es una versión abreviada y parafraseada de la carta publicada. Conviene cotejarlo con la transcripción original antes de grabar la voz en off.
+
+---
+
+### [2026-09-27] - Tarea 2.1: Controlador de Navegación e Inercia Hidrodinámica — [X]
+* **Archivos creados:**
+  * `Core/Naval/EngineTelegraph.cs`: órdenes Atrás media / Detener / Avante 1/4 / media / toda.
+  * `Core/Naval/ShipMotionModel.cs`: modelo plano independiente de la tasa de fotogramas. Respuesta exponencial de la velocidad con constantes distintas para ganar arrancada (ficha `AccelerationTimeSeconds`) y perderla (`CoastDownTimeSeconds`); frenado con máquina atrás; servomotor de timón con tiempo de caída; guiñada con inercia rotacional; gobierno proporcional a la arrancada (sin arrancada no hay giro); pérdida de velocidad con el timón a la banda; ganchos de avería (`PropulsionFactor`, `RudderJammed`).
+  * `Runtime/Input/GameInput.cs`: fachada de teclado/ratón compatible con el Input Manager clásico y con el Input System.
+  * `Runtime/Naval/ShipController.cs` (Rigidbody cinemático, escora y cabeceo visuales, gizmo del círculo de giro), `ShipCameraRig.cs` (tercera persona, órbita y zoom), `NavalHud.cs` (HUD IMGUI de prototipo).
+  * `Tests/EditMode/Naval/ShipMotionModelTests.cs`: 12 pruebas.
+* **Verificación:** 60/60 pruebas OK. Casos cubiertos: aceleración gradual al 95 % en el tiempo de la ficha; al cortar máquina conserva > 80 % de la velocidad a los 10 s; radio de giro a toda fuerza = 2 × el de media (proporcional a la velocidad); sin arrancada el timón no gobierna; resultados equivalentes con pasos de 0,01 s y 0,1 s.
+* **Incidencia:** `CS0649` en campos `[SerializeField]` (advertencia tratada como error). Unity la suprime para esos campos porque los asigna el Inspector; el arnés ahora hace lo mismo.

@@ -5,7 +5,8 @@
     <AssemblyName>Pacifico.Runtime</AssemblyName>
     <DefineConstants>$(DefineConstants);UNITY_EDITOR_VERIFY;ENABLE_LEGACY_INPUT_MANAGER</DefineConstants>
     <!-- CS1701/1702: unificación de mscorlib de las referencias de Unity (inofensivo). -->
-    <NoWarn>$(NoWarn);CS1701;CS1702</NoWarn>
+    <!-- CS0649: Unity lo suprime para campos [SerializeField] (los asigna el Inspector). -->
+    <NoWarn>$(NoWarn);CS1701;CS1702;CS0649</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(UnityAssets)Scripts/Runtime/**/*.cs" />

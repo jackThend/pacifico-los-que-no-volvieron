@@ -6,7 +6,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>Pacifico.Tests.Unity</AssemblyName>
-    <NoWarn>$(NoWarn);CS1701;CS1702</NoWarn>
+    <!-- CS0649: Unity lo suprime para campos [SerializeField] (los asigna el Inspector). -->
+    <NoWarn>$(NoWarn);CS1701;CS1702;CS0649</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(UnityAssets)Tests/EditModeUnity/**/*.cs" />

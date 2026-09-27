@@ -4,7 +4,8 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>Pacifico.Editor</AssemblyName>
     <DefineConstants>$(DefineConstants);UNITY_EDITOR;UNITY_EDITOR_VERIFY</DefineConstants>
-    <NoWarn>$(NoWarn);CS1701;CS1702</NoWarn>
+    <!-- CS0649: Unity lo suprime para campos [SerializeField] (los asigna el Inspector). -->
+    <NoWarn>$(NoWarn);CS1701;CS1702;CS0649</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(UnityAssets)Scripts/Editor/**/*.cs" />
