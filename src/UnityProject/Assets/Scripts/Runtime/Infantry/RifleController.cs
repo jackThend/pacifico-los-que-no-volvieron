@@ -151,7 +151,8 @@ namespace Pacifico.Infantry
             if (dt <= 0f) return;
 
             InfantryMotor motor = _fps.Motor;
-            bool handling = motor.IsSprinting || motor.Stance == Stance.Sliding;
+            // Correr, deslizarse o lanzar un golpe cuerpo a cuerpo detiene la manipulación del arma.
+            bool handling = motor.IsSprinting || motor.Stance == Stance.Sliding || _fps.MeleeBusy;
 
             if (_fps.HasInputFocus && !handling)
             {

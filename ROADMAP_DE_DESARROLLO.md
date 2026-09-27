@@ -59,7 +59,7 @@
 - [X] **3.3 Efectos Volumétricos de Pólvora Negra**
   * *Criterio:* Humo volumétrico generado en la boca del cañón que se disipa con rapidez cinematográfica para no bloquear la visión del jugador.
   * *Verificación:* Test de estrés con 20 disparos continuos sin saturación visual.
-- [ ] **3.4 Combate Cuerpo a Cuerpo (Corvo y Bayoneta)**
+- [X] **3.4 Combate Cuerpo a Cuerpo (Corvo y Bayoneta)**
   * *Criterio:* Animación de estocada y tajo visceral en primera persona al aproximarse al rango cuerpo a cuerpo.
   * *Verificación:* Detección de colisión cuerpo a cuerpo precisa contra muñecos de prueba (*dummies*).
 

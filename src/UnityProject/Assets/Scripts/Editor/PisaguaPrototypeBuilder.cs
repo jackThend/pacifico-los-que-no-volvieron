@@ -12,9 +12,10 @@ using Object = UnityEngine.Object;
 namespace Pacifico.EditorTools
 {
     /// <summary>
-    /// Construye la escena de prototipo FPS «Pisagua» (ROADMAP 3.1) con primitivas: un campo de pruebas para el
+    /// Construye la escena de prototipo FPS «Pisagua» (ROADMAP 3.1–3.4) con primitivas: un campo de pruebas para el
     /// controlador de primera persona (rampas, escalera, túnel bajo, parapetos) y una línea de tiro con siluetas
-    /// cada 100 m para practicar con el alza graduada del Comblain.
+    /// cada 100 m para practicar con el alza graduada del Comblain; humo de pólvora negra y un patio de esgrima con
+    /// muñecos para la bayoneta y el corvo.
     /// Modo batch:
     /// <c>Unity -batchmode -quit -projectPath src/UnityProject -executeMethod Pacifico.EditorTools.PisaguaPrototypeBuilder.RunBatch</c>
     /// </summary>
@@ -31,6 +32,7 @@ namespace Pacifico.EditorTools
         private static readonly Color WoodColor = new Color(0.36f, 0.24f, 0.14f);
         private static readonly Color SteelColor = new Color(0.16f, 0.16f, 0.17f);
         private static readonly Color BrassColor = new Color(0.72f, 0.56f, 0.26f);
+        private static readonly Color StrawColor = new Color(0.86f, 0.74f, 0.42f);
 
         [MenuItem("Pacífico/Prototipos/Construir escena FPS de Pisagua")]
         public static void Build()
@@ -39,7 +41,8 @@ namespace Pacifico.EditorTools
             BuildScene();
             EditorUtility.DisplayDialog("Pacífico", "Escena creada en " + ScenePath +
                 "\n\nWASD mover · ratón mirar · Mayús correr · C/Ctrl agacharse (corriendo: deslizarse) · Espacio saltar · " +
-                "botón derecho apuntar · clic disparar · R recargar · rueda al apuntar: alza · V descarga de prueba (humo) · " +
+                "botón derecho apuntar · clic disparar · R recargar · rueda al apuntar: alza · F estocada · G tajo con el corvo · " +
+                "V descarga de prueba (humo) · " +
                 "Esc libera el ratón", "Aceptar");
         }
 
@@ -62,17 +65,21 @@ namespace Pacifico.EditorTools
             HistoricalDataAssetGenerator.GenerateAll();
             var comblain = AssetDatabase.LoadAssetAtPath<WeaponDataSO>(ProjectPaths.WeaponData + "/Weapon_" + WeaponCatalog.ComblainId + ".asset");
             if (comblain == null) throw new InvalidOperationException("No se generó el WeaponDataSO del Comblain.");
+            var corvo = AssetDatabase.LoadAssetAtPath<WeaponDataSO>(ProjectPaths.WeaponData + "/Weapon_" + WeaponCatalog.CorvoId + ".asset");
+            if (corvo == null) throw new InvalidOperationException("No se generó el WeaponDataSO del corvo.");
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             CreateEnvironment();
             CreateMovementCourse();
             CreateRifleRange();
-            FirstPersonController player = CreatePlayer(comblain);
+            CreateFencingYard();
+            FirstPersonController player = CreatePlayer(comblain, corvo);
 
             var hud = new GameObject("HUD_Infanteria").AddComponent<InfantryHud>();
             hud.Player = player;
             hud.Rifle = player.GetComponent<RifleController>();
+            hud.Melee = player.GetComponent<MeleeController>();
             CreateAmmoCrate(comblain.ToSpec().Cartridge);
             CreateSmoke(player.ViewCamera.transform);
 
@@ -169,7 +176,7 @@ namespace Pacifico.EditorTools
         // Jugador
         // ------------------------------------------------------------------------------------------
 
-        private static FirstPersonController CreatePlayer(WeaponDataSO weapon)
+        private static FirstPersonController CreatePlayer(WeaponDataSO weapon, WeaponDataSO sidearm)
         {
             var player = new GameObject("Jugador_Infante");
             player.transform.position = new Vector3(0f, 0.05f, 16f);
@@ -203,24 +210,32 @@ namespace Pacifico.EditorTools
             var rifle = player.AddComponent<RifleController>();
             rifle.StartingReserve = 20;
 
-            CreateRifleViewModel(pivot, fps, rifle);
+            // Cuerpo a cuerpo (ROADMAP 3.4): bayoneta calada en el fusil y corvo al cinto.
+            var melee = player.AddComponent<MeleeController>();
+            melee.Sidearm = sidearm;
+
+            CreateRifleViewModel(pivot, fps, rifle, melee);
             return fps;
         }
 
         /// <summary>
         /// Fusil Comblain esquemático. Origen en la base del alza; la cresta del alza y el punto de mira quedan a 0,075 m,
         /// de modo que en la pose de encare (y = -0,075) la línea de mira pasa por el centro de la cámara.
-        /// Jerarquía: raíz (<see cref="IronSightViewModel"/>: cadera ↔ encare) → «Mecanica»
-        /// (<see cref="RifleViewModelAnimator"/>: retroceso y recarga) → piezas.
+        /// Jerarquía: raíz (<see cref="IronSightViewModel"/>: cadera ↔ encare) → «Esgrima»
+        /// (<see cref="MeleeViewModelAnimator"/>: guardia y estocada) → «Mecanica» (<see cref="RifleViewModelAnimator"/>:
+        /// retroceso y recarga) → piezas. El corvo cuelga del pivote de cámara.
         /// </summary>
-        private static void CreateRifleViewModel(Transform pivot, FirstPersonController owner, RifleController rifle)
+        private static void CreateRifleViewModel(Transform pivot, FirstPersonController owner, RifleController rifle, MeleeController melee)
         {
             var root = new GameObject("Fusil_Comblain_Vista").transform;
             root.SetParent(pivot, false);
             root.localPosition = new Vector3(0.22f, -0.2f, 0.45f);
 
+            var fencing = new GameObject("Esgrima").transform;
+            fencing.SetParent(root, false);
+
             var body = new GameObject("Mecanica").transform;
-            body.SetParent(root, false);
+            body.SetParent(fencing, false);
 
             Material wood = PrototypeSceneKit.Material("Madera", WoodColor);
             Material steel = PrototypeSceneKit.Material("Acero", SteelColor, 0.5f);
@@ -238,6 +253,13 @@ namespace Pacifico.EditorTools
             muzzle.localPosition = new Vector3(0f, 0.035f, 0.78f);
             rifle.Muzzle = muzzle;
             PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Punto_de_Mira", body, new Vector3(0f, 0.06f, 0.76f), new Vector3(0.004f, 0.03f, 0.006f), steel, keepCollider: false);
+
+            // Bayoneta calada: hoja de 0,5 m a la derecha de la boca (la longitud que usa MeleeAttackProfile).
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Bayoneta_Cubo", body, new Vector3(0.018f, 0.03f, 0.77f), new Vector3(0.02f, 0.02f, 0.04f), steel, keepCollider: false);
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Bayoneta_Hoja", body, new Vector3(0.022f, 0.022f, 1.03f), new Vector3(0.004f, 0.022f, 0.5f), steel, keepCollider: false);
+            var bayonetTip = new GameObject("Punta_Bayoneta").transform;
+            bayonetTip.SetParent(body, false);
+            bayonetTip.localPosition = new Vector3(0.022f, 0.022f, 1.28f);
 
             // Palanca del Comblain (el guardamonte): pivota en su extremo delantero y su parte trasera baja al abrir,
             // haciendo descender el bloque de cierre.
@@ -268,6 +290,67 @@ namespace Pacifico.EditorTools
             var animator = body.gameObject.AddComponent<RifleViewModelAnimator>();
             // Giro negativo en X: la parte trasera de la palanca (z < 0 respecto al pivote) desciende.
             animator.Configure(rifle, lever, new Vector3(-50f, 0f, 0f), null, round.transform, port);
+
+            Transform corvo = CreateCorvoViewModel(pivot, wood, steel);
+            fencing.gameObject.AddComponent<MeleeViewModelAnimator>().Configure(melee, owner, bayonetTip, corvo);
+        }
+
+        /// <summary>Corvo chileno: origen en la empuñadura y hoja curva de 0,3 m hacia +Z (la de MeleeAttackProfile).</summary>
+        private static Transform CreateCorvoViewModel(Transform pivot, Material wood, Material steel)
+        {
+            var corvo = new GameObject("Corvo_Vista").transform;
+            corvo.SetParent(pivot, false);
+            GameObject handle = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Mango", corvo, new Vector3(0f, 0f, -0.06f),
+                new Vector3(0.028f, 0.06f, 0.028f), wood, keepCollider: false);
+            handle.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Hoja", corvo, new Vector3(0f, 0f, 0.1f), new Vector3(0.004f, 0.03f, 0.2f), steel, keepCollider: false);
+            // La punta se curva hacia el filo, como el corvo campesino.
+            GameObject tip = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Hoja_Curva", corvo, new Vector3(0f, -0.012f, 0.245f),
+                new Vector3(0.004f, 0.026f, 0.1f), steel, keepCollider: false);
+            tip.transform.localRotation = Quaternion.Euler(14f, 0f, 0f);
+            corvo.gameObject.SetActive(false);
+            return corvo;
+        }
+
+        // ------------------------------------------------------------------------------------------
+        // Patio de esgrima (ROADMAP 3.4)
+        // ------------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// Muñecos de paja para practicar la estocada y el tajo, detrás de la línea de fuego y a la derecha del
+        /// jugador: tres muñecos en fila, un poste fino de 8 cm (precisión del tajo) y un muñeco tras una tapia baja
+        /// (la hoja no atraviesa el adobe).
+        /// </summary>
+        private static void CreateFencingYard()
+        {
+            var root = new GameObject("Patio_de_Esgrima").transform;
+            root.position = new Vector3(9f, 0f, 12f);
+            Material straw = PrototypeSceneKit.Material("Paja", StrawColor);
+            Material wood = PrototypeSceneKit.Material("Madera", WoodColor);
+
+            for (int i = 0; i < 3; i++) CreateDummy(root, "Muneco_" + (i + 1), new Vector3(i * 2.5f, 0f, 0f), straw, wood);
+
+            GameObject pole = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Poste_de_Precision", root, new Vector3(7.5f, 1.1f, 0f),
+                new Vector3(0.08f, 1.1f, 0.08f), wood);
+            pole.AddComponent<MeleeDummy>();
+
+            // El jugador llega desde la línea de fuego (+Z): el muñeco queda al otro lado de la tapia.
+            CreateDummy(root, "Muneco_Tras_Tapia", new Vector3(10.5f, 0f, -0.9f), straw, wood);
+            Box("Tapia_Baja", root, new Vector3(10.5f, 0.9f, 0f), new Vector3(1.6f, 1.8f, 0.3f), AdobeColor, "Adobe");
+        }
+
+        /// <summary>Saco de paja en un poste: torso (cápsula), cabeza (esfera, daño ×1,5) y brazos (solo visuales).</summary>
+        private static void CreateDummy(Transform parent, string name, Vector3 localPosition, Material straw, Material wood)
+        {
+            var dummy = new GameObject(name).transform;
+            dummy.SetParent(parent, false);
+            dummy.localPosition = localPosition;
+            // El pivote está en el suelo: el muñeco se balancea sobre la base del poste.
+            PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Poste", dummy, new Vector3(0f, 0.6f, 0f), new Vector3(0.08f, 0.6f, 0.08f), wood, keepCollider: false);
+            PrototypeSceneKit.Primitive(PrimitiveType.Capsule, "Torso", dummy, new Vector3(0f, 1.15f, 0f), new Vector3(0.4f, 0.35f, 0.4f), straw);
+            GameObject head = PrototypeSceneKit.Primitive(PrimitiveType.Sphere, "Cabeza", dummy, new Vector3(0f, 1.68f, 0f), new Vector3(0.22f, 0.22f, 0.22f), straw);
+            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Brazos", dummy, new Vector3(0f, 1.42f, 0f), new Vector3(0.9f, 0.06f, 0.06f), wood, keepCollider: false);
+            dummy.gameObject.AddComponent<MeleeDummy>().Configure(head.GetComponent<Collider>());
         }
 
         /// <summary>

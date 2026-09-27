@@ -68,6 +68,12 @@ namespace Pacifico.Infantry
         /// </summary>
         public bool AimBlocked { get; set; }
 
+        /// <summary>
+        /// Golpe cuerpo a cuerpo en curso (ROADMAP 3.4): el fusil no dispara, no se encara y la recarga se detiene.
+        /// Lo fija <see cref="MeleeController"/>.
+        /// </summary>
+        public bool MeleeBusy { get; set; }
+
         /// <summary>El jugador controla el personaje: ratón capturado, o captura desactivada (pruebas en el Editor).</summary>
         public bool HasInputFocus => Cursor.lockState == CursorLockMode.Locked || !lockCursor;
 
@@ -189,7 +195,7 @@ namespace Pacifico.Infantry
                 Sprint = GameInput.Held(GameKey.LeftShift),
                 Crouch = GameInput.Held(GameKey.C) || GameInput.Held(GameKey.LeftControl),
                 Jump = GameInput.Held(GameKey.Space),
-                Aim = GameInput.MouseHeld(1) && Sights != null && !AimBlocked,
+                Aim = GameInput.MouseHeld(1) && Sights != null && !AimBlocked && !MeleeBusy,
             };
         }
 

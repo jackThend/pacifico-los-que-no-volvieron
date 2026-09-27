@@ -151,7 +151,7 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ## 🛠️ Desarrollo en Unity 6
 
-**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, y las 3.1, 3.2 y 3.3 de la fase FPS: estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, y el humo blanco de la pólvora negra (visible, pero sin cegar). Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
+**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, y la fase FPS (3.1–3.4): estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar) y el cuerpo a cuerpo con bayoneta y corvo. Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
 
 ### Abrir el proyecto
 1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
@@ -179,6 +179,7 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 | Botón derecho | Encarar el fusil con las miras |
 | Clic izquierdo · `R` | Disparar · recargar (tras cada disparo se recarga solo: ~2 s) |
 | Rueda (al encarar) o `RePág`/`AvPág` | Graduar el alza (100 m por muesca) |
+| `F` · `G` | Estocada con la bayoneta · tajo con el corvo (al acercarte a un enemigo, el fusil se pone en guardia) |
 | `V` | Prueba del humo: descarga de 20 fusiles a tu lado (arriba a la izquierda, la claridad de la vista) |
 | `Esc` | Liberar o capturar el ratón |
 

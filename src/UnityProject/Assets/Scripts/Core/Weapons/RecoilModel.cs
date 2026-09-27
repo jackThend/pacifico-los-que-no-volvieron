@@ -66,6 +66,17 @@ namespace Pacifico.Core.Weapons
             _yawVelocity += impulse * lateral;
         }
 
+        /// <summary>
+        /// Sacudida de la vista con picos exactos de <paramref name="pitchDeg"/> y <paramref name="yawDeg"/> grados
+        /// (p. ej. el choque de la bayoneta contra un cuerpo). Usa el mismo muelle que el retroceso.
+        /// </summary>
+        public void Punch(float pitchDeg, float yawDeg)
+        {
+            float gain = RecoveryOmega * (float)Math.E;
+            _pitchVelocity += pitchDeg * gain;
+            _yawVelocity += yawDeg * gain;
+        }
+
         public void Step(float dt)
         {
             if (dt <= 0f) return;
