@@ -78,3 +78,18 @@
 * **Estimaciones declaradas:** calados, dotaciones, velocidades en boca de la artillería naval, respaldos de teca y reducto del *Cochrane* figuran en `Source.EstimatedFields`; una prueba exige que las velocidades de artillería se declaren estimadas.
 * **Decisiones de diseño:** la torre Coles se giraba a mano (se usan 6 °/s como licencia jugable); la *Esmeralda* navega a 3 nudos (las fuentes citan 2–3) para que la maniobra sea jugable.
 * **Verificación:** `tools/verify/verify.sh` → 5 pasos en verde, 38/38 pruebas OK.
+
+---
+
+### [2026-09-27] - Tarea 1.3: Coleccionables «La Memoria Rota» (CollectibleDataSO) — [X]
+* **Archivos creados:**
+  * `Core/Narrative/ArchiveMarkdownParser.cs` + `ArchiveDocument.cs`: analizador de los tres formatos del archivo (transcripción con «(Firmado)», cartas numeradas en cita con firma en negrita, despachos con línea de atribución). Extrae metadatos de cabecera (incluidas listas), título y fecha del encabezado, párrafos limpios de Markdown, firma, atribución y notas de diseño; retira solo las comillas « » que envuelven todo el texto.
+  * `Core/Narrative/CollectibleRecord.cs` + `CollectibleCatalog.cs`: curaduría de 8 coleccionables (carta de Grau, 3 cartas de Quiroz, 4 despachos) con remitente, destinatario, capítulo (numeración del GDD §5), facsímil y clave de audio. **El texto siempre se lee de los Markdown del archivo; no se duplica en código.**
+  * `Runtime/Data/CollectibleDataSO.cs`: texto, dedicatoria del reverso (GDD §4.1), facsímil `Texture2D`, `AudioClip` de [Escuchar Carta] y duración estimada si aún no hay grabación.
+  * `Editor/HistoricalDataAssetGenerator.Collectibles.cs`: importa los Markdown y copia el facsímil a `Assets/ArchivoImportado/` (ignorado por git) para usarlo como textura.
+  * Pruebas: 10 pruebas sobre los archivos reales del repositorio y casos sintéticos (comillas internas, CRLF, documento vacío, índice fuera de rango) + ida y vuelta de `CollectibleDataSO` en Unity.
+* **Incidencia y solución:** en las crónicas la atribución va pegada a la cita sin línea en blanco y el analizador las fundía en un solo párrafo (lo detectó la prueba de despachos). Ahora el paso de texto normal a cita también separa párrafos.
+* **Verificación:** `tools/verify/verify.sh` → 5 pasos en verde, 48/48 pruebas OK.
+* **Observaciones para el equipo narrativo:**
+  * README/ROADMAP y GDD numeran distinto los capítulos (p. ej. Tacna es el 6 en el README y el 5 en el GDD). El catálogo usa el GDD.
+  * El texto de `Carta_Miguel_Grau_a_Carmela_Carvajal_1879.md` se presenta como «auténtico», pero es una versión abreviada y parafraseada de la carta publicada. Conviene cotejarlo con la transcripción original antes de grabar la voz en off.

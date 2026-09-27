@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Reflection;
 using NUnit.Framework;
+using Pacifico.Core.Narrative;
 using Pacifico.Core.Naval;
 using Pacifico.Core.Weapons;
 using Pacifico.Data;
@@ -64,6 +65,33 @@ namespace Pacifico.Tests.Unity
                     Object.DestroyImmediate(asset);
                     Object.DestroyImmediate(restored);
                 }
+            }
+        }
+
+        [Test]
+        public void CollectibleDataSO_IdaYVueltaPorElSerializadorDeUnity_ConservaLosDatos()
+        {
+            var record = new CollectibleRecord
+            {
+                Id = "prueba", Type = CollectibleType.Photograph, Title = "Retrato", Sender = "Anónimo",
+                DateLabel = "Cochabamba, 1879", Chapter = 5, Body = "Fotografía de estudio.",
+                ReverseInscription = "A mi adorado hijo José, que Dios te guarde de los cañones. Tu madre, Cochabamba, 1879",
+                SourceFile = "Archivo_Historico/x.md", AudioClipKey = "vo_prueba", WordCount = 3,
+                DesignNotes = { "nota" },
+            };
+            var asset = ScriptableObject.CreateInstance<CollectibleDataSO>();
+            var restored = ScriptableObject.CreateInstance<CollectibleDataSO>();
+            try
+            {
+                asset.CopyFrom(record);
+                JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(asset), restored);
+                AssertSameProperties(record, restored.ToRecord(), record.Id);
+                Assert.That(restored.Validate().IsValid, Is.True, restored.Validate().ToString());
+            }
+            finally
+            {
+                Object.DestroyImmediate(asset);
+                Object.DestroyImmediate(restored);
             }
         }
 

@@ -22,14 +22,14 @@
 - [X] **1.2 Definición de Buques y Blindajes (ShipDataSO)**
   * *Criterio:* Configuración del monitor *Huáscar* (torreta giratoria Coles, blindaje de 4.5"), corbeta *Esmeralda*, fragatas *Cochrane* e *Independencia*.
   * *Verificación:* ScriptableObjects instanciables y serializables sin errores.
-- [EN PROCESO] **1.3 Definición de Coleccionables "La Memoria Rota" (CollectibleDataSO)**
+- [X] **1.3 Definición de Coleccionables "La Memoria Rota" (CollectibleDataSO)**
   * *Criterio:* Estructura de datos para cartas históricas, remitente, facsímil 3D, texto traducido/transcrito y audio asociado.
   * *Verificación:* Carga de las cartas de Abraham Quiroz y Miguel Grau desde los archivos Markdown existentes.
 
 ---
 
 ## 📌 FASE 2: MÓDULO NAVAL 3D (PROTOTIPO IQUIQUE)
-- [ ] **2.1 Controlador de Navegación e Inercia Hidrodinámica**
+- [EN PROCESO] **2.1 Controlador de Navegación e Inercia Hidrodinámica**
   * *Criterio:* Simulación de aceleración por telégrafo de calderas (Detener, 1/4, Media, Toda fuerza) y respuesta de timón.
   * *Verificación:* Buque responde a controles de teclado (W/S/A/D) manteniendo inercia al cortar propulsión.
 - [ ] **2.2 Sistema de Torreta Giratoria Coles (*Huáscar*)**
