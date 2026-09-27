@@ -13,6 +13,8 @@ namespace Pacifico.Naval
         public float CaliberMm;
         public Collider Collider;
         public GameObject Shooter;
+        /// <summary>Metros recorridos desde la boca (la pérdida de velocidad por rozamiento se calcula con esto).</summary>
+        public float DistanceTravelled;
     }
 
     /// <summary>Todo lo que puede recibir un proyectil naval (casco blindado, batería costera, blanco de prácticas).</summary>
@@ -36,6 +38,7 @@ namespace Pacifico.Naval
         private float _caliberMm;
         private GameObject _shooter;
         private float _age;
+        private float _distance;
 
         /// <summary>Se dispara cuando el proyectil cae al agua (para piques y corrección del tiro).</summary>
         public static event Action<Vector3> Splashed;
@@ -79,9 +82,10 @@ namespace Pacifico.Naval
                     CaliberMm = _caliberMm,
                     Collider = hit.collider,
                     Shooter = _shooter,
+                    DistanceTravelled = _distance + hit.distance,
                 };
                 Impacted?.Invoke(shellHit);
-                hit.collider.GetComponentInParent<IShellTarget>()?.ReceiveShell(shellHit);
+                FindTarget(hit.collider)?.ReceiveShell(shellHit);
                 Destroy(gameObject);
                 return;
             }
@@ -94,8 +98,22 @@ namespace Pacifico.Naval
                 return;
             }
 
+            _distance += segment.magnitude;
             transform.SetPositionAndRotation(end, Quaternion.LookRotation(nextVelocity));
             _velocity = nextVelocity;
+        }
+
+        /// <summary>
+        /// Busca un <see cref="IShellTarget"/> en la jerarquía. Se evita GetComponentInParent&lt;Interfaz&gt;() con «?.»
+        /// porque en el Editor Unity puede devolver un objeto «null falso» que no es null para C#.
+        /// </summary>
+        private static IShellTarget FindTarget(Collider collider)
+        {
+            foreach (MonoBehaviour behaviour in collider.GetComponentsInParent<MonoBehaviour>())
+            {
+                if (behaviour is IShellTarget target) return target;
+            }
+            return null;
         }
 
         private bool IsShooter(Collider other)

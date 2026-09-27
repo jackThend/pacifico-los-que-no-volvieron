@@ -117,3 +117,17 @@
   * `Tests/EditMode/Naval/ColesTurretTests.cs`: 14 pruebas.
 * **Verificación:** 74/74 pruebas OK. La velocidad de giro nunca supera 6 °/s ni sobrepasa la orden; arranque suave; las piezas se cruzan a la distancia de convergencia; el adelanto hace coincidir proyectil y blanco.
 * **Correcciones durante la revisión:** se eliminó `??` sobre objetos de Unity (no respeta el «null falso» del motor) y la búsqueda del HUD con `Resources.FindObjectsOfTypeAll` (devuelve también prefabs). Ahora el HUD se registra en `NavalHud.Active`.
+
+---
+
+### [2026-09-27] - Tarea 2.3: Sistema de Blindaje Angular y Balística — [X]
+* **Archivos creados:**
+  * `Core/Naval/ArmorPenetrationModel.cs`: perforación de hierro forjado con fórmula empírica tipo De Marre, `T = (v·√m / (K·d^0,75))^(1/0,7)`, con K = 1.350 calibrada contra el dato de referencia de un Palliser de 10" y 400 lb (~416 m/s → ~11"). Espesor efectivo = (hierro + teca × 0,1) / cos θ. Ángulo de rebote de 65° (55° si la plancha iguala al calibre; 82° en madera). Pérdida de velocidad exponencial según la densidad seccional. Resultados: rebote, sin perforar, perforación y perforación crítica (madera ≥ 150 mm), con daño estructural y probabilidad de incendio.
+  * `Runtime/Naval/ArmoredHull.cs` + `ArmorZoneMarker.cs`: resolución en escena con la normal real de la superficie, la zona del colisionador y la distancia recorrida (nuevo campo `ShellHit.DistanceTravelled`).
+  * `Tests/EditMode/Naval/ArmorPenetrationTests.cs`: 15 pruebas.
+* **Verificación (criterio del roadmap):** 89/89 pruebas OK.
+  * 40 lb de la *Esmeralda* contra el cinturón del *Huáscar*: **nunca perfora** a 200–1.200 m y 0–75°; a 70° **rebota** con daño mínimo.
+  * 300 lb del *Huáscar* contra la *Esmeralda*: **perforación crítica** a 0°, 45° y 70°; bastan de 2 a 6 impactos para destruirla.
+  * Coherencia histórica adicional: los 250 lb del *Cochrane* perforan cinturón y torre de mando del *Huáscar* a 1.000 m (Angamos); el *Huáscar* no perfora el cinturón central de 9" del *Cochrane*, pero sí sus extremos; presentarse a 60° convierte esa perforación en no-perforación (guion, cap. 2: «posicionar el blindado a 45 grados»).
+* **Corrección de robustez:** `NavalShell` buscaba el blanco con `GetComponentInParent<IShellTarget>()?.` (en el Editor puede devolver un «null falso» de Unity). Ahora recorre `GetComponentsInParent<MonoBehaviour>()`.
+* **Nota de diseño:** la trayectoria visual no aplica rozamiento (tiro tenso a < 2 km); la pérdida de velocidad solo se aplica al calcular la perforación. Es una simplificación documentada.
