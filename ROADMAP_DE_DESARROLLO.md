@@ -32,10 +32,10 @@
 - [X] **2.1 Controlador de Navegación e Inercia Hidrodinámica**
   * *Criterio:* Simulación de aceleración por telégrafo de calderas (Detener, 1/4, Media, Toda fuerza) y respuesta de timón.
   * *Verificación:* Buque responde a controles de teclado (W/S/A/D) manteniendo inercia al cortar propulsión.
-- [EN PROCESO] **2.2 Sistema de Torreta Giratoria Coles (*Huáscar*)**
+- [X] **2.2 Sistema de Torreta Giratoria Coles (*Huáscar*)**
   * *Criterio:* Rotación horizontal independiente del casco con retícula de convergencia para los cañones Armstrong de 300 libras.
   * *Verificación:* Apuntado suave con limitadores angulares históricos.
-- [ ] **2.3 Sistema de Blindaje Angular y Balística**
+- [EN PROCESO] **2.3 Sistema de Blindaje Angular y Balística**
   * *Criterio:* Disparos navales calculan ángulo de incidencia. Impactos oblicuos en hierro rebotan; impactos directos o en madera producen daño crítico.
   * *Verificación:* Test de impacto con proyectiles de 40 lbs vs 300 lbs comprobando rebote en el *Huáscar* y perforación en la *Esmeralda*.
 - [ ] **2.4 Mecánica de Espolonazo y Control de Averías**

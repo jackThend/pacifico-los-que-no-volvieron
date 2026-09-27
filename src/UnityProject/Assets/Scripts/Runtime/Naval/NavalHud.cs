@@ -14,6 +14,20 @@ namespace Pacifico.Naval
         private GUIStyle _label;
         private GUIStyle _title;
 
+        /// <summary>HUD activo en la escena (uno por escena de prototipo).</summary>
+        public static NavalHud Active { get; private set; }
+
+        private void Awake()
+        {
+            // Awake precede a los Start de los sistemas que se registran en ExtraLines.
+            Active = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (Active == this) Active = null;
+        }
+
         public ShipController Ship
         {
             get => ship;

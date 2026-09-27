@@ -105,3 +105,15 @@
   * `Tests/EditMode/Naval/ShipMotionModelTests.cs`: 12 pruebas.
 * **Verificación:** 60/60 pruebas OK. Casos cubiertos: aceleración gradual al 95 % en el tiempo de la ficha; al cortar máquina conserva > 80 % de la velocidad a los 10 s; radio de giro a toda fuerza = 2 × el de media (proporcional a la velocidad); sin arrancada el timón no gobierna; resultados equivalentes con pasos de 0,01 s y 0,1 s.
 * **Incidencia:** `CS0649` en campos `[SerializeField]` (advertencia tratada como error). Unity la suprime para esos campos porque los asigna el Inspector; el arnés ahora hace lo mismo.
+
+---
+
+### [2026-09-27] - Tarea 2.2: Sistema de Torreta Giratoria Coles (Huáscar) — [X]
+* **Archivos creados:**
+  * `Core/Naval/Ballistics.cs`: tiro parabólico (alcance ↔ elevación de tiro tenso, tiempo de vuelo, rumbo) y cálculo de adelanto sobre blanco en movimiento.
+  * `Core/Naval/ColesTurretModel.cs`: giro independiente del casco con perfil trapezoidal (aceleración limitada, se detiene exactamente en la orden), camino angular más corto, topes de elevación de la ficha, sector ciego de popa que impide disparar, convergencia ajustable de las dos piezas, recarga por pieza y dispersión gaussiana con semilla (determinista en pruebas).
+  * `Runtime/Naval/ColesTurretController.cs`: apuntado con el ratón sobre el mar, disparo con clic/Espacio, convergencia con R/F, zoom de telémetro con Mayús y retícula de convergencia (caída prevista de cada pieza, dispersión y avisos de SECTOR CIEGO / FUERA DE ALCANCE).
+  * `Runtime/Naval/NavalShell.cs`: proyectil balístico con raycast continuo entre pasos (sin túneles a 400 m/s) e interfaz `IShellTarget`; hereda la velocidad del buque.
+  * `Tests/EditMode/Naval/ColesTurretTests.cs`: 14 pruebas.
+* **Verificación:** 74/74 pruebas OK. La velocidad de giro nunca supera 6 °/s ni sobrepasa la orden; arranque suave; las piezas se cruzan a la distancia de convergencia; el adelanto hace coincidir proyectil y blanco.
+* **Correcciones durante la revisión:** se eliminó `??` sobre objetos de Unity (no respeta el «null falso» del motor) y la búsqueda del HUD con `Resources.FindObjectsOfTypeAll` (devuelve también prefabs). Ahora el HUD se registra en `NavalHud.Active`.
