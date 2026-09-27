@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Ejecuta las pruebas EditMode de Assets/Tests/EditMode con NUnit 3 sobre .NET 8.
+    Son las mismas fuentes que corre el Unity Test Runner (Window > General > Test Runner).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <AssemblyName>Pacifico.Tests.EditMode</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(UnityAssets)Tests/EditMode/**/*.cs" />
+    <ProjectReference Include="../Pacifico.Core/Pacifico.Core.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+</Project>

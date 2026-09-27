@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Equivalente a Pacifico.Core.asmdef (noEngineReferences = true). -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Pacifico.Core</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(UnityAssets)Scripts/Core/**/*.cs" />
+  </ItemGroup>
+</Project>

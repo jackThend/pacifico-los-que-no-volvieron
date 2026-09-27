@@ -50,7 +50,21 @@ venv.bak/
 *.sublime-project
 *.sublime-workspace
 
-# Unity (previsión para desarrollo en motor)
+# Unity (proyecto en src/UnityProject)
+src/UnityProject/[Ll]ibrary/
+src/UnityProject/[Tt]emp/
+src/UnityProject/[Oo]bj/
+src/UnityProject/[Bb]uild/
+src/UnityProject/[Bb]uilds/
+src/UnityProject/[Ll]ogs/
+src/UnityProject/[Uu]ser[Ss]ettings/
+src/UnityProject/[Mm]emoryCaptures/
+src/UnityProject/[Rr]ecordings/
+src/UnityProject/.vs/
+src/UnityProject/.utmp/
+# Copias locales del Archivo Histórico importadas por el editor (se regeneran)
+src/UnityProject/Assets/ArchivoImportado/
+src/UnityProject/Assets/ArchivoImportado.meta
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
@@ -63,6 +77,11 @@ venv.bak/
 *.csproj
 *.unityproj
 *.sln
+# Excepción: proyectos del arnés de verificación fuera de Unity
+!tools/verify/**/*.csproj
+tools/verify/**/bin/
+tools/verify/**/obj/
+tools/verify/TestResults/
 *.suo
 *.user
 *.userprefs
@@ -72,3 +91,6 @@ sysinfo.txt
 *.apk
 *.aab
 *.unitypackage
+
+# Caché local de assets pesados (ver tools/assets_manager.py y AGENTS.md §4.B)
+/assets_cache/

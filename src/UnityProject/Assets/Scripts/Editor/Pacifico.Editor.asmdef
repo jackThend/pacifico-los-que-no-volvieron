@@ -1,0 +1,19 @@
+{
+    "name": "Pacifico.Editor",
+    "rootNamespace": "Pacifico.EditorTools",
+    "references": [
+        "Pacifico.Core",
+        "Pacifico.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
