@@ -56,7 +56,7 @@
 - [X] **3.2 Sistema de Fusiles de Época y Recarga Dinámica**
   * *Criterio:* Fusiles monotiro con ciclo de disparo: percutir -> abrir cerrojo -> expulsar vaina -> insertar cartucho -> cerrar -> apuntar (2.0 segundos).
   * *Verificación:* Temporizador y animaciones de recarga sincronizados.
-- [ ] **3.3 Efectos Volumétricos de Pólvora Negra**
+- [X] **3.3 Efectos Volumétricos de Pólvora Negra**
   * *Criterio:* Humo volumétrico generado en la boca del cañón que se disipa con rapidez cinematográfica para no bloquear la visión del jugador.
   * *Verificación:* Test de estrés con 20 disparos continuos sin saturación visual.
 - [ ] **3.4 Combate Cuerpo a Cuerpo (Corvo y Bayoneta)**

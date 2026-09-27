@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Pacifico.Core.Common;
 using Pacifico.Core.Infantry;
 using Pacifico.Core.Weapons;
+using Pacifico.Effects;
 using Pacifico.Input;
 using UnityEngine;
 
@@ -23,6 +25,11 @@ namespace Pacifico.Infantry
         [SerializeField] private bool autoReload = true;
         [Tooltip("Capas que pueden recibir balas (por defecto, todas salvo «Ignore Raycast»: vainas, efectos).")]
         [SerializeField] private LayerMask hitMask = Physics.DefaultRaycastLayers;
+        [Tooltip("Boca del cañón del fusil en primera persona (humo y fogonazo). Si falta, se estima delante del ojo.")]
+        [SerializeField] private Transform muzzle;
+
+        /// <summary>Distancia del ojo a la boca con el fusil encarado cuando no hay <see cref="Muzzle"/> (≈ 1,2 m).</summary>
+        private const float DefaultMuzzleDistanceM = 1.2f;
 
         private FirstPersonController _fps;
         private System.Random _random;
@@ -47,6 +54,12 @@ namespace Pacifico.Infantry
         {
             get => startingReserve;
             set => startingReserve = value;
+        }
+
+        public Transform Muzzle
+        {
+            get => muzzle;
+            set => muzzle = value;
         }
 
         private void Awake()
@@ -172,6 +185,11 @@ namespace Pacifico.Infantry
             Vector3 origin = eye.position - eye.up * sightHeight;
             Vector3 direction = eye.rotation * Quaternion.Euler(-shot.PitchDeg, shot.YawDeg, 0f) * Vector3.forward;
             RifleBullet.Fire(origin, direction * Model.Weapon.MuzzleVelocityMps, Model.Weapon, _dragFactor, gameObject, hitMask);
+
+            // Humo de pólvora negra (ROADMAP 3.3): sale de la boca en la dirección del ánima, con la velocidad del tirador.
+            Vector3 muzzlePosition = muzzle != null ? muzzle.position : origin + eye.forward * DefaultMuzzleDistanceM;
+            Vec3 v = _fps.Motor.Velocity;
+            BlackPowderSmoke.Emit(muzzlePosition, eye.forward, Model.Weapon.PowderChargeG, new Vector3(v.X, v.Y, v.Z));
 
             _fps.Recoil.Kick(Model.Weapon, aim01, _fps.Motor.Stance == Stance.Crouching);
         }

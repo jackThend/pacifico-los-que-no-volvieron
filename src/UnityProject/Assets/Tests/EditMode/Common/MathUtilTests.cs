@@ -52,5 +52,17 @@ namespace Pacifico.Tests.Common
             Assert.That(Units.KnotsToMetersPerSecond(12f), Is.EqualTo(6.1733f).Within(1e-3f));
             Assert.That(Units.PoundsToKilograms(300f), Is.EqualTo(136.08f).Within(1e-2f));
         }
+
+        [Test]
+        public void SmoothStep_YErf()
+        {
+            Assert.That(MathUtil.SmoothStep(1f, 3f, 0f), Is.EqualTo(0f));
+            Assert.That(MathUtil.SmoothStep(1f, 3f, 2f), Is.EqualTo(0.5f).Within(1e-6f));
+            Assert.That(MathUtil.SmoothStep(1f, 3f, 9f), Is.EqualTo(1f));
+            Assert.That(MathUtil.Erf(0f), Is.EqualTo(0f).Within(1e-6f));
+            Assert.That(MathUtil.Erf(1f), Is.EqualTo(0.8427008f).Within(1e-6f));
+            Assert.That(MathUtil.Erf(-0.5f), Is.EqualTo(-0.5204999f).Within(1e-6f));
+            Assert.That(MathUtil.Erf(4f), Is.EqualTo(1f).Within(1e-6f));
+        }
     }
 }

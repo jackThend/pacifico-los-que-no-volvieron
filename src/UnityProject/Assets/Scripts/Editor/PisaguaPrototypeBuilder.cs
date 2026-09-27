@@ -1,6 +1,7 @@
 using System;
 using Pacifico.Core.Weapons;
 using Pacifico.Data;
+using Pacifico.Effects;
 using Pacifico.Infantry;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -38,7 +39,8 @@ namespace Pacifico.EditorTools
             BuildScene();
             EditorUtility.DisplayDialog("Pacífico", "Escena creada en " + ScenePath +
                 "\n\nWASD mover · ratón mirar · Mayús correr · C/Ctrl agacharse (corriendo: deslizarse) · Espacio saltar · " +
-                "botón derecho apuntar · clic disparar · R recargar · rueda al apuntar: alza · Esc libera el ratón", "Aceptar");
+                "botón derecho apuntar · clic disparar · R recargar · rueda al apuntar: alza · V descarga de prueba (humo) · " +
+                "Esc libera el ratón", "Aceptar");
         }
 
         public static void RunBatch()
@@ -72,6 +74,7 @@ namespace Pacifico.EditorTools
             hud.Player = player;
             hud.Rifle = player.GetComponent<RifleController>();
             CreateAmmoCrate(comblain.ToSpec().Cartridge);
+            CreateSmoke(player.ViewCamera.transform);
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -229,6 +232,11 @@ namespace Pacifico.EditorTools
             GameObject barrel = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Canon", body, new Vector3(0f, 0.035f, 0.37f),
                 new Vector3(0.022f, 0.4f, 0.022f), steel, keepCollider: false);
             barrel.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            // Boca del cañón: de aquí salen el humo y el fogonazo (ROADMAP 3.3).
+            var muzzle = new GameObject("Boca").transform;
+            muzzle.SetParent(body, false);
+            muzzle.localPosition = new Vector3(0f, 0.035f, 0.78f);
+            rifle.Muzzle = muzzle;
             PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Punto_de_Mira", body, new Vector3(0f, 0.06f, 0.76f), new Vector3(0.004f, 0.03f, 0.006f), steel, keepCollider: false);
 
             // Palanca del Comblain (el guardamonte): pivota en su extremo delantero y su parte trasera baja al abrir,
@@ -260,6 +268,43 @@ namespace Pacifico.EditorTools
             var animator = body.gameObject.AddComponent<RifleViewModelAnimator>();
             // Giro negativo en X: la parte trasera de la palanca (z < 0 respecto al pivote) desciende.
             animator.Configure(rifle, lever, new Vector3(-50f, 0f, 0f), null, round.transform, port);
+        }
+
+        /// <summary>
+        /// Humo de pólvora negra (ROADMAP 3.3) con la brisa marina que sopla de través sobre la línea de tiro, y el banco
+        /// de pruebas de la descarga (tecla V). El material se guarda como asset para que la build incluya el sombreador.
+        /// </summary>
+        private static void CreateSmoke(Transform eye)
+        {
+            var go = new GameObject("Humo_Polvora_Negra");
+            go.AddComponent<ParticleSystem>();
+            var smoke = go.AddComponent<BlackPowderSmoke>();
+            smoke.Wind = new Vector3(1.8f, 0f, 0.4f);
+
+            ParticleSystem.EmissionModule emission = go.GetComponent<ParticleSystem>().emission;
+            emission.enabled = false;
+            Material material = SmokeMaterial();
+            go.GetComponent<ParticleSystemRenderer>().sharedMaterial = material;
+
+            var serialized = new SerializedObject(smoke);
+            serialized.FindProperty("material").objectReferenceValue = material;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            var volley = go.AddComponent<SmokeVolleyTest>();
+            var volleySerialized = new SerializedObject(volley);
+            volleySerialized.FindProperty("eye").objectReferenceValue = eye;
+            volleySerialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static Material SmokeMaterial()
+        {
+            string path = ProjectPaths.Materials + "/Proto_Humo.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material != null) return material;
+            material = BlackPowderSmoke.CreateMaterial();
+            HistoricalDataAssetGenerator.EnsureFolder(ProjectPaths.Materials);
+            AssetDatabase.CreateAsset(material, path);
+            return material;
         }
 
         /// <summary>Caja de cartuchos de Comblain junto a la línea de fuego (escasez de Tarapacá, GDD cap. 4).</summary>

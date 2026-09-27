@@ -29,6 +29,23 @@ namespace Pacifico.Core.Common
         }
 
         /// <summary>Avanza <paramref name="current"/> hacia <paramref name="target"/> sin superar <paramref name="maxDelta"/>.</summary>
+        /// <summary>Interpolación de Hermite entre dos umbrales (0 antes de <paramref name="edge0"/>, 1 después de <paramref name="edge1"/>).</summary>
+        public static float SmoothStep(float edge0, float edge1, float value)
+        {
+            float t = Clamp01((value - edge0) / (edge1 - edge0));
+            return t * t * (3f - 2f * t);
+        }
+
+        /// <summary>Función error (Abramowitz y Stegun 7.1.26, error absoluto &lt; 1,5·10⁻⁷).</summary>
+        public static float Erf(float x)
+        {
+            double sign = x < 0f ? -1.0 : 1.0;
+            double ax = Math.Abs(x);
+            double t = 1.0 / (1.0 + 0.3275911 * ax);
+            double y = 1.0 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.Exp(-ax * ax);
+            return (float)(sign * y);
+        }
+
         public static float MoveTowards(float current, float target, float maxDelta)
         {
             float delta = target - current;
