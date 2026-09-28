@@ -6,7 +6,7 @@
 ---
 
 ## 📌 FASE 0: CONFIGURACIÓN INICIAL Y ARQUITECTURA
-- [ ] **0.1 Estructura de Proyecto Unity 6 (URP)**
+- [X] **0.1 Estructura de Proyecto Unity 6 (URP)**
   * *Criterio:* Crear estructura de carpetas estándar en `src/UnityProject` (`Scripts/`, `Prefabs/`, `Scenes/`, `ScriptableObjects/`, `Audio/`, `Materials/`, `UI/`).
   * *Verificación:* Compilación sin errores y verificación de `.gitignore`.
 - [ ] **0.2 Pipeline de Manifiesto de Assets y Google Drive**

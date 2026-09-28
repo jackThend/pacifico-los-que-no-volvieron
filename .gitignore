@@ -72,3 +72,11 @@ sysinfo.txt
 *.apk
 *.aab
 *.unitypackage
+
+# Arnés de validación .NET fuera de Unity (tools/ci)
+!tools/ci/*.csproj
+tools/ci/bin/
+tools/ci/obj/
+
+# Caché local de assets pesados (ver assets_manifest.json)
+/assets_cache/
