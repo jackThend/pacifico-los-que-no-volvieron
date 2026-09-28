@@ -178,5 +178,5 @@
 * `bash tools/verify_all.sh` → estructura OK, assets OK, 84/84 tests, compilación Runtime/Editor 0 errores / 0 warnings.
 * **Problemas y soluciones:** ninguno en compilación ni tests.
 * **Notas:** la trayectoria sigue sin rozamiento (alcance máximo ≈ 6.6 km); el rozamiento solo reduce la velocidad de impacto. Aún no hay dispersión: la salva cae exactamente en la retícula. La *Esmeralda* todavía no dispara (artillería de costado e IA quedan para la integración del capítulo 1); el caso 40 lb vs *Huáscar* se verifica en los tests.
-* **Pendiente en editor:** regenerar la escena, dar Play y disparar a la *Esmeralda* (3 salvas críticas la hunden: 1500 de integridad, 1200 por salva).
+* **Pendiente en editor:** regenerar la escena, dar Play y disparar a la *Esmeralda* (2 salvas críticas la hunden: 1500 de integridad, 1200 por salva de dos proyectiles).
 * **Próximos pasos:** Tarea 2.4 (espolonazo y control de averías).
