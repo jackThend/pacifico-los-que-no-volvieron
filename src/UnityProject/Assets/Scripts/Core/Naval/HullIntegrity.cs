@@ -28,5 +28,21 @@ namespace Pacifico.Core.Naval
             Hit?.Invoke(report);
             if (IsSunk) Sunk?.Invoke();
         }
+
+        /// <summary>Daño estructural genérico (espolonazo, fuego).</summary>
+        public void ApplyDamage(float amount)
+        {
+            if (IsSunk || amount <= 0f) return;
+            Current = Math.Max(0f, Current - amount);
+            if (IsSunk) Sunk?.Invoke();
+        }
+
+        /// <summary>Hundimiento por causa ajena a la estructura (inundación).</summary>
+        public void Founder()
+        {
+            if (IsSunk) return;
+            Current = 0f;
+            Sunk?.Invoke();
+        }
     }
 }

@@ -36,6 +36,12 @@ namespace Pacifico.Core.Naval
         public float PositionX { get; private set; }
         public float PositionZ { get; private set; }
 
+        /// <summary>
+        /// Potencia máxima disponible (0..1): la reducen calderas averiadas e
+        /// inundación. El telégrafo puede pedir más, pero las máquinas no la dan.
+        /// </summary>
+        public float PowerLimit { get; private set; } = 1f;
+
         public float SpeedKnots => SpeedMs / ShipHandling.KnotsToMetersPerSecond;
         public float RudderDegrees => Rudder * Handling.MaxRudderDegrees;
 
@@ -51,6 +57,14 @@ namespace Pacifico.Core.Naval
         }
 
         public void SetOrder(EngineOrder order) => Order = order;
+
+        public void SetPowerLimit(float limit) => PowerLimit = Clamp(limit, 0f, 1f);
+
+        /// <summary>Choque (espolonazo): conserva solo <paramref name="keepFraction"/> de la velocidad.</summary>
+        public void ApplySpeedLoss(float keepFraction)
+        {
+            SpeedMs *= Clamp(keepFraction, 0f, 1f);
+        }
 
         /// <summary>Sube una posición del telégrafo (W). Devuelve true si cambió.</summary>
         public bool TelegraphUp()
@@ -93,7 +107,8 @@ namespace Pacifico.Core.Naval
         private void Substep(float dt)
         {
             // 1. Calderas: la potencia sigue al telégrafo con retardo.
-            EngineOutput = MoveTowards(EngineOutput, Order.PowerFraction(), Handling.EngineResponsePerSecond * dt);
+            var requested = Clamp(Order.PowerFraction(), -PowerLimit, PowerLimit);
+            EngineOutput = MoveTowards(EngineOutput, requested, Handling.EngineResponsePerSecond * dt);
 
             // 2. Propulsión vs. arrastre: velocidad terminal = potencia × velocidad máxima.
             var targetSpeed = EngineOutput * Handling.MaxSpeedMs;

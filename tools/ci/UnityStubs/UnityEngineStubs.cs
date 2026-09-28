@@ -202,6 +202,9 @@ namespace UnityEngine.InputSystem
         public KeyControl aKey { get; } = new KeyControl();
         public KeyControl sKey { get; } = new KeyControl();
         public KeyControl dKey { get; } = new KeyControl();
+        public KeyControl digit1Key { get; } = new KeyControl();
+        public KeyControl digit2Key { get; } = new KeyControl();
+        public KeyControl digit3Key { get; } = new KeyControl();
     }
 }
 

@@ -180,3 +180,23 @@
 * **Notas:** la trayectoria sigue sin rozamiento (alcance máximo ≈ 6.6 km); el rozamiento solo reduce la velocidad de impacto. Aún no hay dispersión: la salva cae exactamente en la retícula. La *Esmeralda* todavía no dispara (artillería de costado e IA quedan para la integración del capítulo 1); el caso 40 lb vs *Huáscar* se verifica en los tests.
 * **Pendiente en editor:** regenerar la escena, dar Play y disparar a la *Esmeralda* (2 salvas críticas la hunden: 1500 de integridad, 1200 por salva de dos proyectiles).
 * **Próximos pasos:** Tarea 2.4 (espolonazo y control de averías).
+
+---
+
+### [2026-09-28] - Tarea 2.4: Mecánica de Espolonazo y Control de Averías
+* **Responsable:** Claude Code (sesión autónoma en la nube)
+* **Archivos creados / modificados:**
+  * `ShipMotionModel`: `PowerLimit` (calderas/inundación limitan la potencia real aunque el telégrafo pida más) y `ApplySpeedLoss` (choque). `HullIntegrity`: `ApplyDamage` y `Founder`.
+  * `Core/Naval/HullFrames.cs`: cuadernas cada 1.5 m de eslora (índice 0 = popa). Madera 0.8 MJ y 15 t/min de vía de agua por cuaderna rota; hierro 2 MJ y 10 t/min. `BreakAround` parte alrededor del contacto alternando proa/popa y sin repetir.
+  * `Core/Naval/RamImpact.cs`: velocidad de cierre (componente relativa en la dirección del atacante), energía cinética del atacante, eficiencia = sen(ángulo entre quillas) × (1 con espolón, 0.35 sin él). Por debajo de **4 nudos de cierre** solo hay roce. Resultado: cuadernas partidas, daño (60 por cuaderna + 20), vía de agua, daño propio (5 % con espolón, 50 % sin él) y velocidad conservada por reparto de masas. `RamDetector`: la roda dentro de la silueta del blanco (sin depender de eventos de colisión, que Unity no genera entre dos Rigidbody cinemáticos).
+  * `Core/Naval/DamageControlSystem.cs`: incendio (crece 1 %/s, daña el casco y, si supera el 70 %, las calderas), inundación (vías de agua contra bombas: 5 t/min pasivas + 30 t/min con la cuadrilla, que además apuntala 0.5 t/min por segundo), calderas (limitan potencia; reparación 3 %/s). Reserva de flotabilidad = 35 % del desplazamiento; al superarla se va a pique. Potencia disponible = calderas × (1 − 0.6 × fracción inundada). Averías por artillería (con tirada inyectable): incendio 20 %/40 % (perforación/crítica), calderas 20 % en crítica al centro del cinturón, vía de agua de 6 t/min en crítica fuera de la torre. `SuggestTask` para la IA (inundación > incendio > calderas).
+  * `Runtime/Naval/ShipDamageReceiver.cs`: ahora integra cuadernas y control de averías; teclas **1/2/3** (fuego / achique / calderas, repetir desasigna) para el jugador y asignación automática para la IA; aplica el límite de potencia al buque; HUD de averías.
+  * `Runtime/Naval/RamController.cs`: detecta la embestida, la resuelve una vez por contacto (hay que separarse para repetir), aplica daño y vía de agua al blanco, daño propio y pérdida de velocidad.
+  * Escena de prueba: ambos buques llevan `RamController`.
+  * Tests: `RamAndDamageControlTests.cs` (22 casos).
+* **Verificación del ROADMAP:** el *Huáscar* embiste a la *Esmeralda* a 6 nudos perpendicular → crítico, ≥ 5 cuadernas partidas en torno al punto de impacto (popa intacta), > 60 t/min de vía de agua, daño propio < 10 %. Además: tres espolonazos lentos (5 nudos) la hunden si no achica, como en Iquique; con achique y apuntalamiento una vía de 90 t/min se contiene.
+* `bash tools/verify_all.sh` → estructura OK, assets OK, 106/106 tests, compilación Runtime/Editor 0 errores / 0 warnings.
+* **Problemas y soluciones:** ninguno en compilación ni tests.
+* **Notas:** umbrales, resistencias y caudales son de balance. El contacto se evalúa solo con la roda del atacante (un choque de costado contra costado no cuenta como espolonazo).
+* **Pendiente en editor:** regenerar la escena, dar Play, embestir a la *Esmeralda* a Media o Toda fuerza, y probar 1/2/3 tras recibir daño.
+* **Estado:** Fase 2 (módulo naval) completa. **Próximos pasos:** Fase 3, tarea 3.1 (controlador FPS de infantería).
