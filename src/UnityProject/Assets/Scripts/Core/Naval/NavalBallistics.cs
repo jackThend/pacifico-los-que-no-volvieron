@@ -23,6 +23,17 @@ namespace Pacifico.Core.Naval
             return (float)(vx * time);
         }
 
+        /// <summary>Ángulo de caída sobre la horizontal al llegar al agua (grados, positivo hacia abajo).</summary>
+        public static float FallAngleDegrees(float muzzleVelocityMs, float elevationDegrees, float heightM)
+        {
+            var angle = elevationDegrees * DegToRad;
+            var vx = muzzleVelocityMs * Math.Cos(angle);
+            var vy = muzzleVelocityMs * Math.Sin(angle);
+            var time = (vy + Math.Sqrt(vy * vy + 2.0 * Gravity * Math.Max(heightM, 0f))) / Gravity;
+            var vyImpact = vy - Gravity * time;
+            return (float)(Math.Atan2(-vyImpact, vx) / DegToRad);
+        }
+
         /// <summary>
         /// Elevación necesaria para alcanzar <paramref name="rangeM"/>, limitada a
         /// [minElevation, maxElevation]. <paramref name="reachable"/> es false si el

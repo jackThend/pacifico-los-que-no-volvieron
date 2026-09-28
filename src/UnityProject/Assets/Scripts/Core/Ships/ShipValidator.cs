@@ -54,6 +54,8 @@ namespace Pacifico.Core.Ships
                     if (string.IsNullOrWhiteSpace(battery.gunName)) errors.Add($"{spec.Id}: batería sin nombre.");
                     if (battery.count < 1) errors.Add($"{spec.Id}: batería {battery.gunName} sin cañones.");
                     if (battery.projectileLbs <= 0f) errors.Add($"{spec.Id}: batería {battery.gunName} con proyectil inválido.");
+                    if (battery.caliberInches <= 0f) errors.Add($"{spec.Id}: batería {battery.gunName} con calibre inválido.");
+                    if (battery.muzzleVelocityMs <= 0f) errors.Add($"{spec.Id}: batería {battery.gunName} con velocidad de boca inválida.");
                     if (battery.reloadSeconds <= 0f) errors.Add($"{spec.Id}: batería {battery.gunName} con recarga inválida.");
                 }
             }

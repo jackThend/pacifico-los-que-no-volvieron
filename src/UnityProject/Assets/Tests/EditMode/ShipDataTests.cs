@@ -93,7 +93,7 @@ namespace Pacifico.Tests
             var madera = new ShipSpec("x", "X", Faction.Chile, ShipType.Corvette, HullMaterial.Wood,
                 100f, 10f, 20f, 30f, 0, false, 0f,
                 new[] { new ArmorPlate(ArmorZone.Deck, 1f), new ArmorPlate(ArmorZone.Deck, 0f) },
-                new[] { new GunBattery("", 0, 0f, GunMount.Turret, 0f) }, "");
+                new[] { new GunBattery("", 0, 0f, 0f, 0f, GunMount.Turret, 0f) }, "");
             var errors = ShipValidator.Validate(madera);
             // manga>eslora, velocidad, dotación, integridad, espesor 0, zona duplicada,
             // madera con coraza, batería sin nombre/cañones/proyectil/recarga, torreta sin coraza.
@@ -101,7 +101,7 @@ namespace Pacifico.Tests
 
             var hierroSinCoraza = new ShipSpec("y", "Y", Faction.Peru, ShipType.Monitor, HullMaterial.Iron,
                 100f, 30f, 5f, 10f, 10, true, 100f, new ArmorPlate[0],
-                new[] { new GunBattery("G", 1, 10f, GunMount.Broadside, 1f) }, "");
+                new[] { new GunBattery("G", 1, 10f, 3f, 300f, GunMount.Broadside, 1f) }, "");
             CollectionAssert.IsNotEmpty(ShipValidator.Validate(hierroSinCoraza));
             CollectionAssert.IsNotEmpty(ShipValidator.Validate(null));
         }

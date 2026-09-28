@@ -95,7 +95,7 @@ namespace Pacifico.Runtime.Data
             for (var i = 0; i < copy.Length; i++)
             {
                 var g = source[i];
-                copy[i] = new GunBattery(g.gunName, g.count, g.projectileLbs, g.mount, g.reloadSeconds);
+                copy[i] = new GunBattery(g.gunName, g.count, g.projectileLbs, g.caliberInches, g.muzzleVelocityMs, g.mount, g.reloadSeconds);
             }
             return copy;
         }

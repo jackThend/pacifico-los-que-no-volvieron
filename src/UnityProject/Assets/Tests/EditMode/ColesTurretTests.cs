@@ -39,7 +39,7 @@ namespace Pacifico.Tests
             var sinMontaje = new ShipSpec("x", "X", Faction.Peru, ShipType.Monitor, HullMaterial.Iron,
                 1000f, 50f, 10f, 10f, 100, true, 1000f,
                 new[] { new ArmorPlate(ArmorZone.Turret, 5f) },
-                new[] { new GunBattery("G", 2, 300f, GunMount.Turret, 10f) }, "");
+                new[] { new GunBattery("G", 2, 300f, 10f, 400f, GunMount.Turret, 10f) }, "");
             StringAssert.Contains("no declara el montaje", string.Join("\n", ShipValidator.Validate(sinMontaje)));
 
             var montajeRoto = new TurretMount(0f, 0f, 10f, 5f, 0f, -1f, -1f, 0f,
@@ -47,7 +47,7 @@ namespace Pacifico.Tests
             var conMontajeRoto = new ShipSpec("y", "Y", Faction.Peru, ShipType.Monitor, HullMaterial.Iron,
                 1000f, 50f, 10f, 10f, 100, true, 1000f,
                 new[] { new ArmorPlate(ArmorZone.Turret, 5f) },
-                new[] { new GunBattery("G", 2, 300f, GunMount.Turret, 10f) }, "", montajeRoto);
+                new[] { new GunBattery("G", 2, 300f, 10f, 400f, GunMount.Turret, 10f) }, "", montajeRoto);
             Assert.GreaterOrEqual(ShipValidator.Validate(conMontajeRoto).Count, 7);
         }
 

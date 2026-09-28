@@ -12,6 +12,8 @@ namespace Pacifico.Core.Ships
         public string gunName;
         public int count;
         public float projectileLbs;
+        public float caliberInches;
+        public float muzzleVelocityMs;
         public GunMount mount;
         public float reloadSeconds;
 
@@ -19,11 +21,14 @@ namespace Pacifico.Core.Ships
         {
         }
 
-        public GunBattery(string gunName, int count, float projectileLbs, GunMount mount, float reloadSeconds)
+        public GunBattery(string gunName, int count, float projectileLbs, float caliberInches,
+            float muzzleVelocityMs, GunMount mount, float reloadSeconds)
         {
             this.gunName = gunName;
             this.count = count;
             this.projectileLbs = projectileLbs;
+            this.caliberInches = caliberInches;
+            this.muzzleVelocityMs = muzzleVelocityMs;
             this.mount = mount;
             this.reloadSeconds = reloadSeconds;
         }

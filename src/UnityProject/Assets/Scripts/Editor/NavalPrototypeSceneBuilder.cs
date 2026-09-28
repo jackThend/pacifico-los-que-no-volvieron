@@ -39,7 +39,7 @@ namespace Pacifico.Editor
             }
 
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
-            Debug.Log($"[Pacífico] Escena creada: {ScenePath}. Play: W/S telégrafo, A/D timón, ratón apunta la torre Coles.");
+            Debug.Log($"[Pacífico] Escena creada: {ScenePath}. Play: W/S telégrafo, A/D timón, ratón apunta la torre Coles, clic izquierdo dispara.");
         }
 
         private static GameObject CreateShip(string shipId, Vector3 position, float heading, bool playerControlled)
@@ -62,6 +62,7 @@ namespace Pacifico.Editor
             controller.Configure(data, playerControlled,
                 playerControlled ? EngineOrder.Stop : EngineOrder.Quarter);
 
+            ship.AddComponent<ShipDamageReceiver>().Configure(controller);
             if (spec.Turret != null) CreateColesTurret(ship, controller, spec.Turret, playerControlled);
             return ship;
         }

@@ -155,3 +155,28 @@
 * **Notas:** la balística no tiene rozamiento: el alcance máximo sale ≈ 6.6 km a 12°, probablemente mayor que el real del Armstrong de 10". Se revisará al implementar proyectiles en 2.3. Velocidades de puntería y sectores son de balance.
 * **Pendiente en editor:** regenerar la escena (*Pacífico/Escenas/Crear prototipo naval (Iquique)*), dar Play y apuntar con el ratón a la *Esmeralda*.
 * **Próximos pasos:** Tarea 2.3 (blindaje angular y balística de impacto).
+
+---
+
+### [2026-09-28] - Tarea 2.3: Sistema de Blindaje Angular y Balística
+* **Responsable:** Claude Code (sesión autónoma en la nube)
+* **Archivos creados / modificados:**
+  * `GunBattery`: nuevos campos `caliberInches` y `muzzleVelocityMs` (catálogo: 300 lb 10"/400 m/s, 250 lb 9"/430, 150 lb 8"/400, 70 lb 6.4"/380, 40 lb 4.75"/360, 12 lb 3"/400; aproximaciones). Validación, `ShipDataSO` y tests actualizados.
+  * `Core/Naval/NavalBallistics.cs`: ángulo de caída del proyectil.
+  * `Core/Naval/ArmorImpact.cs`:
+    * Penetración en hierro forjado por "energía por pulgada de circunferencia" (regla de la época), calibrada: 300 lb a 400 m/s ≈ 12.2", 40 lb a 360 m/s ≈ 3.5".
+    * Velocidad remanente exponencial con la distancia (1/e cada 900 m por pulgada de calibre: los grandes calibres la conservan mejor).
+    * Incidencia: costado vertical (banda que mira al proyectil, oblicuidad horizontal + caída), torre cilíndrica (solo caída) y cubierta.
+    * Resultado: `Ricochet` (sin perforar o incidencia ≥ 60°; 5 % del daño), `Penetration` (daño base = libras del proyectil) y `CriticalPenetration` (casco de madera o incidencia ≤ 25°; daño ×2). Zona sin coraza en buque de hierro = chapa de 0.75".
+    * `ResolveShot`: distancia, marcación, elevación, caída e incidencia a partir de posiciones y rumbo.
+  * `Core/Naval/HullIntegrity.cs` (integridad, eventos `Hit` y `Sunk`, se hunde una sola vez) y `Core/Naval/NavalHitTest.cs` (impacto sobre la silueta eslora × manga y zona: torre, extremos o centro del cinturón).
+  * `Runtime/Naval/ShipDamageReceiver.cs`: integridad del buque en escena, registro global de blancos, al hundirse para máquinas y el casco desciende.
+  * `ColesTurretController`: clic izquierdo dispara la salva si la torre está en puntería y cargada (recarga de la batería: 15 s); cada Armstrong cae en su punto de la retícula y se resuelve contra el buque alcanzado. HUD con resultado (REBOTE / PERFORACIÓN / PERFORACIÓN CRÍTICA, zona, ángulo, pulgadas perforadas vs efectivas, daño).
+  * Escena de prueba: ambos buques llevan `ShipDamageReceiver`.
+  * Tests: `ArmorImpactTests.cs` (17 casos).
+* **Verificación del ROADMAP:** 40 lb contra el *Huáscar* (cinturón y torre, 200/500/1000 m, de frente) → **rebote** con daño < 5; 300 lb contra la *Esmeralda* (200–2000 m, varios rumbos) → **perforación crítica** (600). Extra: el 300 lb perfora los 9" del *Cochrane* de través a 1000 m pero rebota si este presenta el casco a 30–45° (táctica de Angamos del guion).
+* `bash tools/verify_all.sh` → estructura OK, assets OK, 84/84 tests, compilación Runtime/Editor 0 errores / 0 warnings.
+* **Problemas y soluciones:** ninguno en compilación ni tests.
+* **Notas:** la trayectoria sigue sin rozamiento (alcance máximo ≈ 6.6 km); el rozamiento solo reduce la velocidad de impacto. Aún no hay dispersión: la salva cae exactamente en la retícula. La *Esmeralda* todavía no dispara (artillería de costado e IA quedan para la integración del capítulo 1); el caso 40 lb vs *Huáscar* se verifica en los tests.
+* **Pendiente en editor:** regenerar la escena, dar Play y disparar a la *Esmeralda* (3 salvas críticas la hunden: 1500 de integridad, 1200 por salva).
+* **Próximos pasos:** Tarea 2.4 (espolonazo y control de averías).

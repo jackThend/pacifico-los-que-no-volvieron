@@ -4,7 +4,7 @@ namespace Pacifico.Core.Ships
 {
     /// <summary>
     /// Catálogo de buques del módulo naval (GDD §3.2, Guion caps. 1 y 3).
-    /// Coraza, calibres y dimensiones son aproximaciones históricas; la
+    /// Coraza, calibres, velocidades de boca y dimensiones son aproximaciones históricas; la
     /// velocidad refleja el estado en 1879; integridad de casco y tiempos de
     /// recarga de artillería son valores de balance (acelerados para jugar).
     /// </summary>
@@ -49,9 +49,9 @@ namespace Pacifico.Core.Ships
             },
             guns: new[]
             {
-                new GunBattery("Armstrong 10\" de 300 lb", 2, 300f, GunMount.Turret, 15f),
-                new GunBattery("Armstrong de 40 lb", 2, 40f, GunMount.Broadside, 8f),
-                new GunBattery("Cañón de 12 lb", 1, 12f, GunMount.Pivot, 5f)
+                new GunBattery("Armstrong 10\" de 300 lb", 2, 300f, 10f, 400f, GunMount.Turret, 15f),
+                new GunBattery("Armstrong de 40 lb", 2, 40f, 4.75f, 360f, GunMount.Broadside, 8f),
+                new GunBattery("Cañón de 12 lb", 1, 12f, 3f, 400f, GunMount.Pivot, 5f)
             },
             historicalNote: "Monitor de hierro (Laird, 1865). Torre giratoria Coles movida a mano con dos Armstrong de 300 lb y espolón de proa.",
             turret: HuascarColesTurret);
@@ -63,7 +63,7 @@ namespace Pacifico.Core.Ships
             armor: new ArmorPlate[0],
             guns: new[]
             {
-                new GunBattery("Cañón de 40 lb", 16, 40f, GunMount.Broadside, 6f)
+                new GunBattery("Cañón de 40 lb", 16, 40f, 4.75f, 360f, GunMount.Broadside, 6f)
             },
             historicalNote: "Corbeta de madera (1855). En Iquique sus calderas averiadas apenas le daban unos 3–4 nudos.");
 
@@ -79,7 +79,7 @@ namespace Pacifico.Core.Ships
             },
             guns: new[]
             {
-                new GunBattery("Armstrong 9\" de 250 lb", 6, 250f, GunMount.CentralBattery, 12f)
+                new GunBattery("Armstrong 9\" de 250 lb", 6, 250f, 9f, 430f, GunMount.CentralBattery, 12f)
             },
             historicalNote: "Blindado de reducto central (Earle's, 1874). Recién carenado, cerró la trampa de Angamos junto al Blanco Encalada.");
 
@@ -94,8 +94,8 @@ namespace Pacifico.Core.Ships
             },
             guns: new[]
             {
-                new GunBattery("Vavasseur de 150 lb", 2, 150f, GunMount.Pivot, 10f),
-                new GunBattery("Armstrong de 70 lb", 12, 70f, GunMount.Broadside, 8f)
+                new GunBattery("Vavasseur de 150 lb", 2, 150f, 8f, 400f, GunMount.Pivot, 10f),
+                new GunBattery("Armstrong de 70 lb", 12, 70f, 6.4f, 380f, GunMount.Broadside, 8f)
             },
             historicalNote: "Fragata blindada (Samuda, 1865). Encalló en Punta Gruesa persiguiendo a la goleta Covadonga.");
 

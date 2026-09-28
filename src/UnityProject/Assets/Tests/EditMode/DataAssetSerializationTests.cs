@@ -51,8 +51,8 @@ namespace Pacifico.Tests
                     original.Armor.Select(a => (a.zone, a.thicknessInches)).ToList(),
                     copy.Armor.Select(a => (a.zone, a.thicknessInches)).ToList());
                 CollectionAssert.AreEqual(
-                    original.Guns.Select(g => (g.gunName, g.count, g.projectileLbs, g.mount, g.reloadSeconds)).ToList(),
-                    copy.Guns.Select(g => (g.gunName, g.count, g.projectileLbs, g.mount, g.reloadSeconds)).ToList());
+                    original.Guns.Select(g => (g.gunName, g.count, g.projectileLbs, g.caliberInches, g.muzzleVelocityMs, g.mount, g.reloadSeconds)).ToList(),
+                    copy.Guns.Select(g => (g.gunName, g.count, g.projectileLbs, g.caliberInches, g.muzzleVelocityMs, g.mount, g.reloadSeconds)).ToList());
                 Assert.AreEqual(original.Turret == null, copy.Turret == null, original.Id);
                 if (original.Turret != null)
                 {

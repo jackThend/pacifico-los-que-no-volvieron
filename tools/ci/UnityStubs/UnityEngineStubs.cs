@@ -192,6 +192,7 @@ namespace UnityEngine.InputSystem
     {
         public static Mouse current => null;
         public Vector2Control position { get; } = new Vector2Control();
+        public ButtonControl leftButton { get; } = new ButtonControl();
     }
 
     public class Keyboard
