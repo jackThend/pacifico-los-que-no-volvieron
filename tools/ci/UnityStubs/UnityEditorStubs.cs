@@ -20,3 +20,16 @@ namespace UnityEditor
         public static void SetDirty(UnityEngine.Object target) { }
     }
 }
+
+namespace UnityEditor.SceneManagement
+{
+    public enum NewSceneSetup { EmptyScene = 0, DefaultGameObjects = 1 }
+    public enum NewSceneMode { Single = 0, Additive = 1 }
+
+    public static class EditorSceneManager
+    {
+        public static UnityEngine.SceneManagement.Scene NewScene(NewSceneSetup setup, NewSceneMode mode) => default;
+        public static UnityEngine.SceneManagement.Scene GetActiveScene() => default;
+        public static bool SaveScene(UnityEngine.SceneManagement.Scene scene, string dstScenePath) => true;
+    }
+}

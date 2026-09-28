@@ -29,7 +29,7 @@
 ---
 
 ## 📌 FASE 2: MÓDULO NAVAL 3D (PROTOTIPO IQUIQUE)
-- [ ] **2.1 Controlador de Navegación e Inercia Hidrodinámica**
+- [X] **2.1 Controlador de Navegación e Inercia Hidrodinámica**
   * *Criterio:* Simulación de aceleración por telégrafo de calderas (Detener, 1/4, Media, Toda fuerza) y respuesta de timón.
   * *Verificación:* Buque responde a controles de teclado (W/S/A/D) manteniendo inercia al cortar propulsión.
 - [ ] **2.2 Sistema de Torreta Giratoria Coles (*Huáscar*)**

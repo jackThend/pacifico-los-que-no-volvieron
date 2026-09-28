@@ -113,3 +113,23 @@
 * **Notas:** las imágenes de `Archivo_Historico/` están fuera de `Assets/`, por lo que la textura del facsímil se asigna a mano (o copiándola a `Assets/UI/`) tras importar; la ruta de origen queda guardada en `facsimileImagePath`. Las 3 cartas de Quiroz heredan el capítulo 8 del documento. El daguerrotipo de Abraham Quiroz mencionado en el documento no está en el archivo.
 * **Pendiente en editor:** ejecutar *Pacífico/Datos/Generar todo* y los tests EditMode en Unity 6.
 * **Próximos pasos:** Fase 2, tarea 2.1 (controlador de navegación e inercia hidrodinámica).
+
+---
+
+### [2026-09-28] - Tarea 2.1: Controlador de Navegación e Inercia Hidrodinámica
+* **Responsable:** Claude Code (sesión autónoma en la nube)
+* **Archivos creados:**
+  * `Core/Naval/EngineOrder.cs`: telégrafo Atrás / Detener / 1/4 / Media / Toda fuerza (GDD §3.2; "Atrás" añadido para desengancharse tras un espolonazo en 2.4).
+  * `Core/Naval/ShipHandling.cs`: parámetros de maniobra derivados de `ShipSpec`: inercia = 25 s × ∛(desplazamiento/1000 t), respuesta de calderas = 0.2/s ÷ ∛(...), radio de giro mínimo = 3 esloras, creciendo hasta ×2 a toda fuerza; timón de ±35° que va de banda a banda en 2 s.
+  * `Core/Naval/ShipMotionModel.cs`: simulación plana determinista. Calderas con retardo → empuje calibrado para que la velocidad terminal sea potencia × velocidad máxima; arrastre cuadrático + lineal residual (al cortar máquinas el buque conserva arrancada y se detiene poco a poco, sin invertir la marcha); guiñada = timón × velocidad / radio (sin arrancada no hay gobierno) con respuesta suavizada; subpasos de 0.02 s para estabilidad.
+  * `Runtime/Naval/ShipNavigationController.cs`: W/S por pulsación (telégrafo), A/D mantenido (timón) con el Input System; mueve el buque con `Rigidbody` cinemático (`MovePosition`/`MoveRotation`, interpolado) para detectar colisiones en 2.4; evento `OrderChanged`; API para IA (`SetOrder`, `SetRudderCommand`); HUD de depuración con `OnGUI`.
+  * `Runtime/Naval/ShipCameraFollow.cs`: cámara en tercera persona por la popa con seguimiento suavizado.
+  * `Editor/NavalPrototypeSceneBuilder.cs`: menú *Pacífico/Escenas/Crear prototipo naval (Iquique)* que genera `Assets/Scenes/Prototipo_Naval_Iquique.unity` con primitivas: mar de 5 × 5 km, *Huáscar* (jugador, casco a escala real + torre Coles) y *Esmeralda* (IA a 1/4), cámara de seguimiento.
+  * `Tests/EditMode/ShipMotionModelTests.cs`: 16 casos (telégrafo y límites, velocidad terminal por orden, aceleración gradual, **inercia al cortar máquinas** con decrecimiento monótono y parada final, sin gobierno a velocidad cero, caída a estribor/babor, velocidad de la pala, radio de giro creciente con la velocidad, marcha atrás, mayor inercia del *Cochrane*, *Esmeralda* limitada a 4 nudos, equivalencia paso grande/pequeño, rumbo normalizado, parámetros inválidos).
+  * Stubs: `Vector3`, `Quaternion`, `Transform`, `Rigidbody`, `Camera`, `Time`, `GUI`, `Rect`, `PrimitiveType`, `Keyboard`/`KeyControl` (Input System) y `EditorSceneManager`.
+* **Verificación:** `bash tools/verify_all.sh` → estructura OK, assets OK, 54/54 tests, compilación Runtime/Editor 0 errores / 0 warnings.
+* **Problemas y soluciones:**
+  * Con el arrastre lineal residual (necesario para que el buque acabe parándose) la velocidad terminal a toda fuerza quedaba en ~88 % de la máxima. Solución: el empuje incluye el mismo término lineal, de modo que la velocidad terminal es exactamente potencia × máxima.
+* **Valores resultantes (*Huáscar*):** inercia ≈ 26 s, ~5 s de calderas hasta plena potencia, radio de giro ≈ 220 m a 1/4 y ≈ 350 m a toda fuerza. Son valores de balance, a ajustar jugando.
+* **Pendiente en editor:** en *Project Settings › Player › Active Input Handling* debe estar activado el Input System (Unity lo ofrece al importar el paquete). Ejecutar *Pacífico/Escenas/Crear prototipo naval (Iquique)*, dar Play y comprobar W/S/A/D e inercia en el HUD.
+* **Próximos pasos:** Tarea 2.2 (torreta giratoria Coles del *Huáscar*).

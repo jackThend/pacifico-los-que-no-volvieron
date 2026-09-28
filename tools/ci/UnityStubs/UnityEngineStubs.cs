@@ -13,7 +13,39 @@ namespace UnityEngine
         public static implicit operator bool(Object obj) => !ReferenceEquals(obj, null);
     }
 
-    public class GameObject : Object { }
+    public enum PrimitiveType { Sphere = 0, Capsule = 1, Cylinder = 2, Cube = 3, Plane = 4, Quad = 5 }
+
+    public class GameObject : Object
+    {
+        public GameObject() { }
+        public GameObject(string name) { this.name = name; }
+        public Transform transform { get; } = new Transform();
+        public T AddComponent<T>() where T : Component => Activator.CreateInstance<T>();
+        public T GetComponent<T>() => default;
+        public static GameObject CreatePrimitive(PrimitiveType type) => new GameObject();
+    }
+
+    public struct Vector3
+    {
+        public float x, y, z;
+        public Vector3(float x, float y, float z) { this.x = x; this.y = y; this.z = z; }
+        public static Vector3 up => new Vector3(0f, 1f, 0f);
+        public static Vector3 forward => new Vector3(0f, 0f, 1f);
+        public static Vector3 operator +(Vector3 a, Vector3 b) => new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
+        public static Vector3 operator -(Vector3 a, Vector3 b) => new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+        public static Vector3 operator *(Vector3 a, float d) => new Vector3(a.x * d, a.y * d, a.z * d);
+        public static Vector3 Lerp(Vector3 a, Vector3 b, float t) => a + (b - a) * t;
+    }
+
+    public struct Quaternion
+    {
+        public static Quaternion Euler(float x, float y, float z) => default;
+    }
+
+    public struct Rect
+    {
+        public Rect(float x, float y, float width, float height) { }
+    }
     public class Texture : Object { }
     public class Texture2D : Texture { }
     public class AudioClip : Object { }
@@ -21,9 +53,57 @@ namespace UnityEngine
     public class Component : Object
     {
         public GameObject gameObject => null;
+        public Transform transform => null;
+        public T GetComponent<T>() => default;
     }
 
-    public class Behaviour : Component { }
+    public class Transform : Component
+    {
+        public Vector3 position { get; set; }
+        public Vector3 localPosition { get; set; }
+        public Vector3 localScale { get; set; }
+        public Vector3 eulerAngles { get; set; }
+        public Vector3 forward => Vector3.forward;
+        public void SetParent(Transform parent, bool worldPositionStays) { }
+        public void SetPositionAndRotation(Vector3 position, Quaternion rotation) { }
+        public void LookAt(Vector3 worldPosition) { }
+    }
+
+    public enum RigidbodyInterpolation { None = 0, Interpolate = 1, Extrapolate = 2 }
+
+    public class Rigidbody : Component
+    {
+        public bool isKinematic { get; set; }
+        public bool useGravity { get; set; }
+        public RigidbodyInterpolation interpolation { get; set; }
+        public void MovePosition(Vector3 position) { }
+        public void MoveRotation(Quaternion rotation) { }
+    }
+
+    public class Behaviour : Component
+    {
+        public bool enabled { get; set; }
+    }
+
+    public class Camera : Behaviour
+    {
+        public static Camera main => null;
+        public float farClipPlane { get; set; }
+    }
+
+    public static class Time
+    {
+        public static float deltaTime => 0f;
+        public static float fixedDeltaTime => 0.02f;
+    }
+
+    public static class GUI
+    {
+        public static void Label(Rect position, string text) { }
+    }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public sealed class DisallowMultipleComponent : Attribute { }
     public class MonoBehaviour : Behaviour { }
 
     public class ScriptableObject : Object
@@ -66,4 +146,29 @@ namespace UnityEngine
         public string menuName { get; set; }
         public int order { get; set; }
     }
+}
+
+namespace UnityEngine.InputSystem
+{
+    public class ButtonControl
+    {
+        public bool isPressed => false;
+        public bool wasPressedThisFrame => false;
+    }
+
+    public sealed class KeyControl : ButtonControl { }
+
+    public class Keyboard
+    {
+        public static Keyboard current => null;
+        public KeyControl wKey { get; } = new KeyControl();
+        public KeyControl aKey { get; } = new KeyControl();
+        public KeyControl sKey { get; } = new KeyControl();
+        public KeyControl dKey { get; } = new KeyControl();
+    }
+}
+
+namespace UnityEngine.SceneManagement
+{
+    public struct Scene { }
 }
