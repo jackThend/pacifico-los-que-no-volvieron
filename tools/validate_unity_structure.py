@@ -15,6 +15,7 @@ UNITY = os.path.join(ROOT, "src", "UnityProject")
 REQUIRED_DIRS = [
     "Assets/Scripts/Core",
     "Assets/Scripts/Runtime",
+    "Assets/Scripts/Editor",
     "Assets/Prefabs",
     "Assets/Scenes",
     "Assets/ScriptableObjects",
@@ -30,6 +31,7 @@ REQUIRED_DIRS = [
 ASMDEFS = [
     "Assets/Scripts/Core/Pacifico.Core.asmdef",
     "Assets/Scripts/Runtime/Pacifico.Runtime.asmdef",
+    "Assets/Scripts/Editor/Pacifico.Editor.asmdef",
     "Assets/Tests/EditMode/Pacifico.Tests.EditMode.asmdef",
 ]
 
@@ -47,14 +49,16 @@ MUST_IGNORE = [
     "src/UnityProject/Logs/x",
     "src/UnityProject/UserSettings/x",
     "src/UnityProject/Assembly-CSharp.csproj",
-    "tools/ci/bin/x",
+    "tools/ci/CoreTests/bin/x",
+    "tools/ci/UnityCompileCheck/obj/x",
     "assets_cache/x",
 ]
 MUST_TRACK = [
     "src/UnityProject/Assets/Scripts/Core/ProjectInfo.cs",
     "src/UnityProject/Packages/manifest.json",
     "src/UnityProject/ProjectSettings/ProjectVersion.txt",
-    "tools/ci/Pacifico.Core.Tests.csproj",
+    "tools/ci/CoreTests/Pacifico.Core.Tests.csproj",
+    "tools/ci/UnityCompileCheck/Pacifico.Unity.CompileCheck.csproj",
 ]
 
 

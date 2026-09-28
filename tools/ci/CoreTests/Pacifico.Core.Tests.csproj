@@ -2,7 +2,7 @@
   <!--
     Arnés de validación fuera de Unity: compila el ensamblado Pacifico.Core
     (noEngineReferences) y ejecuta los tests EditMode con NUnit.
-    Uso: dotnet test tools/ci/Pacifico.Core.Tests.csproj
+    Uso: dotnet test tools/ci/CoreTests/Pacifico.Core.Tests.csproj
   -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -11,7 +11,7 @@
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <UnityAssets>$(MSBuildThisFileDirectory)../../src/UnityProject/Assets</UnityAssets>
+    <UnityAssets>$(MSBuildThisFileDirectory)../../../src/UnityProject/Assets</UnityAssets>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(UnityAssets)/Scripts/Core/**/*.cs" LinkBase="Core" />

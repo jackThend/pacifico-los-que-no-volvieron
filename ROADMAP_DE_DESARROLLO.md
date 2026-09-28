@@ -16,7 +16,7 @@
 ---
 
 ## 📌 FASE 1: ARQUITECTURA DE DATOS (SCRIPTABLE OBJECTS)
-- [ ] **1.1 Definición de Armamento Histórico (WeaponDataSO)**
+- [X] **1.1 Definición de Armamento Histórico (WeaponDataSO)**
   * *Criterio:* ScriptableObjects con datos balísticos, tiempo de recarga (Comblain: 2.0s, Chassepot: 2.2s, Remington: 2.1s), daño, dispersión y alcance.
   * *Verificación:* Test unitario validando los valores contra las especificaciones del GDD.
 - [ ] **1.2 Definición de Buques y Blindajes (ShipDataSO)**

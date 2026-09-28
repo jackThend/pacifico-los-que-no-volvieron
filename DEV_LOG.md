@@ -32,7 +32,7 @@
   * `tools/validate_unity_structure.py`: valida carpetas, asmdefs, paquetes, versión y reglas de `.gitignore`.
   * `src/UnityProject/.gitignore` (Library/Temp/Logs/UserSettings/csproj relativos al proyecto Unity).
 * **Verificación:**
-  * `dotnet test tools/ci/Pacifico.Core.Tests.csproj` → 5/5 tests OK, sin warnings (TreatWarningsAsErrors).
+  * `dotnet test tools/ci/Pacifico.Core.Tests.csproj` (movido luego a `tools/ci/CoreTests/`) → 5/5 tests OK, sin warnings (TreatWarningsAsErrors).
   * `python3 tools/validate_unity_structure.py` → OK.
 * **Problemas y soluciones:**
   * Las reglas Unity del `.gitignore` raíz usan rutas ancladas (`/Library/`) que no cubren `src/UnityProject/`. Solución: `.gitignore` propio dentro del proyecto Unity.
@@ -55,3 +55,21 @@
   * `python3 tools/assets_manager.py status` → 48 assets OK.
 * **Notas:** La sincronización real con Google Drive requiere que el archivo sea público (enlace compartido); para carpetas privadas se podrá añadir `rclone` más adelante. La licencia de cada imagen de Wikimedia debe confirmarse en su ficha de origen.
 * **Próximos pasos:** Fase 1, tarea 1.1 (`WeaponDataSO`).
+
+---
+
+### [2026-09-28] - Tarea 1.1: Definición de Armamento Histórico (WeaponDataSO)
+* **Responsable:** Claude Code (sesión autónoma en la nube)
+* **Archivos creados:**
+  * `Core/Weapons/`: `WeaponEnums.cs` (clase, mecanismo, bando), `WeaponSpec.cs` (especificación inmutable), `WeaponValidator.cs` (reglas de coherencia), `HistoricalWeapons.cs` (catálogo: Comblain 2.0 s, Chassepot 2.2 s, Gras 2.2 s, Remington Rolling Block 2.1 s, Corvo chileno, Bayoneta triangular).
+  * `Runtime/Data/WeaponDataSO.cs`: ScriptableObject editable con `ToSpec()`/`ApplySpec()` y validación en `OnValidate`.
+  * `Editor/Pacifico.Editor.asmdef` + `Editor/HistoricalDataGenerator.cs`: menú *Pacífico/Datos/Generar armas históricas* que crea los `.asset` en `ScriptableObjects/Weapons/` desde el catálogo (evita escribir YAML y GUIDs a mano).
+  * `Tests/EditMode/WeaponDataTests.cs`: 10 casos (recargas del GDD, validez del catálogo, ids únicos, monotiro 11 mm, rasgos de diseño: Remington mayor daño, Chassepot/Gras menor dispersión, Comblain recarga más rápida; validador rechaza datos incoherentes).
+  * `tools/ci/UnityCompileCheck/`: proyecto netstandard2.1 que compila **todos** los scripts (Core + Runtime + Editor) contra stubs mínimos de UnityEngine/UnityEditor.
+  * `tools/verify_all.sh`: verificación completa en un comando.
+* **Verificación:** `bash tools/verify_all.sh` → estructura OK, assets OK, 15/15 tests, compilación Runtime/Editor 0 errores / 0 warnings.
+* **Problemas y soluciones:**
+  * Dos `.csproj` en `tools/ci/` compartían `obj/project.assets.json` (restauraciones cruzadas). Solución: un subdirectorio por proyecto (`CoreTests/`, `UnityCompileCheck/`) y reglas de `.gitignore` con `**`.
+* **Notas de diseño:** Recargas = valores del GDD. Calibre y velocidad de boca = aproximaciones históricas. Daño, dispersión y alcances = balance inicial, a ajustar en playtesting. Los stubs de Unity solo contienen lo que el código usa; ampliarlos cuando se usen nuevas APIs.
+* **Pendiente en editor:** abrir el proyecto en Unity 6, ejecutar el menú de generación y correr los tests EditMode con el Test Runner.
+* **Próximos pasos:** Tarea 1.2 (`ShipDataSO`).
