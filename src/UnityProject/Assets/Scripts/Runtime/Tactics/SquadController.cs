@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Pacifico.Core.Common;
 using Pacifico.Core.Tactics;
@@ -14,6 +15,8 @@ namespace Pacifico.Tactics
         Hold = 0,
         Move = 1,
         Attack = 2,
+        /// <summary>Carga a la bayoneta (ROADMAP 6.3): al trote, sin detenerse a tirar, hasta trabarse.</summary>
+        Charge = 3,
     }
 
     /// <summary>
@@ -48,7 +51,19 @@ namespace Pacifico.Tactics
         /// <summary>Un hombre está en su puesto a cubierto si está a menos de esta distancia.</summary>
         private const float InCoverDistance = 1f;
 
+        /// <summary>Distancia entre centros a la que dos escuadras quedan trabadas cuerpo a cuerpo (m).</summary>
+        private const float ContactDistanceM = 7f;
+        /// <summary>Tras desbandarse, a cuánto se retira antes de rehacerse (m).</summary>
+        private const float RoutDistanceM = 120f;
+
         private static readonly List<SquadController> s_all = new List<SquadController>();
+
+        /// <summary>Bajas de cualquier escuadra (para contar las del enemigo en las misiones).</summary>
+        public static event Action<SquadController, int> CasualtiesTaken;
+
+        private ShockCombat _shock;
+        private bool _shockSuppressed;
+        private float _chargeRepath;
 
         private readonly List<SoldierUnit> _soldiers = new List<SoldierUnit>();
         private readonly List<Vec3> _positions = new List<Vec3>();
@@ -127,6 +142,18 @@ namespace Pacifico.Tactics
         public int EnemyCasualties { get; private set; }
 
         public Vector3 Anchor => ToVector3(Command.March.Anchor);
+
+        /// <summary>Se ha desbandado tras perder un choque: huye a retaguardia sin disparar hasta rehacerse.</summary>
+        public bool Routed { get; private set; }
+
+        /// <summary>Ha salido del campo de batalla (heridos llevados a retaguardia).</summary>
+        public bool Evacuated { get; private set; }
+
+        /// <summary>Aire de marcha ordinario (1 infantería, <see cref="SquadMarch.CavalryPace"/> caballería).</summary>
+        public float BasePace { get; set; } = 1f;
+
+        /// <summary>Choque en curso (null si no está trabada).</summary>
+        public ShockCombat Shock => _shock;
         public Vector3 Facing => ToVector3(Command.March.Facing);
 
         public void Configure(string name, Faction side, WeaponDataSO weaponData, int count, FormationType type, bool player,
@@ -204,7 +231,49 @@ namespace Pacifico.Tactics
             if (!IsAlive) return;
             Order = SquadOrderKind.Hold;
             _target = null;
+            _shock = null;
             Command.Halt();
+        }
+
+        /// <summary>Carga a la bayoneta contra <paramref name="enemy"/> (no la da una escuadra desbandada).</summary>
+        public void IssueCharge(SquadController enemy)
+        {
+            if (!IsAlive || Routed || enemy == null || !IsEnemyOf(enemy)) return;
+            Order = SquadOrderKind.Charge;
+            _target = enemy;
+            _shock = null;
+            _chargeRepath = 0f;
+            LeaveCover();
+        }
+
+        /// <summary>Se desbanda: corre hacia <paramref name="rally"/> sin disparar; al llegar, se rehace.</summary>
+        public void Rout(Vector3 rally)
+        {
+            if (!IsAlive) return;
+            Routed = true;
+            _target = null;
+            _shock = null;
+            Order = SquadOrderKind.Move;
+            LeaveCover();
+            Vector3 away = Vector3.ProjectOnPlane(rally - CenterOfMass(), Vector3.up);
+            MarchTo(rally, away.sqrMagnitude > 0.01f ? away.normalized : Facing);
+        }
+
+        /// <summary>
+        /// Sale del campo con sus heridos (retirada a retaguardia): los hombres dejan la batalla y se cuentan como
+        /// salvados. Devuelve cuántos eran.
+        /// </summary>
+        public int Evacuate()
+        {
+            if (!IsAlive || Evacuated) return 0;
+            int men = _soldiers.Count;
+            Evacuated = true;
+            CoverPoint.Release(this);
+            foreach (SoldierUnit soldier in _soldiers) Destroy(soldier.gameObject);
+            _soldiers.Clear();
+            s_all.Remove(this);
+            enabled = false;
+            return men;
         }
 
         public void SetFormation(FormationType type)
@@ -243,13 +312,29 @@ namespace Pacifico.Tactics
             int collapsed = Supply.Step(dt, exertion, BattlefieldClimate.Heat);
             if (collapsed > 0)
             {
-                TakeCasualties(collapsed, CenterOfMass() + Random.insideUnitSphere);
+                TakeCasualties(collapsed, CenterOfMass() + UnityEngine.Random.insideUnitSphere);
                 if (!IsAlive) return;
             }
-            Command.March.SpeedFactor = SuppressionModel.SpeedFactor(state) * Supply.SpeedFactor;
+            // En la carga y en la desbandada nadie se tiende: se corre.
+            bool running = Order == SquadOrderKind.Charge || Routed;
+            Command.March.SpeedFactor = (running ? 1f : SuppressionModel.SpeedFactor(state)) * Supply.SpeedFactor;
+            Command.March.Pace = running ? Mathf.Max(BasePace, SquadMarch.TrotPace) : BasePace;
 
-            // Llegada: la escuadra queda a la espera y responde al fuego por su cuenta.
-            if (Order == SquadOrderKind.Move && !Command.March.Moving) Order = SquadOrderKind.Hold;
+            // Llegada: la escuadra queda a la espera y responde al fuego por su cuenta (y, si huía, se rehace).
+            if (Order == SquadOrderKind.Move && !Command.March.Moving)
+            {
+                Order = SquadOrderKind.Hold;
+                Routed = false;
+            }
+
+            if (Order == SquadOrderKind.Charge)
+            {
+                UpdateCharge(dt);
+                if (!IsAlive) return;
+                Command.Step(dt, _positions);
+                DriveSoldiers();
+                return;
+            }
             SquadController target = UpdateEngagement(dt, out bool canFire, out float distance);
             UpdateCover(dt, target);
             Command.Step(dt, _positions);
@@ -370,6 +455,7 @@ namespace Pacifico.Tactics
         {
             canFire = false;
             distance = 0f;
+            if (Routed) return null;
 
             if (Order == SquadOrderKind.Attack && (_target == null || !_target.IsAlive))
             {
@@ -506,13 +592,63 @@ namespace Pacifico.Tactics
             }
         }
 
+        /// <summary>
+        /// Carga (ROADMAP 6.3): corre al trote hacia el enemigo; trabada, el choque se resuelve con
+        /// <see cref="ShockCombat"/>. Quien pierde se desbanda hacia su retaguardia.
+        /// </summary>
+        private void UpdateCharge(float dt)
+        {
+            SquadController enemy = _target;
+            if (enemy == null || !enemy.IsAlive || enemy.Evacuated)
+            {
+                IssueHalt();
+                return;
+            }
+            Vector3 here = CenterOfMass(), there = enemy.CenterOfMass();
+            Vector3 toEnemy = Vector3.ProjectOnPlane(there - here, Vector3.up);
+            float distance = toEnemy.magnitude;
+            Vector3 direction = distance > 0.1f ? toEnemy / distance : Facing;
+
+            if (_shock == null && distance > ContactDistanceM)
+            {
+                _chargeRepath -= dt;
+                if (_chargeRepath <= 0f)
+                {
+                    _chargeRepath = 1f;
+                    MarchTo(there, direction);
+                }
+                return;
+            }
+
+            if (_shock == null)
+            {
+                Command.Halt();
+                _shock = new ShockCombat(Strength, enemy.Strength, GetInstanceID() ^ enemy.GetInstanceID());
+                _shockSuppressed = enemy.Suppression.State != SuppressionState.Normal;
+            }
+            ShockStep step = _shock.Step(dt, Strength, enemy.Strength, _shockSuppressed);
+            if (step.DefenderCasualties > 0) EnemyCasualties += enemy.TakeCasualties(step.DefenderCasualties, here);
+            if (step.AttackerCasualties > 0) TakeCasualties(step.AttackerCasualties, there);
+            if (!IsAlive) return;
+
+            if (step.Outcome == ShockOutcome.DefendersBreak)
+            {
+                if (enemy.IsAlive) enemy.Rout(there + direction * RoutDistanceM);
+                IssueHalt();
+            }
+            else if (step.Outcome == ShockOutcome.AttackersRepulsed)
+            {
+                Rout(here - direction * RoutDistanceM);
+            }
+        }
+
         /// <summary>Bajas: caen hombres al azar; los demás cierran filas. Devuelve cuántos cayeron.</summary>
         public int TakeCasualties(int count, Vector3 fireFrom)
         {
             int fallen = 0;
             for (int n = 0; n < count && _soldiers.Count > 0; n++)
             {
-                int index = Random.Range(0, _soldiers.Count);
+                int index = UnityEngine.Random.Range(0, _soldiers.Count);
                 _soldiers[index].Fall(fireFrom);
                 _soldiers.RemoveAt(index);
                 _lastDestination.RemoveAt(index);
@@ -520,6 +656,7 @@ namespace Pacifico.Tactics
                 fallen++;
             }
             if (fallen == 0) return 0;
+            CasualtiesTaken?.Invoke(this, fallen);
             SyncPositions();
             Supply?.SetMen(_soldiers.Count);
             if (_soldiers.Count > 0)
@@ -543,7 +680,7 @@ namespace Pacifico.Tactics
             int visible = Mathf.Min(shots, 3);
             for (int i = 0; i < visible; i++)
             {
-                SoldierUnit shooter = _soldiers[Random.Range(0, _soldiers.Count)];
+                SoldierUnit shooter = _soldiers[UnityEngine.Random.Range(0, _soldiers.Count)];
                 Vector3 forward = target != null
                     ? (target.CenterOfMass() - shooter.transform.position).normalized
                     : shooter.transform.forward;

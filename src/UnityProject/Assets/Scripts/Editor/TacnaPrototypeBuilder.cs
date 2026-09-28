@@ -28,12 +28,12 @@ namespace Pacifico.EditorTools
         private static readonly Vector3 TerrainSize = new Vector3(500f, 40f, 500f);
         private const int HeightmapResolution = 513;
 
-        private static readonly Color SandColor = new Color(0.8f, 0.7f, 0.52f);
-        private static readonly Color SackColor = new Color(0.62f, 0.56f, 0.42f);
-        private static readonly Color ColoradoRed = new Color(0.62f, 0.1f, 0.09f);
-        private static readonly Color ColoradoTrim = new Color(0.9f, 0.88f, 0.8f);
-        private static readonly Color ChileBlue = new Color(0.14f, 0.17f, 0.32f);
-        private static readonly Color ChileTrim = new Color(0.58f, 0.12f, 0.1f);
+        internal static readonly Color SandColor = new Color(0.8f, 0.7f, 0.52f);
+        internal static readonly Color SackColor = new Color(0.62f, 0.56f, 0.42f);
+        internal static readonly Color ColoradoRed = new Color(0.62f, 0.1f, 0.09f);
+        internal static readonly Color ColoradoTrim = new Color(0.9f, 0.88f, 0.8f);
+        internal static readonly Color ChileBlue = new Color(0.14f, 0.17f, 0.32f);
+        internal static readonly Color ChileTrim = new Color(0.58f, 0.12f, 0.1f);
 
         [MenuItem("Pacífico/Prototipos/Construir escena RTS de Tacna")]
         public static void Build()
@@ -109,7 +109,7 @@ namespace Pacifico.EditorTools
             Debug.Log("[Pacífico] Escena RTS de prototipo guardada en " + ScenePath);
         }
 
-        private static WeaponDataSO LoadWeapon(string id)
+        internal static WeaponDataSO LoadWeapon(string id)
         {
             var asset = AssetDatabase.LoadAssetAtPath<WeaponDataSO>(ProjectPaths.WeaponData + "/Weapon_" + id + ".asset");
             if (asset == null) throw new InvalidOperationException("No se generó el WeaponDataSO de " + id + ".");
@@ -120,7 +120,7 @@ namespace Pacifico.EditorTools
         // Entorno y terreno
         // ------------------------------------------------------------------------------------------
 
-        private static void CreateEnvironment()
+        internal static void CreateEnvironment()
         {
             var sun = new GameObject("Sol").AddComponent<Light>();
             sun.type = LightType.Directional;
@@ -140,7 +140,7 @@ namespace Pacifico.EditorTools
         /// Terreno de dunas con la meseta al norte: altura base, subida de 14 m entre z = 20 y z = 90, dunas de dos
         /// escalas (ruido de Perlin determinista) y la zanja aliada al borde de la meseta.
         /// </summary>
-        private static Terrain CreateTerrain()
+        internal static Terrain CreateTerrain()
         {
             HistoricalDataAssetGenerator.EnsureFolder(TerrainFolder);
             var data = new TerrainData { heightmapResolution = HeightmapResolution };
@@ -215,7 +215,7 @@ namespace Pacifico.EditorTools
         /// (ROADMAP 4.2): uno por metro al pie de cada parapeto y cada 1,2 m en la zanja, protegiendo hacia el sur.
         /// En la tierra de nadie, peñascos con puestos por ambos lados.
         /// </summary>
-        private static void CreateDefences(Terrain terrain)
+        internal static void CreateDefences(Terrain terrain)
         {
             var root = new GameObject("Linea_Aliada").transform;
             var covers = new GameObject("Puestos_a_Cubierto").transform;
@@ -263,7 +263,7 @@ namespace Pacifico.EditorTools
         /// Depósitos de retaguardia de ambos bandos y un carro de vituallas por bando (ROADMAP 4.3). El aliado está a
         /// ~130 m de la zanja: mantenerlo conectado con la línea es parte del juego.
         /// </summary>
-        private static void CreateLogistics(Terrain terrain)
+        internal static void CreateLogistics(Terrain terrain)
         {
             Material wood = PrototypeSceneKit.Material("Madera_Carro", new Color(0.4f, 0.28f, 0.17f));
             Material barrels = PrototypeSceneKit.Material("Pipas", new Color(0.5f, 0.38f, 0.24f));
@@ -293,7 +293,7 @@ namespace Pacifico.EditorTools
             go.AddComponent<SupplyCart>().Configure(faction, wood, barrels);
         }
 
-        private static Camera CreateCamera()
+        internal static Camera CreateCamera()
         {
             var go = new GameObject("Camara_Tactica");
             go.tag = "MainCamera";
@@ -308,7 +308,7 @@ namespace Pacifico.EditorTools
             return camera;
         }
 
-        private static void Squad(Terrain terrain, string name, Faction faction, WeaponDataSO weapon, int count, FormationType formation,
+        internal static SquadController Squad(Terrain terrain, string name, Faction faction, WeaponDataSO weapon, int count, FormationType formation,
                                   bool player, Vector3 position, float headingDeg, Material uniform, Material trim)
         {
             var go = new GameObject("Escuadra_" + name);
@@ -317,6 +317,7 @@ namespace Pacifico.EditorTools
             go.AddComponent<SquadController>().Configure(name, faction, weapon, count, formation, player, uniform, trim);
             // Los chilenos atacan: las primeras olas de asalto del capítulo 5 (GDD), para ver la supresión en acción.
             if (!player) go.AddComponent<SquadAI>().StartDelaySeconds = 20f;
+            return go.GetComponent<SquadController>();
         }
     }
 }

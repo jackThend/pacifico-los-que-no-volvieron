@@ -23,6 +23,9 @@ namespace Pacifico.Tactics
             set => startDelaySeconds = value;
         }
 
+        /// <summary>Si es mayor que cero, carga a la bayoneta (o al sable) al enemigo que tenga a esta distancia (m).</summary>
+        public float ChargeWithinM { get; set; }
+
         private void Awake()
         {
             _squad = GetComponent<SquadController>();
@@ -32,10 +35,10 @@ namespace Pacifico.Tactics
         private void Update()
         {
             _timer -= Time.deltaTime;
-            if (_timer > 0f || _squad.Command == null || !_squad.IsAlive) return;
+            if (_timer > 0f || _squad.Command == null || !_squad.IsAlive || _squad.Routed) return;
             _timer = thinkSeconds;
 
-            if (_squad.Order == SquadOrderKind.Attack && _squad.Target != null && _squad.Target.IsAlive) return;
+            if (_squad.Order == SquadOrderKind.Charge) return;
             SquadController nearest = null;
             float best = float.PositiveInfinity;
             Vector3 here = _squad.CenterOfMass();
@@ -49,7 +52,9 @@ namespace Pacifico.Tactics
                     nearest = other;
                 }
             }
-            if (nearest != null) _squad.IssueAttack(nearest);
+            if (nearest == null) return;
+            if (ChargeWithinM > 0f && best <= ChargeWithinM * ChargeWithinM) _squad.IssueCharge(nearest);
+            else if (_squad.Order != SquadOrderKind.Attack || _squad.Target == null || !_squad.Target.IsAlive) _squad.IssueAttack(nearest);
         }
     }
 }

@@ -92,7 +92,8 @@
 - [X] **6.1 Escenario Capítulo 1: Rada de Iquique (Naval 3D)**
 - [X] **6.2 Escenario Capítulo 4: Desembarco de Pisagua (FPS)**
   * *Nota:* según el guion y el GDD, el Capítulo 4 en primera persona es «Sed en la quebrada» (Tarapacá); Pisagua es el Capítulo 3, en RTS. Se implementó Tarapacá (ver DEV_LOG).
-- [ ] **6.3 Escenario Capítulo 6: Alto de la Alianza / Tacna (RTS)**
+- [X] **6.3 Escenario Capítulo 6: Alto de la Alianza / Tacna (RTS)**
+  * *Nota:* en el guion y el GDD es el Capítulo 5, «El trueno de Intiorko» (ver DEV_LOG).
 - [ ] **6.4 Escenario Capítulo 7: Morro de Arica (RTS + Asalto)**
 - [ ] **6.5 Escenario Capítulo 8: Reductos de Miraflores (FPS / Clímax)**
 - [ ] **6.6 Pruebas Integrales de Rendimiento y Empaquetado Final**

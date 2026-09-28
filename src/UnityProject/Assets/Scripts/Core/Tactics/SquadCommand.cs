@@ -47,6 +47,15 @@ namespace Pacifico.Core.Tactics
         /// <summary>Multiplicador de la velocidad de marcha (la supresión la reduce, ROADMAP 4.2).</summary>
         public float SpeedFactor { get; set; } = 1f;
 
+        /// <summary>
+        /// Aire de la marcha: 1 = paso ordinario; <see cref="TrotPace"/> = paso de carga (los Colorados «avanzan al
+        /// trote»); <see cref="CavalryPace"/> = caballería al galope corto.
+        /// </summary>
+        public float Pace { get; set; } = 1f;
+
+        public const float TrotPace = 2.1f;
+        public const float CavalryPace = 4f;
+
         /// <summary>La formación ha cambiado de frente de golpe: hay que reasignar los puestos.</summary>
         public bool Reformed { get; private set; }
 
@@ -147,7 +156,7 @@ namespace Pacifico.Core.Tactics
             }
             float misalignment = Math.Abs(MathUtil.DeltaAngle(newHeading, target));
             float alignFactor = MathUtil.Lerp(1f, 0f, MathUtil.InverseLerp(20f, 60f, misalignment));
-            Speed = MarchSpeedMps * cohesion * alignFactor * MathUtil.Clamp01(SpeedFactor);
+            Speed = MarchSpeedMps * Math.Max(1f, Pace) * cohesion * alignFactor * MathUtil.Clamp01(SpeedFactor);
             float travel = Speed * dt;
             while (travel > 0f && Moving)
             {
@@ -264,7 +273,8 @@ namespace Pacifico.Core.Tactics
         public float FollowSpeed(float distanceToSlot)
         {
             // Bajo fuego nadie corre erguido: la carrera se limita con el mismo factor que la marcha (mínimo, arrastrarse).
-            float cap = SquadMarch.RunSpeedMps * Math.Max(0.35f, MathUtil.Clamp01(March.SpeedFactor));
+            float run = Math.Max(SquadMarch.RunSpeedMps, SquadMarch.MarchSpeedMps * Math.Max(1f, March.Pace) * 1.3f);
+            float cap = run * Math.Max(0.35f, MathUtil.Clamp01(March.SpeedFactor));
             return MathUtil.Clamp(March.Speed + distanceToSlot * 1.5f, 0f, cap);
         }
 

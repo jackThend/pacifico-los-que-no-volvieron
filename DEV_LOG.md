@@ -447,3 +447,46 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
   * Comprobar en Unity 6 (tarea 0.3) el NavMesh de las laderas, la IA entre las casas y el ritmo.
   * La vista del fusil en primera persona es la del Comblain también para el Chassepot (greybox).
   * Faltan audio (campanas, voz de Cáceres) y supresión recibida por la IA a partir de las balas que le pasan cerca.
+
+
+---
+
+### [2026-09-28] - Tarea 6.3: Escenario Alto de la Alianza / Tacna (RTS) — [X] (verificado fuera del motor; ver 0.3)
+* **Numeración:** el roadmap lo llama «Capítulo 6», pero en el guion y el GDD es el **Capítulo 5, «El trueno de Intiorko»** (26 de mayo de 1880).
+* **Núcleo:**
+  * `ShockCombat`: choque a la bayoneta entre escuadras.
+    * Cada hombre trabado derriba a un contrario con probabilidad λ·dt (proceso de Poisson; su esperanza no depende del paso). λ = 0,06/s.
+    * El impulso de la carga vale ×1,5 durante 8 s; un defensor suprimido responde a un 40 %.
+    * Rompe quien pierde la mitad de su fuerza o se ve superado 3 a 1.
+    * Calibración (400 choques por caso): 12 contra 10 suprimidos gana siempre; contra 10 en calma, el 91 %; 12 contra 12, el 74 %; 6 contra 12, el 9 %.
+    * El primer modelo, que liquidaba las bajas esperadas sin azar, ganaba el 100 % de los casos iguales: se sustituyó por el sorteo.
+  * `ShellBurst`: metralla de Krupp. Hasta el 50 % de bajas en el punto de caída; decae con el cuadrado de la distancia hasta 12 m; la zanja la reduce un 80 %.
+  * `SquadMarch.Pace`: paso de carga (al trote, ×2,1) y de caballería (×4).
+  * `AltoDeLaAlianzaChapter`:
+    * La camanchaca (desplegarse en la zanja; la niebla se levanta a los 90 s).
+    * El avance chileno: contenerlo hasta 15 bajas o 150 s; entonces «la izquierda cede».
+    * La carga de los Colorados: el grito «¡Temblad, rotos…!» se lee del guion; hay que recuperar dos cañones.
+    * La tenaza: salvar a 12 hombres en la retaguardia en 240 s.
+    * Fracasos: la tenaza se cierra con los heridos en el campo, o no queda nadie.
+    * Coleccionable: la carta de Abraham Quiroz desde las dunas de Tacna, que el catálogo asigna al capítulo 5. El diario paceño del GDD no está en el Archivo.
+* **Unity:**
+  * `SquadController`: la orden **Charge** (al trote, sin tenderse ni detenerse a tirar; al trabarse, resuelve con `ShockCombat`), la **desbandada** (`Rout`: huye 120 m sin disparar y se rehace al llegar) y `Evacuate` (sale del campo con sus heridos). Emite `CasualtiesTaken`.
+  * `SquadAI`: `ChargeWithinM` para la caballería, y respeta la desbandada.
+  * `SquadArtillery`: pieza de montaña con metralla y supresión; se captura (`CapturePoint`) y dispara para su nuevo dueño.
+  * `AltoDeLaAlianzaDirector` crea las oleadas de cada momento: cuatro escuadras al levantarse la niebla, la guardia de los cañones cuando la izquierda cede, y en la tenaza la caballería por el flanco y las reservas de frente.
+    * La carga se da con `C` o el botón «¡A LA CARGA!». Si en `huayno` hay una pista, suena al cargar.
+    * Cuenta bajas, cañones y heridos a salvo, y marca en pantalla los cañones y la retaguardia.
+* **Escena `Capitulo5_Alto_de_la_Alianza`** (menú **Pacífico → Capítulos → Capítulo 5: Alto de la Alianza**): el terreno, la zanja y los parapetos del prototipo de Tacna, con camanchaca densa.
+  * Tres compañías de Colorados y la reserva boliviana, controladas por el jugador.
+  * Dos Krupp chilenos al sur y dos cañones aliados en la izquierda.
+  * La retaguardia junto al depósito.
+* **Ajuste con una simulación de la defensa en la trinchera** (200 partidas por variante, con el fuego, la supresión, la cobertura y la metralla del juego):
+  * Con cinco escuadras chilenas, un umbral de 20 bajas y una granada cada 14 s, el jugador perdía la mitad de sus hombres incluso en la zanja, y casi todos al descubierto.
+  * Elegido: cuatro escuadras, 15 bajas, 150 s y una granada cada 25 s. Atrincherado pierde unas 10 de 44; sin zanja, 17.
+* **Verificación:** 10 pruebas nuevas (365 en total).
+  * Guion y grito, partida completa, flanco que cede sin contener, tenaza que se cierra sin los heridos, y aniquilación.
+  * Choque: calibración, brevedad y esperanza independiente del paso.
+  * Paso al trote y metralla.
+* **Pendiente:**
+  * Comprobar en Unity 6 (tarea 0.3) las cargas sobre el NavMesh de las dunas y la persecución de la caballería.
+  * La pista del huayno (música tradicional con tambores y quenas) está por grabar.
