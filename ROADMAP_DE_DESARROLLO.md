@@ -22,7 +22,7 @@
 - [X] **1.2 Definición de Buques y Blindajes (ShipDataSO)**
   * *Criterio:* Configuración del monitor *Huáscar* (torreta giratoria Coles, blindaje de 4.5"), corbeta *Esmeralda*, fragatas *Cochrane* e *Independencia*.
   * *Verificación:* ScriptableObjects instanciables y serializables sin errores.
-- [ ] **1.3 Definición de Coleccionables "La Memoria Rota" (CollectibleDataSO)**
+- [X] **1.3 Definición de Coleccionables "La Memoria Rota" (CollectibleDataSO)**
   * *Criterio:* Estructura de datos para cartas históricas, remitente, facsímil 3D, texto traducido/transcrito y audio asociado.
   * *Verificación:* Carga de las cartas de Abraham Quiroz y Miguel Grau desde los archivos Markdown existentes.
 

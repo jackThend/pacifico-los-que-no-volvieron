@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using Pacifico.Core.Collectibles;
 using Pacifico.Core.Ships;
 using Pacifico.Core.Weapons;
 using Pacifico.Runtime.Data;
@@ -18,6 +19,7 @@ namespace Pacifico.Tests
     {
         [TestCase(typeof(ShipDataSO))]
         [TestCase(typeof(WeaponDataSO))]
+        [TestCase(typeof(CollectibleDataSO))]
         public void CamposSonSerializablesPorUnity(Type assetType)
         {
             var problems = new List<string>();
@@ -86,9 +88,39 @@ namespace Pacifico.Tests
             }
         }
 
+        [Test]
+        public void CollectibleDataSO_ConservaLosDatosImportados()
+        {
+            var original = new CollectibleSpec("c", "Carta", CollectibleType.Letter, Pacifico.Core.Faction.Peru,
+                "Grau", "Carmela", "Pisagua", "2 de junio de 1879", 1879, 1, "Texto\n\nFin", "Contexto",
+                "Fuente", "doc.md", "img.jpg", "vo_c", new[] { "nota 1", "nota 2" });
+            var asset = ScriptableObject.CreateInstance<CollectibleDataSO>();
+            asset.ApplySpec(original);
+            var copy = asset.ToSpec();
+
+            Assert.AreEqual(original.Id, copy.Id);
+            Assert.AreEqual(original.Title, copy.Title);
+            Assert.AreEqual(original.Type, copy.Type);
+            Assert.AreEqual(original.Faction, copy.Faction);
+            Assert.AreEqual(original.Sender, copy.Sender);
+            Assert.AreEqual(original.Recipient, copy.Recipient);
+            Assert.AreEqual(original.Location, copy.Location);
+            Assert.AreEqual(original.DateText, copy.DateText);
+            Assert.AreEqual(original.Year, copy.Year);
+            Assert.AreEqual(original.Chapter, copy.Chapter);
+            Assert.AreEqual(original.Transcription, copy.Transcription);
+            Assert.AreEqual(original.Context, copy.Context);
+            Assert.AreEqual(original.SourceReference, copy.SourceReference);
+            Assert.AreEqual(original.SourceDocumentPath, copy.SourceDocumentPath);
+            Assert.AreEqual(original.FacsimileImagePath, copy.FacsimileImagePath);
+            Assert.AreEqual(original.NarrationKey, copy.NarrationKey);
+            CollectionAssert.AreEqual(original.GameNotes, copy.GameNotes);
+        }
+
         // Reglas del serializador de Unity: campos de instancia públicos o con
-        // [SerializeField], no readonly, de tipo primitivo, enum, string, o
-        // clase/struct [Serializable] (recursivo), o array de éstos.
+        // [SerializeField], no readonly, de tipo primitivo, enum, string,
+        // referencia a UnityEngine.Object o clase/struct [Serializable]
+        // (recursivo), o array de éstos.
         private static void CheckSerializableFields(Type type, List<string> problems, int depth)
         {
             if (depth > 4) return;
@@ -106,6 +138,8 @@ namespace Pacifico.Tests
 
                 var fieldType = field.FieldType.IsArray ? field.FieldType.GetElementType() : field.FieldType;
                 if (fieldType.IsPrimitive || fieldType.IsEnum || fieldType == typeof(string)) continue;
+                // Referencias a assets (Texture2D, AudioClip, GameObject...) las serializa Unity por GUID.
+                if (typeof(UnityEngine.Object).IsAssignableFrom(fieldType)) continue;
                 if (fieldType.IsGenericType || fieldType.IsInterface || fieldType.IsAbstract)
                 {
                     problems.Add($"{type.Name}.{field.Name}: tipo {fieldType.Name} no serializable.");

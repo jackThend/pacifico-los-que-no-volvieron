@@ -93,3 +93,23 @@
 * **Notas de diseño:** Coraza, calibres y dimensiones son aproximaciones históricas; integridad de casco y recargas de artillería son balance inicial. Los límites angulares de la torre Coles se definirán en la tarea 2.2. El *Blanco Encalada* y la *Covadonga* (citados en el guion) se añadirán al catálogo cuando se integren sus capítulos.
 * **Pendiente en editor:** ejecutar *Pacífico/Datos/Generar todo* y los tests EditMode en Unity 6.
 * **Próximos pasos:** Tarea 1.3 (`CollectibleDataSO`).
+
+---
+
+### [2026-09-28] - Tarea 1.3: Coleccionables "La Memoria Rota" (CollectibleDataSO)
+* **Responsable:** Claude Code (sesión autónoma en la nube)
+* **Archivos creados / modificados:**
+  * `Core/Collectibles/`: `CollectibleType.cs`, `CollectibleSpec.cs`, `CollectibleValidator.cs` (incluye detección de restos de Markdown en el texto mostrado), `DocumentSource.cs` (registro de fuentes con los datos que el Markdown no declara: bando, facsímil, remitente/destinatario por defecto), `CollectibleMarkdownParser.cs` y `CollectibleLibrary.cs` (carga desde disco y localización de la raíz del repositorio).
+  * El parser admite los dos formatos existentes: documento único (sección `### ... Transcrito` + metadato `**Fecha:**`) y epistolario (`#### Carta N: Título (Lugar, Fecha)` con texto en citas `>`). Extrae remitente, destinatario, lugar, fecha, año, capítulo (del encabezado `(CAPÍTULO N)`), contexto, fuente, notas de juego y transcripción limpia (sin `*`, `>`, `«»`, respetando párrafos).
+  * `Runtime/Data/CollectibleDataSO.cs`: datos textuales + referencias `Texture2D` (facsímil), `GameObject` (modelo 3D) y `AudioClip` (narración para [Escuchar Carta]). `ApplySpec` no toca esas referencias, así que reimportar no pierde lo asignado a mano.
+  * `Editor/HistoricalDataGenerator.cs`: menú *Pacífico/Datos/Importar cartas históricas*, incluido en *Generar todo*.
+  * Tests: `CollectibleDataTests.cs` (4 unitarios del parser con Markdown sintético y 3 de integración contra los archivos reales) y ampliación de `DataAssetSerializationTests.cs` (reglas de serialización y conservación de datos de `CollectibleDataSO`).
+  * Stubs: `Texture`, `Texture2D`, `AudioClip`, `Application.dataPath` y `TextArea(int, int)`.
+* **Resultado de la carga:** 4 coleccionables: `carta_grau_carmela_carvajal` (Perú, cap. 1, Pisagua, 2 de junio de 1879, con facsímil del archivo) y `carta_abraham_quiroz_01..03` (Chile, cap. 8; 1879, Dunas de Tacna 1880, Lurín 1881).
+* **Verificación:** `bash tools/verify_all.sh` → estructura OK, assets OK, 38/38 tests, compilación Runtime/Editor 0 errores / 0 warnings.
+* **Problemas y soluciones:**
+  * CS0649 ("campo nunca asignado") en `facsimileTexture`, `facsimileModel` y `narrationClip`, tratado como error fuera de Unity. Unity no lo emite para campos `[SerializeField]` asignados desde el Inspector. Solución: `NoWarn CS0649` en los dos proyectos del arnés, replicando el comportamiento del editor.
+  * Un test suponía párrafos separados por línea vacía en la carta 2 de Quiroz; el Markdown real los separa con salto simple dentro de la cita. El parser era fiel al original; se corrigió el test.
+* **Notas:** las imágenes de `Archivo_Historico/` están fuera de `Assets/`, por lo que la textura del facsímil se asigna a mano (o copiándola a `Assets/UI/`) tras importar; la ruta de origen queda guardada en `facsimileImagePath`. Las 3 cartas de Quiroz heredan el capítulo 8 del documento. El daguerrotipo de Abraham Quiroz mencionado en el documento no está en el archivo.
+* **Pendiente en editor:** ejecutar *Pacífico/Datos/Generar todo* y los tests EditMode en Unity 6.
+* **Próximos pasos:** Fase 2, tarea 2.1 (controlador de navegación e inercia hidrodinámica).

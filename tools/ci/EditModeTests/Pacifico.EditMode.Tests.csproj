@@ -11,6 +11,8 @@
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Como Unity: los campos [SerializeField] se asignan desde el Inspector. -->
+    <NoWarn>$(NoWarn);CS0649</NoWarn>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <UnityAssets>$(MSBuildThisFileDirectory)../../../src/UnityProject/Assets</UnityAssets>
   </PropertyGroup>

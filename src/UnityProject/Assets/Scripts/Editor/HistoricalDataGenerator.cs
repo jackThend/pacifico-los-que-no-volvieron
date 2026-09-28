@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using Pacifico.Core.Collectibles;
 using Pacifico.Core.Ships;
 using Pacifico.Core.Weapons;
 using Pacifico.Runtime.Data;
@@ -30,11 +32,27 @@ namespace Pacifico.Editor
                 s => s.Id, (asset, spec) => asset.ApplySpec(spec));
         }
 
+        [MenuItem("Pacífico/Datos/Importar cartas históricas")]
+        public static void ImportCollectibles()
+        {
+            // Assets/ -> src/UnityProject -> src -> raíz del repositorio (donde vive Archivo_Historico).
+            var repositoryRoot = CollectibleLibrary.FindRepositoryRoot(Path.GetFullPath(Application.dataPath));
+            if (repositoryRoot == null)
+            {
+                Debug.LogError($"[Pacífico] No se encontró la carpeta {CollectibleLibrary.ArchiveFolderName} sobre {Application.dataPath}.");
+                return;
+            }
+
+            Generate<CollectibleSpec, CollectibleDataSO>("Collectibles", "Collectible",
+                CollectibleLibrary.LoadAll(repositoryRoot), s => s.Id, (asset, spec) => asset.ApplySpec(spec));
+        }
+
         [MenuItem("Pacífico/Datos/Generar todo")]
         public static void GenerateAll()
         {
             GenerateWeapons();
             GenerateShips();
+            ImportCollectibles();
         }
 
         private static void Generate<TSpec, TAsset>(

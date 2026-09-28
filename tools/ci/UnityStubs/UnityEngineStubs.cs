@@ -14,6 +14,9 @@ namespace UnityEngine
     }
 
     public class GameObject : Object { }
+    public class Texture : Object { }
+    public class Texture2D : Texture { }
+    public class AudioClip : Object { }
 
     public class Component : Object
     {
@@ -26,6 +29,11 @@ namespace UnityEngine
     public class ScriptableObject : Object
     {
         public static T CreateInstance<T>() where T : ScriptableObject => Activator.CreateInstance<T>();
+    }
+
+    public static class Application
+    {
+        public static string dataPath => string.Empty;
     }
 
     public static class Debug
@@ -43,7 +51,11 @@ namespace UnityEngine
 
     public sealed class HeaderAttribute : PropertyAttribute { public HeaderAttribute(string header) { } }
     public sealed class TooltipAttribute : PropertyAttribute { public TooltipAttribute(string tooltip) { } }
-    public sealed class TextAreaAttribute : PropertyAttribute { }
+    public sealed class TextAreaAttribute : PropertyAttribute
+    {
+        public TextAreaAttribute() { }
+        public TextAreaAttribute(int minLines, int maxLines) { }
+    }
     public sealed class RangeAttribute : PropertyAttribute { public RangeAttribute(float min, float max) { } }
     public sealed class MinAttribute : PropertyAttribute { public MinAttribute(float min) { } }
 
