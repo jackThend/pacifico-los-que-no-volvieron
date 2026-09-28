@@ -16,10 +16,39 @@ namespace Pacifico.Core.Campaign
 
         private static readonly Regex Quote = new Regex("«(?<q>[^»]+)»");
 
-        private GuionQuotes(string chapterTitle, List<string> quotes)
+        private GuionQuotes(string chapterTitle, List<string> quotes, List<string[]> blocks, string[] fenced)
         {
             ChapterTitle = chapterTitle;
             All = quotes;
+            Blocks = blocks;
+            Fenced = fenced;
+        }
+
+        /// <summary>
+        /// Bloques citados («&gt; …») de varias líneas: el prólogo del corresponsal, una carta, la cita final. Cada
+        /// bloque es la lista de sus líneas no vacías, sin marcas Markdown ni las comillas de apertura y cierre.
+        /// </summary>
+        public IReadOnlyList<string[]> Blocks { get; }
+
+        /// <summary>Líneas del primer bloque de código («```») de la sección: la lápida del epílogo.</summary>
+        public IReadOnlyList<string> Fenced { get; }
+
+        /// <summary>El bloque citado cuya primera línea empieza por <paramref name="prefix"/>.</summary>
+        public string[] FindBlock(string prefix)
+        {
+            foreach (string[] block in Blocks)
+            {
+                if (block.Length > 0 && block[0].StartsWith(prefix, StringComparison.Ordinal)) return block;
+            }
+            throw new KeyNotFoundException("El guion (" + ChapterTitle + ") no contiene un bloque citado que empiece por «" + prefix + "».");
+        }
+
+        private static string CleanBlockLine(string line)
+        {
+            string t = line.Trim();
+            if (t.StartsWith(">")) t = t.Substring(1);
+            t = Regex.Replace(t.Replace("*", string.Empty), @"\s+", " ").Trim();
+            return t.Trim('"', '“', '”', '«', '»').Trim();
         }
 
         public string ChapterTitle { get; }
@@ -45,6 +74,10 @@ namespace Pacifico.Core.Campaign
         {
             string[] lines = Section(markdown, headingContains).Split('\n');
             var quotes = new List<string>();
+            var blocks = new List<string[]>();
+            var current = new List<string>();
+            var fenced = new List<string>();
+            bool inFence = false, fenceDone = false;
             for (int i = 1; i < lines.Length; i++)
             {
                 foreach (Match m in Quote.Matches(lines[i]))
@@ -52,8 +85,32 @@ namespace Pacifico.Core.Campaign
                     string q = Regex.Replace(m.Groups["q"].Value.Replace("*", string.Empty), @"\s+", " ").Trim();
                     if (q.Length > 0) quotes.Add(q);
                 }
+
+                string trimmed = lines[i].Trim();
+                if (trimmed.StartsWith("```"))
+                {
+                    if (inFence) fenceDone = true;
+                    inFence = !inFence && !fenceDone;
+                    continue;
+                }
+                if (inFence)
+                {
+                    if (trimmed.Length > 0) fenced.Add(trimmed);
+                    continue;
+                }
+                if (trimmed.StartsWith(">"))
+                {
+                    string text = CleanBlockLine(trimmed);
+                    if (text.Length > 0) current.Add(text);
+                }
+                else if (current.Count > 0)
+                {
+                    blocks.Add(current.ToArray());
+                    current.Clear();
+                }
             }
-            return new GuionQuotes(lines[0].Substring(3).Trim(), quotes);
+            if (current.Count > 0) blocks.Add(current.ToArray());
+            return new GuionQuotes(lines[0].Substring(3).Trim(), quotes, blocks, fenced.ToArray());
         }
 
         public static GuionQuotes Load(Func<string, string> readRepositoryFile, string headingContains) =>

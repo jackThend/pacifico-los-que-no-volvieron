@@ -58,6 +58,26 @@ namespace Pacifico.Tests.Campaign
             Assert.That(runner.History.Count(e => e.Kind == MissionEventKind.ObjectiveCompleted), Is.EqualTo(1));
         }
 
+        /// <summary>Regresión (6.5): una reacción que espera al diálogo no se dispara en el mismo paso en que otra lo empieza.</summary>
+        [Test]
+        public void Runner_LasReaccionesVenElDialogoRecienEmpezado()
+        {
+            var script = new MissionScript { Id = "x" };
+            var stage = new MissionStage { Id = "a" };
+            var speak = new MissionTrigger { Id = "habla", When = MissionCondition.Flag("señal") };
+            speak.Lines.Add(new MissionLine("X", "Una línea que hay que dejar terminar."));
+            stage.Triggers.Add(speak);
+            stage.Triggers.Add(new MissionTrigger { Id = "despues", When = MissionCondition.All(MissionCondition.Flag("señal"), MissionCondition.DialogueIdle()), SetsFlag = "hecho" });
+            stage.Transitions.Add(new MissionTransition(MissionCondition.Flag("hecho"), MissionScript.CompleteStage));
+            script.Stages.Add(stage);
+            var runner = new MissionRunner(script);
+            runner.Facts.SetFlag("señal");
+            runner.Step(0.1f);
+            Assert.That(runner.Facts.Flag("hecho"), Is.False);
+            Run(runner, 10f);
+            Assert.That(runner.Facts.Flag("hecho"), Is.True);
+        }
+
         [Test]
         public void Runner_Fracaso()
         {

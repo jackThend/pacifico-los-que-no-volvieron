@@ -22,6 +22,8 @@ namespace Pacifico.Campaign
         [SerializeField] private float blastRadius = 5f;
         [SerializeField] private float blastDamage = 45f;
         [SerializeField] private Material dust;
+        [Tooltip("Bando que sirve la pieza (Chile en Tarapacá; Perú en el Reducto N.º 3 de Miraflores).")]
+        [SerializeField] private Core.Common.Faction owner = Core.Common.Faction.Chile;
 
         private readonly CapturePoint _capture = new CapturePoint(4f);
         private System.Random _random;
@@ -34,8 +36,10 @@ namespace Pacifico.Campaign
         public CapturePoint Capture => _capture;
         public event Action<KruppGun> Captured;
 
-        public void Configure(Transform barrelTransform, Vector3 zoneCenter, float zoneRadius, Material dustMaterial)
+        public void Configure(Transform barrelTransform, Vector3 zoneCenter, float zoneRadius, Material dustMaterial,
+                              Core.Common.Faction side = Core.Common.Faction.Chile)
         {
+            owner = side;
             barrel = barrelTransform;
             targetCenter = zoneCenter;
             targetRadius = zoneRadius;
@@ -58,7 +62,8 @@ namespace Pacifico.Campaign
                 {
                     if (!c.Alive) continue;
                     float d = Vector3.Distance(c.transform.position, transform.position);
-                    if (c.Faction == Core.Common.Faction.Chile) { if (d <= contestRadius) enemies++; }
+                    // «enemies» defienden la pieza (su bando); «friends», quienes vienen a tomarla.
+                    if (SameSide(c)) { if (d <= contestRadius) enemies++; }
                     else if (d <= captureRadius) friends++;
                 }
                 if (_capture.Step(Time.deltaTime, friends, enemies))
@@ -76,6 +81,8 @@ namespace Pacifico.Campaign
             if (barrel != null) barrel.localPosition = new Vector3(0f, barrel.localPosition.y, -_recoil * 0.4f);
         }
 
+        private bool SameSide(Combatant c) => (c.Faction == Core.Common.Faction.Chile) == (owner == Core.Common.Faction.Chile);
+
         private void Shoot()
         {
             _recoil = 1f;
@@ -89,7 +96,7 @@ namespace Pacifico.Campaign
             DustBurst.Spawn(impact, dust, blastRadius * 1.2f);
             foreach (Combatant c in Combatant.All)
             {
-                if (!c.Alive || c.Faction == Core.Common.Faction.Chile) continue;
+                if (!c.Alive || SameSide(c)) continue;
                 float d = Vector3.Distance(c.transform.position, impact);
                 if (d < blastRadius) c.Hurt(blastDamage * (1f - d / blastRadius), gameObject, impact);
             }

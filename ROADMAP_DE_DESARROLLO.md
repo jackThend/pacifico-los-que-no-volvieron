@@ -96,5 +96,6 @@
   * *Nota:* en el guion y el GDD es el Capítulo 5, «El trueno de Intiorko» (ver DEV_LOG).
 - [X] **6.4 Escenario Capítulo 7: Morro de Arica (RTS + Asalto)**
   * *Nota:* en el guion y el GDD es el Capítulo 6, «Hasta el último cartucho», en primera persona (ver DEV_LOG).
-- [ ] **6.5 Escenario Capítulo 8: Reductos de Miraflores (FPS / Clímax)**
+- [X] **6.5 Escenario Capítulo 8: Reductos de Miraflores (FPS / Clímax)**
+  * Incluye el epílogo «La memoria rota».
 - [ ] **6.6 Pruebas Integrales de Rendimiento y Empaquetado Final**

@@ -420,6 +420,8 @@ namespace Pacifico.Core.Campaign
                         if (i == 0 && trigger.Interrupts) Dialogue.Interrupt(trigger.Lines[i]);
                         else Dialogue.Enqueue(trigger.Lines[i]);
                     }
+                    // Las reacciones siguientes de este mismo paso ven el diálogo que acaba de empezar.
+                    _context.DialogueIdle = Dialogue.IsIdle;
                 }
                 _context.DialogueIdle = Dialogue.IsIdle;
 

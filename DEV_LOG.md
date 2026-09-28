@@ -522,3 +522,42 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Ajuste con la simulación de escaramuza:** con el asalto parándose a tirar a 60 m, la defensa salía gratis (0 % de caídas, ningún Artesano perdido). Se endureció el asalto: 10 hombres, refuerzos continuos, carga a la bayoneta a 40 m y 12 bajas para romperlo. Sigue siendo la fase «ganable» del capítulo, y el guion hace caer el parapeto después.
 * **Verificación:** 4 pruebas nuevas (369 en total): guion y respuesta; partida completa con el detonador, la caída de Bolognesi y el salto de Ugarte; el parapeto cae aunque no se rechace el asalto; y caer antes o después de llegar a la cima.
 * **Pendiente:** comprobar en Unity 6 (tarea 0.3) el asalto por la ladera, la Gatling y el salto de Ugarte.
+
+
+---
+
+### [2026-09-28] - Tarea 6.5: Escenario Capítulo 8, Reductos de Miraflores (FPS / clímax) — [X] (verificado fuera del motor; ver 0.3)
+* **Núcleo:**
+  * `GuionQuotes` lee también los **bloques citados** de varias líneas (el prólogo del corresponsal, la carta, la cita final) y el **bloque de código** de la lápida.
+  * `MirafloresChapter`:
+    * El prólogo del corresponsal, leído del guion y dividido en frases.
+    * Los jardines bajo el bombardeo (Krupp y fragatas).
+    * El asalto al Reducto N.º 3 con **el rostro del enemigo**: el primer defensor que Abraham derriba dentro del reducto es un oficinista de anteojos, y a su lado hay un muchacho de 14 años con un fusil descargado.
+    * La artillería silenciada: cae la bandera y suenan los clarines del alto el fuego.
+    * El desenlace: sentarse contra el parapeto, la carta y el disparo. Caer entonces no es un fracaso.
+    * Coleccionable: la carta 3 de Quiroz (catálogo, capítulo 8).
+  * `MemoriaRotaEpilogue` lee del guion la lápida, la carta, la cifra de muertos y la última cita. El mosaico usa diez retratos de época del Archivo, de los tres bandos; se excluyen a propósito las imágenes modernas.
+  * `EpilogueTimeline`: el epílogo como función pura del tiempo (103 s).
+    * Negro, lápida escrita a máquina, la carta en 13 subtítulos, el mosaico que se va llenando, la cifra, la cita final y el fundido.
+  * **Error del motor de misiones corregido:** tras disparar una reacción que añade diálogo, las siguientes reacciones del mismo paso seguían viendo el diálogo libre. El disparo final se adelantaba a la carta; prueba de regresión añadida.
+* **Unity:**
+  * `MirafloresMissionDirector`: la escuadra de Quiroz, los reservistas de los jardines y los defensores del reducto, todos con ropa civil.
+    * El momento del rostro: la acción se ralentiza y aparece el muchacho, que no es combatiente.
+    * El desenlace: la vista baja al sentarse y aparece la carta. Con el disparo, la vista tiembla, destella en rojo y se cierra en túnel; cae de lado, la cámara sube en plano cenital y todo funde a negro.
+  * `EpiloguePlayer` (IMGUI).
+  * `AmbientBombardment`.
+  * `KruppGun` ahora sirve a cualquier bando (las piezas peruanas del reducto que toma el jugador chileno).
+* **Escena `Capitulo8_Reductos_de_Miraflores`** (menú **Pacífico → Capítulos → Capítulo 8: Reductos de Miraflores**): jardines con tapias y casas señoriales derruidas, olivos y acequias; el Reducto N.º 3 con dos piezas, la bandera y un olivo partido; el sitio contra el parapeto. El prólogo se muestra sobre la lámina del Reducto N.º 3 de 1881.
+* **Previsualización del epílogo en el navegador** (los fotogramas exactos del núcleo, con los retratos reales). Sacó a la luz un error: el atenuado del mosaico reducía *cuántos* retratos se veían (solo 4 de 10 bajo la cifra) en vez de su *opacidad*. Se separaron `Mosaic` y `MosaicAlpha`, con prueba de regresión.
+* **Avisos para el equipo narrativo:**
+  * **La carta de Quiroz tiene tres versiones distintas:** la del epílogo del guion, la carta 3 del Archivo y la del GDD. El epílogo usa la del guion; el coleccionable, la del Archivo. Conviene unificarlas antes de grabar la voz.
+  * **No hay fotografía de Abraham Quiroz en el Archivo.** El marco del retrato queda vacío («Sin fotografía en el Archivo») en vez de inventar un rostro.
+  * **No hay retratos de época de los Colorados:** la única imagen es un desfile moderno de recreación.
+  * La cita final del GDD («Aquí no venció el odio…») difiere de la del guion; se usa la del guion.
+* **Verificación:** 7 pruebas nuevas (376 en total).
+  * Prólogo literal, partida completa hasta el epílogo y fracaso antes del final.
+  * Lectura del epílogo; mosaico solo con retratos de época existentes.
+  * Epílogo a 60 FPS: en orden y sin saltos, con la carta entera y final en negro.
+  * La regresión del motor de misiones.
+* **Pendiente:** comprobar en Unity 6 (tarea 0.3) el asalto al reducto, el ralentizado y la secuencia del disparo; grabar la voz de la carta y el sonido del viento y del disparo.
+* **Con esto, los capítulos de la Fase 6 quedan completos fuera del motor.** Queda la tarea 6.6 (pruebas integrales de rendimiento y empaquetado).
