@@ -49,7 +49,7 @@ MUST_IGNORE = [
     "src/UnityProject/Logs/x",
     "src/UnityProject/UserSettings/x",
     "src/UnityProject/Assembly-CSharp.csproj",
-    "tools/ci/CoreTests/bin/x",
+    "tools/ci/EditModeTests/bin/x",
     "tools/ci/UnityCompileCheck/obj/x",
     "assets_cache/x",
 ]
@@ -57,8 +57,9 @@ MUST_TRACK = [
     "src/UnityProject/Assets/Scripts/Core/ProjectInfo.cs",
     "src/UnityProject/Packages/manifest.json",
     "src/UnityProject/ProjectSettings/ProjectVersion.txt",
-    "tools/ci/CoreTests/Pacifico.Core.Tests.csproj",
+    "tools/ci/EditModeTests/Pacifico.EditMode.Tests.csproj",
     "tools/ci/UnityCompileCheck/Pacifico.Unity.CompileCheck.csproj",
+    "tools/ci/UnityStubs/UnityEngineStubs.cs",
 ]
 
 

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using Pacifico.Core.Ships;
 using Pacifico.Core.Weapons;
 using Pacifico.Runtime.Data;
 using UnityEditor;
@@ -11,34 +14,56 @@ namespace Pacifico.Editor
     /// </summary>
     public static class HistoricalDataGenerator
     {
-        private const string WeaponsFolder = "Assets/ScriptableObjects/Weapons";
+        private const string Root = "Assets/ScriptableObjects";
 
         [MenuItem("Pacífico/Datos/Generar armas históricas")]
         public static void GenerateWeapons()
         {
-            EnsureFolder("Assets/ScriptableObjects", "Weapons");
-            foreach (var spec in HistoricalWeapons.All)
+            Generate<WeaponSpec, WeaponDataSO>("Weapons", "Weapon", HistoricalWeapons.All,
+                s => s.Id, (asset, spec) => asset.ApplySpec(spec));
+        }
+
+        [MenuItem("Pacífico/Datos/Generar buques históricos")]
+        public static void GenerateShips()
+        {
+            Generate<ShipSpec, ShipDataSO>("Ships", "Ship", HistoricalShips.All,
+                s => s.Id, (asset, spec) => asset.ApplySpec(spec));
+        }
+
+        [MenuItem("Pacífico/Datos/Generar todo")]
+        public static void GenerateAll()
+        {
+            GenerateWeapons();
+            GenerateShips();
+        }
+
+        private static void Generate<TSpec, TAsset>(
+            string folder,
+            string prefix,
+            IReadOnlyList<TSpec> specs,
+            Func<TSpec, string> idOf,
+            Action<TAsset, TSpec> apply)
+            where TAsset : ScriptableObject
+        {
+            if (!AssetDatabase.IsValidFolder($"{Root}/{folder}"))
             {
-                var path = $"{WeaponsFolder}/Weapon_{spec.Id}.asset";
-                var asset = AssetDatabase.LoadAssetAtPath<WeaponDataSO>(path);
+                AssetDatabase.CreateFolder(Root, folder);
+            }
+
+            foreach (var spec in specs)
+            {
+                var path = $"{Root}/{folder}/{prefix}_{idOf(spec)}.asset";
+                var asset = AssetDatabase.LoadAssetAtPath<TAsset>(path);
                 if (asset == null)
                 {
-                    asset = ScriptableObject.CreateInstance<WeaponDataSO>();
+                    asset = ScriptableObject.CreateInstance<TAsset>();
                     AssetDatabase.CreateAsset(asset, path);
                 }
-                asset.ApplySpec(spec);
+                apply(asset, spec);
                 EditorUtility.SetDirty(asset);
             }
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Pacífico] {HistoricalWeapons.All.Count} armas generadas en {WeaponsFolder}.");
-        }
-
-        private static void EnsureFolder(string parent, string child)
-        {
-            if (!AssetDatabase.IsValidFolder($"{parent}/{child}"))
-            {
-                AssetDatabase.CreateFolder(parent, child);
-            }
+            Debug.Log($"[Pacífico] {specs.Count} assets generados en {Root}/{folder}.");
         }
     }
 }

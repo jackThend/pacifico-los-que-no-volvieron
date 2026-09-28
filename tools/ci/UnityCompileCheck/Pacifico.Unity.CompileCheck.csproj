@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
     Comprobación de compilación de Pacifico.Runtime y Pacifico.Editor contra
-    stubs mínimos de la API de Unity (tools/ci/UnityCompileCheck/UnityStubs). No sustituye a
+    stubs mínimos de la API de Unity (tools/ci/UnityStubs). No sustituye a
     compilar en el editor, pero detecta errores de sintaxis y de tipos.
     Uso: dotnet build tools/ci/UnityCompileCheck/Pacifico.Unity.CompileCheck.csproj
   -->
@@ -14,7 +14,7 @@
     <UnityAssets>$(MSBuildThisFileDirectory)../../../src/UnityProject/Assets</UnityAssets>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="UnityStubs/**/*.cs" />
+    <Compile Include="../UnityStubs/**/*.cs" LinkBase="UnityStubs" />
     <Compile Include="$(UnityAssets)/Scripts/**/*.cs" LinkBase="Scripts" />
   </ItemGroup>
 </Project>

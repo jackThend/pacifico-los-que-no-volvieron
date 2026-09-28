@@ -17,13 +17,4 @@ namespace Pacifico.Core.Weapons
         BoltAction = 3,
         LeverAction = 4
     }
-
-    /// <summary>Bando que emplea el arma en la campaña.</summary>
-    public enum Faction
-    {
-        Chile = 0,
-        Peru = 1,
-        Bolivia = 2,
-        Alliance = 3
-    }
 }

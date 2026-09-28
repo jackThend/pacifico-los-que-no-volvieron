@@ -3,6 +3,7 @@
     "rootNamespace": "Pacifico.Tests",
     "references": [
         "Pacifico.Core",
+        "Pacifico.Runtime",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

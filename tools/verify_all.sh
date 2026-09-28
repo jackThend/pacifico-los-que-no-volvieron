@@ -6,6 +6,6 @@ cd "$(dirname "$0")/.."
 python3 tools/validate_unity_structure.py
 python3 tools/assets_manager.py test > /dev/null && echo "[OK] Autoprueba del gestor de assets."
 python3 tools/assets_manager.py status > /dev/null && echo "[OK] Manifiesto de assets sincronizado."
-dotnet test tools/ci/CoreTests/Pacifico.Core.Tests.csproj --nologo -v q
+dotnet test tools/ci/EditModeTests/Pacifico.EditMode.Tests.csproj --nologo -v q
 dotnet build tools/ci/UnityCompileCheck/Pacifico.Unity.CompileCheck.csproj --nologo -v q
 echo "[OK] Verificación completa."

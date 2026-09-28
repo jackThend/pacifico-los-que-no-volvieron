@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
-    Arnés de validación fuera de Unity: compila el ensamblado Pacifico.Core
-    (noEngineReferences) y ejecuta los tests EditMode con NUnit.
-    Uso: dotnet test tools/ci/CoreTests/Pacifico.Core.Tests.csproj
+    Arnés de tests fuera de Unity: compila Pacifico.Core, Pacifico.Runtime
+    (contra los stubs de tools/ci/UnityStubs) y ejecuta los tests EditMode
+    con NUnit, igual que el Test Runner de Unity.
+    Uso: dotnet test tools/ci/EditModeTests/Pacifico.EditMode.Tests.csproj
   -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -14,7 +15,9 @@
     <UnityAssets>$(MSBuildThisFileDirectory)../../../src/UnityProject/Assets</UnityAssets>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../UnityStubs/UnityEngineStubs.cs" LinkBase="UnityStubs" />
     <Compile Include="$(UnityAssets)/Scripts/Core/**/*.cs" LinkBase="Core" />
+    <Compile Include="$(UnityAssets)/Scripts/Runtime/**/*.cs" LinkBase="Runtime" />
     <Compile Include="$(UnityAssets)/Tests/EditMode/**/*.cs" LinkBase="Tests" />
   </ItemGroup>
   <ItemGroup>

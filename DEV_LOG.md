@@ -73,3 +73,23 @@
 * **Notas de diseño:** Recargas = valores del GDD. Calibre y velocidad de boca = aproximaciones históricas. Daño, dispersión y alcances = balance inicial, a ajustar en playtesting. Los stubs de Unity solo contienen lo que el código usa; ampliarlos cuando se usen nuevas APIs.
 * **Pendiente en editor:** abrir el proyecto en Unity 6, ejecutar el menú de generación y correr los tests EditMode con el Test Runner.
 * **Próximos pasos:** Tarea 1.2 (`ShipDataSO`).
+
+---
+
+### [2026-09-28] - Tarea 1.2: Definición de Buques y Blindajes (ShipDataSO)
+* **Responsable:** Claude Code (sesión autónoma en la nube)
+* **Archivos creados / modificados:**
+  * `Core/Faction.cs`: el enum `Faction` pasa de `Pacifico.Core.Weapons` a `Pacifico.Core` (lo comparten armas y buques).
+  * `Core/Ships/`: `ShipEnums.cs` (tipo, material de casco, zona de coraza, montaje), `ArmorPlate.cs` y `GunBattery.cs` (clases `[Serializable]` con campos públicos), `ShipSpec.cs`, `ShipValidator.cs`, `HistoricalShips.cs`.
+  * Catálogo: *Huáscar* (monitor de hierro, cinturón 4.5", torre Coles 5.5" con 2 × Armstrong de 300 lb, espolón), *Esmeralda* (corbeta de madera, sin coraza, 16 × 40 lb, ~4 nudos por calderas averiadas), *Cochrane* (reducto central, cinturón 9", 6 × Armstrong de 250 lb) e *Independencia* (fragata blindada, 4.5", Vavasseur 150 lb + 12 × 70 lb).
+  * `Runtime/Data/ShipDataSO.cs`: ScriptableObject con arrays de `ArmorPlate`/`GunBattery`, copias profundas en `ApplySpec`/`ToSpec` y validación en `OnValidate`.
+  * `Editor/HistoricalDataGenerator.cs`: generador genérico; nuevos menús *Generar buques históricos* y *Generar todo*.
+  * Tests: `ShipDataTests.cs` (9 casos) y `DataAssetSerializationTests.cs` (instanciación con `CreateInstance`, conservación de datos del catálogo, ausencia de instancias compartidas y reglas del serializador de Unity por reflexión para `ShipDataSO` y `WeaponDataSO`).
+  * `tools/ci/`: `CoreTests/` → `EditModeTests/` (ahora compila también Runtime contra stubs, para probar los ScriptableObjects); stubs movidos a `tools/ci/UnityStubs/` compartidos por ambos proyectos. El asmdef de tests EditMode referencia `Pacifico.Runtime`.
+* **Verificación:** `bash tools/verify_all.sh` → estructura OK, assets OK, 29/29 tests, compilación Runtime/Editor 0 errores / 0 warnings.
+  * Prueba de mutación: quitar `[SerializeField]` de `hasRam` hace fallar `CamposSonSerializablesPorUnity` con el mensaje esperado.
+* **Problemas y soluciones:**
+  * El stub `ScriptableObject.CreateInstance<T>()` exigía `new()`, restricción que Unity no tiene; el generador genérico no compilaba. Solución: stub con `Activator.CreateInstance<T>()` y la misma firma que Unity.
+* **Notas de diseño:** Coraza, calibres y dimensiones son aproximaciones históricas; integridad de casco y recargas de artillería son balance inicial. Los límites angulares de la torre Coles se definirán en la tarea 2.2. El *Blanco Encalada* y la *Covadonga* (citados en el guion) se añadirán al catálogo cuando se integren sus capítulos.
+* **Pendiente en editor:** ejecutar *Pacífico/Datos/Generar todo* y los tests EditMode en Unity 6.
+* **Próximos pasos:** Tarea 1.3 (`CollectibleDataSO`).

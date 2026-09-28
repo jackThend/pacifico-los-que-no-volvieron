@@ -1,5 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
+using Pacifico.Core;
 using Pacifico.Core.Weapons;
 
 namespace Pacifico.Tests
