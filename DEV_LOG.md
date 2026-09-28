@@ -40,3 +40,18 @@
   * `com.unity.textmeshpro` está integrado en `com.unity.ugui` 2.0 en Unity 6; se retiró del manifiesto.
 * **Decisión de arquitectura:** toda lógica de dominio (balística, datos históricos, reglas) irá en `Pacifico.Core` sin dependencias de UnityEngine, para poder verificarla con `dotnet test` en entornos sin editor. Los `.meta` los generará Unity al abrir el proyecto por primera vez.
 * **Próximos pasos:** Tarea 0.2 (manifiesto de assets y `tools/assets_manager.py`).
+
+---
+
+### [2026-09-28] - Tarea 0.2: Pipeline de Manifiesto de Assets y Google Drive
+* **Responsable:** Claude Code (sesión autónoma en la nube)
+* **Archivos creados:**
+  * `tools/assets_manager.py` (solo biblioteca estándar). Comandos: `status`, `sync [--only ID]`, `add`, `scan-repo`, `test`.
+    * Fuentes soportadas: `repo` (versionado en Git), `cache` (solo local), `gdrive` (por `gdrive_id`, descarga vía `drive.google.com/uc?export=download`) y `url` (enlace directo CC0).
+    * Descargas atómicas a `assets_cache/` (archivo `.part` + verificación SHA-256 antes de reemplazar). Un hash distinto (p. ej. Drive devolviendo HTML) aborta sin corromper la caché.
+  * `assets_manifest.json`: versión 1, registra los 48 archivos de `Archivo_Historico/` con SHA-256, tamaño y licencia.
+* **Verificación:**
+  * `python3 tools/assets_manager.py test` → 8/8 comprobaciones OK (registro, hash, estado FALTA → descarga vía `file://` → OK, detección y reparación de corrupción, persistencia, URL de Drive).
+  * `python3 tools/assets_manager.py status` → 48 assets OK.
+* **Notas:** La sincronización real con Google Drive requiere que el archivo sea público (enlace compartido); para carpetas privadas se podrá añadir `rclone` más adelante. La licencia de cada imagen de Wikimedia debe confirmarse en su ficha de origen.
+* **Próximos pasos:** Fase 1, tarea 1.1 (`WeaponDataSO`).

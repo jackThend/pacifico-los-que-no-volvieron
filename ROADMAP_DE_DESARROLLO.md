@@ -9,7 +9,7 @@
 - [X] **0.1 Estructura de Proyecto Unity 6 (URP)**
   * *Criterio:* Crear estructura de carpetas estándar en `src/UnityProject` (`Scripts/`, `Prefabs/`, `Scenes/`, `ScriptableObjects/`, `Audio/`, `Materials/`, `UI/`).
   * *Verificación:* Compilación sin errores y verificación de `.gitignore`.
-- [ ] **0.2 Pipeline de Manifiesto de Assets y Google Drive**
+- [X] **0.2 Pipeline de Manifiesto de Assets y Google Drive**
   * *Criterio:* Crear script `tools/assets_manager.py` y archivo `assets_manifest.json` para gestionar la descarga y sincronización de assets pesados desde Google Drive o fuentes CC0.
   * *Verificación:* Ejecución del script en modo test reportando hashes y estado de sincronización.
 
