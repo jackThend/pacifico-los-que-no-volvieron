@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Pacifico.Core.Naval;
 using Pacifico.Core.Ships;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Pacifico.Runtime.Naval
 {
@@ -120,11 +119,9 @@ namespace Pacifico.Runtime.Naval
 
         private void ReadDamageControlKeys()
         {
-            var keyboard = Keyboard.current;
-            if (keyboard == null) return;
-            if (keyboard.digit1Key.wasPressedThisFrame) damageControl.ToggleTask(DamageControlTask.Firefighting);
-            if (keyboard.digit2Key.wasPressedThisFrame) damageControl.ToggleTask(DamageControlTask.Pumping);
-            if (keyboard.digit3Key.wasPressedThisFrame) damageControl.ToggleTask(DamageControlTask.BoilerRepair);
+            if (GameInput.KeyDown(GameKey.Digit1)) damageControl.ToggleTask(DamageControlTask.Firefighting);
+            if (GameInput.KeyDown(GameKey.Digit2)) damageControl.ToggleTask(DamageControlTask.Pumping);
+            if (GameInput.KeyDown(GameKey.Digit3)) damageControl.ToggleTask(DamageControlTask.BoilerRepair);
         }
 
         private static string TaskName(DamageControlTask task)

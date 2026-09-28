@@ -15,6 +15,20 @@ namespace UnityEditor
         public static void SaveAssets() { }
     }
 
+    [AttributeUsage(AttributeTargets.Class)]
+    public sealed class InitializeOnLoadAttribute : Attribute { }
+
+    public class SceneAsset : UnityEngine.Object { }
+
+    public static class EditorApplication
+    {
+        public delegate void CallbackFunction();
+        public static CallbackFunction delayCall;
+        public static bool isCompiling => false;
+        public static bool isUpdating => false;
+        public static bool isPlayingOrWillChangePlaymode => false;
+    }
+
     public static class EditorUtility
     {
         public static void SetDirty(UnityEngine.Object target) { }
@@ -31,5 +45,6 @@ namespace UnityEditor.SceneManagement
         public static UnityEngine.SceneManagement.Scene NewScene(NewSceneSetup setup, NewSceneMode mode) => default;
         public static UnityEngine.SceneManagement.Scene GetActiveScene() => default;
         public static bool SaveScene(UnityEngine.SceneManagement.Scene scene, string dstScenePath) => true;
+        public static UnityEngine.SceneManagement.Scene OpenScene(string scenePath) => default;
     }
 }

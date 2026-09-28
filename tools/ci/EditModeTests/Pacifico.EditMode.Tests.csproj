@@ -13,6 +13,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Como Unity: los campos [SerializeField] se asignan desde el Inspector. -->
     <NoWarn>$(NoWarn);CS0649</NoWarn>
+    <!-- Ruta del Input System nuevo (el chequeo de compilación cubre la del Input Manager clásico). -->
+    <DefineConstants>$(DefineConstants);ENABLE_INPUT_SYSTEM</DefineConstants>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <UnityAssets>$(MSBuildThisFileDirectory)../../../src/UnityProject/Assets</UnityAssets>
   </PropertyGroup>

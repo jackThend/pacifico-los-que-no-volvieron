@@ -1,7 +1,6 @@
 using Pacifico.Core.Naval;
 using Pacifico.Core.Ships;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Pacifico.Runtime.Naval
 {
@@ -66,10 +65,9 @@ namespace Pacifico.Runtime.Naval
         private void Update()
         {
             if (!playerControlled || aimCamera == null) return;
-            var mouse = Mouse.current;
-            if (mouse == null) return;
+            if (!GameInput.TryGetPointer(out var pointer)) return;
 
-            var ray = aimCamera.ScreenPointToRay(mouse.position.ReadValue());
+            var ray = aimCamera.ScreenPointToRay(pointer);
             var sea = new Plane(Vector3.up, new Vector3(0f, seaLevel, 0f));
             if (sea.Raycast(ray, out var distance))
             {
@@ -77,7 +75,7 @@ namespace Pacifico.Runtime.Naval
                 turret.SetTarget(point.x, point.z);
             }
 
-            if (mouse.leftButton.wasPressedThisFrame) TryFire();
+            if (GameInput.PrimaryClickDown()) TryFire();
         }
 
         /// <summary>
@@ -144,9 +142,9 @@ namespace Pacifico.Runtime.Naval
         {
             if (!showReticle || !playerControlled || turret == null || aimCamera == null) return;
 
-            if (turret.HasTarget) DrawMarker(turret.Target, "◎");
-            DrawMarker(turret.LeftImpact, "×");
-            DrawMarker(turret.RightImpact, "×");
+            if (turret.HasTarget) DrawMarker(turret.Target, "+");
+            DrawMarker(turret.LeftImpact, "x");
+            DrawMarker(turret.RightImpact, "x");
 
             string state;
             if (!turret.HasTarget) state = "sin blanco";

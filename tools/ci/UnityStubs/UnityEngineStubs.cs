@@ -54,6 +54,17 @@ namespace UnityEngine
         public bool Raycast(Ray ray, out float enter) { enter = 0f; return false; }
     }
 
+    public enum KeyCode { None = 0, Alpha1 = 49, Alpha2 = 50, Alpha3 = 51, A = 97, D = 100, S = 115, W = 119 }
+
+    /// <summary>Input Manager clásico.</summary>
+    public static class Input
+    {
+        public static Vector3 mousePosition => default;
+        public static bool GetKey(KeyCode key) => false;
+        public static bool GetKeyDown(KeyCode key) => false;
+        public static bool GetMouseButtonDown(int button) => false;
+    }
+
     public static class Screen
     {
         public static int height => 0;
@@ -139,6 +150,7 @@ namespace UnityEngine
     public static class Application
     {
         public static string dataPath => string.Empty;
+        public static bool isBatchMode => false;
     }
 
     public static class Debug
@@ -173,7 +185,7 @@ namespace UnityEngine
     }
 }
 
-namespace UnityEngine.InputSystem
+namespace UnityEngine.InputSystem.Controls
 {
     public class ButtonControl
     {
@@ -187,6 +199,11 @@ namespace UnityEngine.InputSystem
     {
         public Vector2 ReadValue() => default;
     }
+}
+
+namespace UnityEngine.InputSystem
+{
+    using UnityEngine.InputSystem.Controls;
 
     public class Mouse
     {
@@ -210,5 +227,9 @@ namespace UnityEngine.InputSystem
 
 namespace UnityEngine.SceneManagement
 {
-    public struct Scene { }
+    public struct Scene
+    {
+        public string path => string.Empty;
+        public bool isDirty => false;
+    }
 }

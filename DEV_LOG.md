@@ -200,3 +200,19 @@
 * **Notas:** umbrales, resistencias y caudales son de balance. El contacto se evalúa solo con la roda del atacante (un choque de costado contra costado no cuenta como espolonazo).
 * **Pendiente en editor:** regenerar la escena, dar Play, embestir a la *Esmeralda* a Media o Toda fuerza, y probar 1/2/3 tras recibir daño.
 * **Estado:** Fase 2 (módulo naval) completa. **Próximos pasos:** Fase 3, tarea 3.1 (controlador FPS de infantería).
+
+---
+
+### [2026-09-28] - Facilitar la prueba en Unity y memoria del proyecto
+* **Responsable:** Claude Code (sesión autónoma en la nube)
+* **Motivo:** el usuario (no técnico) no logró seguir los pasos manuales para probar en Unity y pidió reducirlos a 3.
+* **Cambios:**
+  * `Editor/FirstRunSetup.cs` (`[InitializeOnLoad]`): al abrir el proyecto, si no existe `Assets/Scenes/Prototipo_Naval_Iquique.unity` genera todos los datos (armas, buques, cartas) y crea la escena. Si ya existe y el editor está en una escena vacía sin guardar, la abre. Espera a que termine la compilación/importación, no actúa en modo batch ni en Play, y no pisa escenas con cambios sin guardar.
+  * `Runtime/Input/GameInput.cs`: capa única de entrada (teclas W/A/S/D/1/2/3, puntero y clic) que usa el Input System nuevo si está activo (`ENABLE_INPUT_SYSTEM`) o el Input Manager clásico si no. El prototipo responde sin tocar *Active Input Handling*. `ShipNavigationController`, `ColesTurretController` y `ShipDamageReceiver` ya no usan `Keyboard`/`Mouse` directamente.
+  * Marcadores de la retícula cambiados a `+` / `x` (los glifos Unicode podían no existir en la fuente por defecto de `OnGUI`).
+  * Stubs: `KeyControl`/`ButtonControl`/`Vector2Control` movidos a `UnityEngine.InputSystem.Controls` (su namespace real); añadidos `Input`, `KeyCode`, `InitializeOnLoad`, `EditorApplication`, `SceneAsset`, `EditorSceneManager.OpenScene`, `Scene.path/isDirty`, `Application.isBatchMode`. El proyecto de tests compila la ruta del Input System nuevo (`ENABLE_INPUT_SYSTEM`) y el chequeo de compilación la del clásico.
+  * `README.md`: sección "Cómo probar el prototipo (3 pasos)".
+  * `CLAUDE.md`: sección "Estado actual y cómo continuar" (progreso, siguiente tarea, perfil del usuario, entorno, convenciones).
+  * `tools/setup_cloud_env.sh` + hook `SessionStart` en `.claude/settings.json`: instala .NET 8 en sesiones en la nube si falta (no hace nada en local).
+* **Verificación:** `bash tools/verify_all.sh` → estructura OK, assets OK, 106/106 tests, compilación Runtime/Editor 0 errores / 0 warnings.
+* **Próximos pasos:** integrar en `main`, esperar la prueba del usuario en Unity y continuar con la tarea 3.1.

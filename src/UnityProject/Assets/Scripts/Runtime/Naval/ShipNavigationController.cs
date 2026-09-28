@@ -2,7 +2,6 @@ using System;
 using Pacifico.Core.Naval;
 using Pacifico.Runtime.Data;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Pacifico.Runtime.Naval
 {
@@ -65,15 +64,13 @@ namespace Pacifico.Runtime.Naval
         private void Update()
         {
             if (!playerControlled) return;
-            var keyboard = Keyboard.current;
-            if (keyboard == null) return;
 
-            if (keyboard.wKey.wasPressedThisFrame) TelegraphUp();
-            if (keyboard.sKey.wasPressedThisFrame) TelegraphDown();
+            if (GameInput.KeyDown(GameKey.W)) TelegraphUp();
+            if (GameInput.KeyDown(GameKey.S)) TelegraphDown();
 
             var steer = 0f;
-            if (keyboard.aKey.isPressed) steer -= 1f;
-            if (keyboard.dKey.isPressed) steer += 1f;
+            if (GameInput.KeyHeld(GameKey.A)) steer -= 1f;
+            if (GameInput.KeyHeld(GameKey.D)) steer += 1f;
             motion.SetRudderCommand(steer);
         }
 

@@ -98,6 +98,18 @@ La historia se divide en **8 capítulos dinámicos más prólogo y epílogo**, a
 
 ---
 
+## 🕹️ Cómo probar el prototipo (3 pasos)
+
+1. **Descargar:** en GitHub pulsa *Code → Download ZIP* y descomprímelo.
+2. **Abrir:** en Unity Hub, *Add → Add project from disk* y elige la carpeta **`src/UnityProject`** (dentro de lo descomprimido). Si el Hub pregunta por la versión del editor, acepta abrirlo con tu Unity 6.
+3. **Jugar:** espera a que termine de cargar (la primera vez tarda unos minutos y se prepara sola la escena de la rada de Iquique) y pulsa **Play** (▶). Haz clic en la vista *Game* para darle el teclado.
+
+**Controles del prototipo naval:** `W`/`S` telégrafo · `A`/`D` timón · ratón apunta la torre Coles · clic izquierdo dispara · embestir con la proa a Media o Toda fuerza · `1`/`2`/`3` cuadrilla de averías (fuego / achique / calderas).
+
+Si la consola de Unity (*Window → General → Console*) muestra errores en rojo, cópialos para corregirlos.
+
+---
+
 ## 🏛️ Archivo Histórico y Multimedia
 
 El repositorio cuenta con una base documental de **48 archivos de alta definición** curados directamente de archivos nacionales (Biblioteca Nacional de Chile, Archivo General de la Nación del Perú, Archivo Histórico de La Paz y Library of Congress):
