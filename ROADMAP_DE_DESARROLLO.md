@@ -6,39 +6,39 @@
 ---
 
 ## 📌 FASE 0: CONFIGURACIÓN INICIAL Y ARQUITECTURA
-- [ ] **0.1 Estructura de Proyecto Unity 6 (URP)**
+- [X] **0.1 Estructura de Proyecto Unity 6 (URP)**
   * *Criterio:* Crear estructura de carpetas estándar en `src/UnityProject` (`Scripts/`, `Prefabs/`, `Scenes/`, `ScriptableObjects/`, `Audio/`, `Materials/`, `UI/`).
   * *Verificación:* Compilación sin errores y verificación de `.gitignore`.
-- [ ] **0.2 Pipeline de Manifiesto de Assets y Google Drive**
+- [X] **0.2 Pipeline de Manifiesto de Assets y Google Drive**
   * *Criterio:* Crear script `tools/assets_manager.py` y archivo `assets_manifest.json` para gestionar la descarga y sincronización de assets pesados desde Google Drive o fuentes CC0.
   * *Verificación:* Ejecución del script en modo test reportando hashes y estado de sincronización.
 
 ---
 
 ## 📌 FASE 1: ARQUITECTURA DE DATOS (SCRIPTABLE OBJECTS)
-- [ ] **1.1 Definición de Armamento Histórico (WeaponDataSO)**
+- [X] **1.1 Definición de Armamento Histórico (WeaponDataSO)**
   * *Criterio:* ScriptableObjects con datos balísticos, tiempo de recarga (Comblain: 2.0s, Chassepot: 2.2s, Remington: 2.1s), daño, dispersión y alcance.
   * *Verificación:* Test unitario validando los valores contra las especificaciones del GDD.
-- [ ] **1.2 Definición de Buques y Blindajes (ShipDataSO)**
+- [X] **1.2 Definición de Buques y Blindajes (ShipDataSO)**
   * *Criterio:* Configuración del monitor *Huáscar* (torreta giratoria Coles, blindaje de 4.5"), corbeta *Esmeralda*, fragatas *Cochrane* e *Independencia*.
   * *Verificación:* ScriptableObjects instanciables y serializables sin errores.
-- [ ] **1.3 Definición de Coleccionables "La Memoria Rota" (CollectibleDataSO)**
+- [X] **1.3 Definición de Coleccionables "La Memoria Rota" (CollectibleDataSO)**
   * *Criterio:* Estructura de datos para cartas históricas, remitente, facsímil 3D, texto traducido/transcrito y audio asociado.
   * *Verificación:* Carga de las cartas de Abraham Quiroz y Miguel Grau desde los archivos Markdown existentes.
 
 ---
 
 ## 📌 FASE 2: MÓDULO NAVAL 3D (PROTOTIPO IQUIQUE)
-- [ ] **2.1 Controlador de Navegación e Inercia Hidrodinámica**
+- [X] **2.1 Controlador de Navegación e Inercia Hidrodinámica**
   * *Criterio:* Simulación de aceleración por telégrafo de calderas (Detener, 1/4, Media, Toda fuerza) y respuesta de timón.
   * *Verificación:* Buque responde a controles de teclado (W/S/A/D) manteniendo inercia al cortar propulsión.
-- [ ] **2.2 Sistema de Torreta Giratoria Coles (*Huáscar*)**
+- [X] **2.2 Sistema de Torreta Giratoria Coles (*Huáscar*)**
   * *Criterio:* Rotación horizontal independiente del casco con retícula de convergencia para los cañones Armstrong de 300 libras.
   * *Verificación:* Apuntado suave con limitadores angulares históricos.
-- [ ] **2.3 Sistema de Blindaje Angular y Balística**
+- [X] **2.3 Sistema de Blindaje Angular y Balística**
   * *Criterio:* Disparos navales calculan ángulo de incidencia. Impactos oblicuos en hierro rebotan; impactos directos o en madera producen daño crítico.
   * *Verificación:* Test de impacto con proyectiles de 40 lbs vs 300 lbs comprobando rebote en el *Huáscar* y perforación en la *Esmeralda*.
-- [ ] **2.4 Mecánica de Espolonazo y Control de Averías**
+- [X] **2.4 Mecánica de Espolonazo y Control de Averías**
   * *Criterio:* Colisión frontal a velocidad crítica aplica daño masivo de embestida; interfaz de control de averías (fuego, inundación, calderas).
   * *Verificación:* El *Huáscar* puede embestir y partir cuadernas simuladas.
 
