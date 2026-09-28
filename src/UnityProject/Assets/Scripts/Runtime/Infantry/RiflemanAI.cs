@@ -42,6 +42,9 @@ namespace Pacifico.Infantry
         public Vector3? Objective { get; set; }
         public bool HoldPosition { get; set; }
         public bool ChargeOrdered { get; set; }
+
+        /// <summary>Si es mayor que cero, carga a la bayoneta al enemigo que vea a esta distancia (asalto del Morro).</summary>
+        public float ChargeWithinM { get; set; }
         public RiflemanBrain Brain => _brain;
         public Combatant Target => _target;
 
@@ -101,7 +104,8 @@ namespace Pacifico.Infantry
                 TargetMoving = _targetMoving,
                 Loaded = _rifle.CanFire,
                 HasAmmo = _rifle.TotalRounds > 0,
-                ChargeOrdered = ChargeOrdered,
+                ChargeOrdered = ChargeOrdered || (ChargeWithinM > 0f && _target != null && _lineOfSight &&
+                                                  Vector3.Distance(transform.position, _target.transform.position) <= ChargeWithinM),
                 HoldPosition = HoldPosition,
             };
             RiflemanDecision d = _brain.Step(dt, p);

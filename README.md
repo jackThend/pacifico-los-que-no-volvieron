@@ -151,7 +151,7 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ## 🛠️ Desarrollo en Unity 6
 
-**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, la fase FPS (3.1–3.4), la fase RTS (4.1–4.3) y la fase narrativa (5.1–5.2) y los primeros capítulos jugables (6.1, la rada de Iquique; 6.2, la quebrada de Tarapacá; 6.3, el Alto de la Alianza): estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar), el cuerpo a cuerpo con bayoneta y corvo, el mando de escuadras en formación de línea y guerrilla sobre NavMesh, la supresión y la cobertura (zanjas y parapetos), la sed y los cartuchos con carros de vituallas, el visor 3D de documentos históricos, las cinemáticas de corresponsal con subtítulos sincronizados y el motor de misiones con los capítulos 1 (Esmeralda, Huáscar, náufragos y la carta de Grau) 4 (Tarapacá, con fusileros de la IA en primera persona) y 5 (el Alto de la Alianza, con cargas a la bayoneta entre escuadras). Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
+**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, la fase FPS (3.1–3.4), la fase RTS (4.1–4.3) y la fase narrativa (5.1–5.2) y los primeros capítulos jugables (6.1, la rada de Iquique; 6.2, la quebrada de Tarapacá; 6.3, el Alto de la Alianza; 6.4, el Morro de Arica): estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar), el cuerpo a cuerpo con bayoneta y corvo, el mando de escuadras en formación de línea y guerrilla sobre NavMesh, la supresión y la cobertura (zanjas y parapetos), la sed y los cartuchos con carros de vituallas, el visor 3D de documentos históricos, las cinemáticas de corresponsal con subtítulos sincronizados y el motor de misiones con los capítulos 1 (Esmeralda, Huáscar, náufragos y la carta de Grau) 4 (Tarapacá, con fusileros de la IA en primera persona) 5 (el Alto de la Alianza, con cargas a la bayoneta entre escuadras) y 6 (el Morro de Arica). Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
 
 ### Abrir el proyecto
 1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
@@ -201,6 +201,11 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 * Llevas a los Colorados y a la reserva boliviana a la zanja antes de que se levante la camanchaca y contienes el avance chileno.
 * Cuando la izquierda cede, `C` (o el botón «¡A LA CARGA!») lanza la carga a la bayoneta para recuperar los cañones.
 * Al final, llevas a los heridos a la retaguardia antes de que la caballería chilena cierre la tenaza.
+
+**Capítulo 6 jugable, «Hasta el último cartucho»** (menú **Pacífico → Capítulos → Capítulo 6: Morro de Arica**):
+* La junta de oficiales, con la respuesta de Bolognesi.
+* La defensa del parapeto de caliza como Manuel Salazar, con la Gatling y los Artesanos de Tacna. `E` acciona el detonador de las minas: los cables están cortados.
+* La retirada disparando hasta la explanada y la resistencia junto a la bandera mientras caen Bolognesi y sus oficiales y Ugarte se lanza al vacío.
 
 **Visor de documentos (camarote de Grau):** arrastrar para girar · `F` dar la vuelta · rueda: acercar hacia el cursor · botón derecho: desplazar · `T` transcripción (`RePág`/`AvPág` páginas) · `R` restablecer · `Esc` cerrar.
 

@@ -490,3 +490,35 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Pendiente:**
   * Comprobar en Unity 6 (tarea 0.3) las cargas sobre el NavMesh de las dunas y la persecución de la caballería.
   * La pista del huayno (música tradicional con tambores y quenas) está por grabar.
+
+
+---
+
+### [2026-09-28] - Tarea 6.4: Escenario Morro de Arica — [X] (verificado fuera del motor; ver 0.3)
+* **Numeración y modalidad:** el roadmap dice «Capítulo 7, RTS + asalto». En el guion y el GDD es el **Capítulo 6, «Hasta el último cartucho»**, en **primera persona** (el soldado Manuel Salazar, Artesanos de Tacna); se siguió el guion.
+* **Núcleo — `AricaChapter`:**
+  * **La junta:** la respuesta de Bolognesi, leída del guion, sobre la lámina del Archivo.
+  * **El parapeto de caliza:** rechazar 12 asaltantes o aguantar 150 s. Opcional: el detonador de las minas, que no funciona («han cortado los cables»).
+  * **La retirada** hasta la explanada.
+  * **La cima del abismo:** Bolognesi cae a los 20 s, Ugarte salta a los 45 s y el capítulo termina a los 75 s.
+  * Caer en las escarpas es fracaso; **en la cima, caer es el final** de la guarnición y el capítulo se completa.
+  * **Coleccionable:** el despacho de Spenser St. John sobre Arica, que el catálogo asigna al capítulo 6. El reloj de Bolognesi del guion no está en el Archivo.
+* **Unity:**
+  * `GatlingGun`: ráfagas de balas reales contra el asaltante visible más cercano. Usa el cartucho de la ficha asignada (Remington en el prototipo); la cadencia es una estimación de juego.
+  * `InteractionPoint`: accionar algo con `E`.
+  * `ScriptedRider`: arranque a la orden y salto al vacío con caída libre (Ugarte).
+  * `RiflemanAI.ChargeWithinM`: carga a quemarropa.
+  * `AricaMissionDirector`:
+    * La junta, sin mandos, sobre la lámina en sepia.
+    * Los Artesanos en sus puestos y el asalto a oleadas (10 hombres y refuerzos por cada tres caídos).
+    * La Gatling hasta que el parapeto es rebasado.
+    * En la cima, los oficiales que caen y Ugarte que salta.
+* **Escena `Capitulo6_Morro_de_Arica`** (menú **Pacífico → Capítulos → Capítulo 6: Morro de Arica**):
+  * El macizo con el acantilado sobre el mar al oeste; la ladera este de unos 27°; el llano con los restos de los fuertes San José y Santa Bárbara.
+  * El parapeto de caliza y sacos, la Gatling y el detonador con su cable.
+  * La explanada con la bandera, los cañones, Bolognesi, sus oficiales y Ugarte a caballo.
+  * Alba del 7 de junio con luz rasante del este.
+  * **Licencia de escala:** el acantilado mide 100 m. El guion habla de 260 y el Morro real ronda los 130.
+* **Ajuste con la simulación de escaramuza:** con el asalto parándose a tirar a 60 m, la defensa salía gratis (0 % de caídas, ningún Artesano perdido). Se endureció el asalto: 10 hombres, refuerzos continuos, carga a la bayoneta a 40 m y 12 bajas para romperlo. Sigue siendo la fase «ganable» del capítulo, y el guion hace caer el parapeto después.
+* **Verificación:** 4 pruebas nuevas (369 en total): guion y respuesta; partida completa con el detonador, la caída de Bolognesi y el salto de Ugarte; el parapeto cae aunque no se rechace el asalto; y caer antes o después de llegar a la cima.
+* **Pendiente:** comprobar en Unity 6 (tarea 0.3) el asalto por la ladera, la Gatling y el salto de Ugarte.
