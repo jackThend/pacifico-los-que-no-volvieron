@@ -46,7 +46,7 @@ namespace Pacifico.Core.Naval
             quadraticDrag = 1f / (handling.MaxSpeedMs * handling.InertiaSeconds);
             PositionX = x;
             PositionZ = z;
-            HeadingDegrees = NormalizeHeading(headingDegrees);
+            HeadingDegrees = Angles.Normalize360(headingDegrees);
             Order = EngineOrder.Stop;
         }
 
@@ -111,7 +111,7 @@ namespace Pacifico.Core.Naval
             var targetYaw = Rudder * SpeedMs / TurnRadiusAtSpeed(SpeedMs) * DegreesPerRadian;
             var yawBlend = 1f - (float)Math.Exp(-dt / Handling.YawResponseSeconds);
             YawRateDegreesPerSecond += (targetYaw - YawRateDegreesPerSecond) * yawBlend;
-            HeadingDegrees = NormalizeHeading(HeadingDegrees + YawRateDegreesPerSecond * dt);
+            HeadingDegrees = Angles.Normalize360(HeadingDegrees + YawRateDegreesPerSecond * dt);
 
             // 5. Traslación sobre el rumbo actual.
             var headingRad = HeadingDegrees / DegreesPerRadian;
@@ -126,11 +126,5 @@ namespace Pacifico.Core.Naval
         }
 
         private static float Clamp(float value, float min, float max) => value < min ? min : value > max ? max : value;
-
-        private static float NormalizeHeading(float degrees)
-        {
-            var result = degrees % 360f;
-            return result < 0f ? result + 360f : result;
-        }
     }
 }

@@ -39,7 +39,7 @@ namespace Pacifico.Editor
             }
 
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
-            Debug.Log($"[Pacífico] Escena creada: {ScenePath}. Play y usa W/S (telégrafo) y A/D (timón).");
+            Debug.Log($"[Pacífico] Escena creada: {ScenePath}. Play: W/S telégrafo, A/D timón, ratón apunta la torre Coles.");
         }
 
         private static GameObject CreateShip(string shipId, Vector3 position, float heading, bool playerControlled)
@@ -57,20 +57,46 @@ namespace Pacifico.Editor
             hull.transform.localScale = new Vector3(spec.BeamM, 5f, spec.LengthM);
             hull.transform.localPosition = new Vector3(0f, 1.5f, 0f);
 
-            if (spec.HasTurret)
-            {
-                var turret = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                turret.name = "Torre Coles";
-                turret.transform.SetParent(ship.transform, false);
-                turret.transform.localScale = new Vector3(7f, 1.5f, 7f);
-                turret.transform.localPosition = new Vector3(0f, 5.5f, spec.LengthM * 0.1f);
-            }
-
             ship.AddComponent<Rigidbody>();
             var controller = ship.AddComponent<ShipNavigationController>();
             controller.Configure(data, playerControlled,
                 playerControlled ? EngineOrder.Stop : EngineOrder.Quarter);
+
+            if (spec.Turret != null) CreateColesTurret(ship, controller, spec.Turret, playerControlled);
             return ship;
+        }
+
+        /// <summary>Torre (cilindro) con pivote de giro y pivote de elevación para los dos cañones.</summary>
+        private static void CreateColesTurret(GameObject ship, ShipNavigationController controller,
+            TurretMount mount, bool playerControlled)
+        {
+            var yawPivot = new GameObject("Torre Coles (giro)");
+            yawPivot.transform.SetParent(ship.transform, false);
+            yawPivot.transform.localPosition = new Vector3(0f, 4f, mount.offsetForwardM);
+
+            var drum = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            drum.name = "Torre Coles";
+            drum.transform.SetParent(yawPivot.transform, false);
+            drum.transform.localScale = new Vector3(7f, 1.25f, 7f);
+            drum.transform.localPosition = new Vector3(0f, 1.25f, 0f);
+
+            var pitchPivot = new GameObject("Cañones (elevación)");
+            pitchPivot.transform.SetParent(yawPivot.transform, false);
+            pitchPivot.transform.localPosition = new Vector3(0f, 1.5f, 2.5f);
+
+            var half = mount.barrelSeparationM * 0.5f;
+            foreach (var side in new[] { -1f, 1f })
+            {
+                var barrel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                barrel.name = side < 0f ? "Armstrong babor" : "Armstrong estribor";
+                barrel.transform.SetParent(pitchPivot.transform, false);
+                barrel.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                barrel.transform.localScale = new Vector3(0.6f, 2.25f, 0.6f); // 4.5 m de caña
+                barrel.transform.localPosition = new Vector3(side * half, 0f, 2.25f);
+            }
+
+            var turret = ship.AddComponent<ColesTurretController>();
+            turret.Configure(controller, yawPivot.transform, pitchPivot.transform, Camera.main, playerControlled);
         }
     }
 }

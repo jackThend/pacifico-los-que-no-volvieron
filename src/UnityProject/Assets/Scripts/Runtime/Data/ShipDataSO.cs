@@ -32,6 +32,8 @@ namespace Pacifico.Runtime.Data
         [Header("Blindaje y artillería")]
         [SerializeField] private ArmorPlate[] armor = new ArmorPlate[0];
         [SerializeField] private GunBattery[] guns = new GunBattery[0];
+        [SerializeField, Tooltip("Solo se usa si alguna batería va montada en torre.")]
+        private TurretMount turret = new TurretMount();
 
         public string Id => id;
         public HullMaterial Hull => hull;
@@ -43,7 +45,8 @@ namespace Pacifico.Runtime.Data
         {
             return new ShipSpec(id, displayName, faction, shipType, hull,
                 displacementTons, lengthM, beamM, maxSpeedKnots, crew, hasRam, hullIntegrity,
-                CloneArmor(armor), CloneGuns(guns), historicalNote);
+                CloneArmor(armor), CloneGuns(guns), historicalNote,
+                HasTurretGuns() ? turret.Clone() : null);
         }
 
         public void ApplySpec(ShipSpec spec)
@@ -63,6 +66,16 @@ namespace Pacifico.Runtime.Data
             hullIntegrity = spec.HullIntegrity;
             armor = CloneArmor(spec.Armor);
             guns = CloneGuns(spec.Guns);
+            turret = spec.Turret != null ? spec.Turret.Clone() : new TurretMount();
+        }
+
+        private bool HasTurretGuns()
+        {
+            foreach (var battery in guns)
+            {
+                if (battery != null && battery.mount == GunMount.Turret) return true;
+            }
+            return false;
         }
 
         // Copias profundas: el asset nunca comparte instancias con el catálogo estático.

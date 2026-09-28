@@ -15,6 +15,27 @@ namespace Pacifico.Core.Ships
         public const string CochraneId = "cochrane";
         public const string IndependenciaId = "independencia";
 
+        /// <summary>
+        /// Torre Coles del Huáscar. Gira 360° (a brazo, con su dotación), pero
+        /// el castillo de proa y la chimenea/palo/puente enmascaran el tiro.
+        /// Velocidades de puntería, sectores y elevación: aproximación de balance;
+        /// velocidad de boca aproximada del Armstrong de 10".
+        /// </summary>
+        public static readonly TurretMount HuascarColesTurret = new TurretMount(
+            traverseDegreesPerSecond: 4f,
+            elevationDegreesPerSecond: 1.5f,
+            minElevationDegrees: -5f,
+            maxElevationDegrees: 12f,
+            muzzleVelocityMs: 400f,
+            barrelSeparationM: 2.2f,
+            gunHeightM: 3f,
+            offsetForwardM: 6f,
+            blindSectors: new[]
+            {
+                new FiringArcBlock(0f, 12f, "Castillo de proa"),
+                new FiringArcBlock(180f, 35f, "Chimenea, palo y puente")
+            });
+
         public static readonly ShipSpec Huascar = new ShipSpec(
             HuascarId, "Monitor Huáscar", Faction.Peru, ShipType.Monitor, HullMaterial.Iron,
             displacementTons: 1130f, lengthM: 59f, beamM: 10.7f, maxSpeedKnots: 11f, crew: 200,
@@ -32,7 +53,8 @@ namespace Pacifico.Core.Ships
                 new GunBattery("Armstrong de 40 lb", 2, 40f, GunMount.Broadside, 8f),
                 new GunBattery("Cañón de 12 lb", 1, 12f, GunMount.Pivot, 5f)
             },
-            historicalNote: "Monitor de hierro (Laird, 1865). Torre giratoria Coles movida a mano con dos Armstrong de 300 lb y espolón de proa.");
+            historicalNote: "Monitor de hierro (Laird, 1865). Torre giratoria Coles movida a mano con dos Armstrong de 300 lb y espolón de proa.",
+            turret: HuascarColesTurret);
 
         public static readonly ShipSpec Esmeralda = new ShipSpec(
             EsmeraldaId, "Corbeta Esmeralda", Faction.Chile, ShipType.Corvette, HullMaterial.Wood,

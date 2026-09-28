@@ -133,3 +133,25 @@
 * **Valores resultantes (*Huáscar*):** inercia ≈ 26 s, ~5 s de calderas hasta plena potencia, radio de giro ≈ 220 m a 1/4 y ≈ 350 m a toda fuerza. Son valores de balance, a ajustar jugando.
 * **Pendiente en editor:** en *Project Settings › Player › Active Input Handling* debe estar activado el Input System (Unity lo ofrece al importar el paquete). Ejecutar *Pacífico/Escenas/Crear prototipo naval (Iquique)*, dar Play y comprobar W/S/A/D e inercia en el HUD.
 * **Próximos pasos:** Tarea 2.2 (torreta giratoria Coles del *Huáscar*).
+
+---
+
+### [2026-09-28] - Tarea 2.2: Sistema de Torreta Giratoria Coles (*Huáscar*)
+* **Responsable:** Claude Code (sesión autónoma en la nube)
+* **Archivos creados / modificados:**
+  * `Core/Angles.cs`: normalización y diferencia angular por el camino corto (ahora también la usa `ShipMotionModel`).
+  * `Core/Ships/TurretMount.cs`: montaje de torre `[Serializable]` (velocidades de giro y elevación, límites de elevación, velocidad de boca, separación de cañones, altura de muñones, posición en el casco) y `FiringArcBlock` (sectores enmascarados por la superestructura).
+  * `ShipSpec.Turret` (opcional) y validación: cañones en torre ⇔ montaje declarado; límites y sectores coherentes (nunca bloquean todo el horizonte).
+  * `HistoricalShips.HuascarColesTurret`: giro 4°/s (a brazo), elevación 1.5°/s entre -5° y +12°, 400 m/s, cañones separados 2.2 m, torre 6 m a proa del centro; sectores enmascarados: proa ±12° (castillo) y popa ±35° (chimenea, palo y puente).
+  * `ShipDataSO`: guarda el montaje con copia profunda (solo se exporta si hay baterías en torre).
+  * `Core/Naval/NavalBallistics.cs`: alcance por elevación (parábola desde la altura de los muñones) y elevación por alcance (bisección, con indicador de alcanzable).
+  * `Core/Naval/ColesTurretModel.cs`: puntería independiente del casco. La marcación es relativa a la proa, así que la torre compensa sola las caídas del buque, limitada por su velocidad de giro; gira por el camino más corto (la Coles da la vuelta completa). `IsOnTarget`, `IsMasked`/`MaskingSector`, `CanFire`. **Retícula de convergencia:** punto de caída actual y puntos de impacto de cada Armstrong, con ejes convergentes a la distancia del blanco; se separan mientras la torre gira o eleva y coinciden al asentarse.
+  * `Runtime/Naval/ColesTurretController.cs`: apuntado con el ratón (rayo de cámara contra el plano del mar), giro visual de torre y cañones, API `SetTarget` para IA, retícula y estado en pantalla (`OnGUI`: EN PUNTERÍA / ENMASCARADO: motivo / FUERA DE ALCANCE).
+  * `Editor/NavalPrototypeSceneBuilder.cs`: el *Huáscar* de la escena lleva ahora pivote de giro, tambor, pivote de elevación y dos cañones greybox, con el controlador de torre configurado.
+  * Tests: `ColesTurretTests.cs` (13 casos: montaje y validación, ángulos, balística ida y vuelta, giro limitado, camino corto cruzando popa, sectores enmascarados, elevación máxima y fuera de alcance, velocidad de elevación, compensación del giro del casco, convergencia de la retícula, sin blanco no gira, montaje nulo) y comprobación del montaje en la ida y vuelta de `ShipDataSO`.
+  * Stubs: `Vector2`, `Ray`, `Plane`, `Screen`, `Transform.localRotation`, `Camera.ScreenPointToRay/WorldToScreenPoint`, `Mouse`.
+* **Verificación:** `bash tools/verify_all.sh` → estructura OK, assets OK, 67/67 tests, compilación Runtime/Editor 0 errores / 0 warnings.
+* **Problemas y soluciones:** ninguno en compilación ni tests.
+* **Notas:** la balística no tiene rozamiento: el alcance máximo sale ≈ 6.6 km a 12°, probablemente mayor que el real del Armstrong de 10". Se revisará al implementar proyectiles en 2.3. Velocidades de puntería y sectores son de balance.
+* **Pendiente en editor:** regenerar la escena (*Pacífico/Escenas/Crear prototipo naval (Iquique)*), dar Play y apuntar con el ratón a la *Esmeralda*.
+* **Próximos pasos:** Tarea 2.3 (blindaje angular y balística de impacto).

@@ -37,6 +37,28 @@ namespace UnityEngine
         public static Vector3 Lerp(Vector3 a, Vector3 b, float t) => a + (b - a) * t;
     }
 
+    public struct Vector2
+    {
+        public float x, y;
+        public static implicit operator Vector3(Vector2 v) => new Vector3(v.x, v.y, 0f);
+    }
+
+    public struct Ray
+    {
+        public Vector3 GetPoint(float distance) => default;
+    }
+
+    public struct Plane
+    {
+        public Plane(Vector3 inNormal, Vector3 inPoint) { }
+        public bool Raycast(Ray ray, out float enter) { enter = 0f; return false; }
+    }
+
+    public static class Screen
+    {
+        public static int height => 0;
+    }
+
     public struct Quaternion
     {
         public static Quaternion Euler(float x, float y, float z) => default;
@@ -63,6 +85,7 @@ namespace UnityEngine
         public Vector3 localPosition { get; set; }
         public Vector3 localScale { get; set; }
         public Vector3 eulerAngles { get; set; }
+        public Quaternion localRotation { get; set; }
         public Vector3 forward => Vector3.forward;
         public void SetParent(Transform parent, bool worldPositionStays) { }
         public void SetPositionAndRotation(Vector3 position, Quaternion rotation) { }
@@ -89,6 +112,8 @@ namespace UnityEngine
     {
         public static Camera main => null;
         public float farClipPlane { get; set; }
+        public Ray ScreenPointToRay(Vector3 pos) => default;
+        public Vector3 WorldToScreenPoint(Vector3 position) => default;
     }
 
     public static class Time
@@ -157,6 +182,17 @@ namespace UnityEngine.InputSystem
     }
 
     public sealed class KeyControl : ButtonControl { }
+
+    public sealed class Vector2Control
+    {
+        public Vector2 ReadValue() => default;
+    }
+
+    public class Mouse
+    {
+        public static Mouse current => null;
+        public Vector2Control position { get; } = new Vector2Control();
+    }
 
     public class Keyboard
     {

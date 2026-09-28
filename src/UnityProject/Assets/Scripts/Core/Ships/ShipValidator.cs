@@ -61,7 +61,42 @@ namespace Pacifico.Core.Ships
             if (spec.HasTurret && spec.ArmorInches(ArmorZone.Turret) <= 0f)
                 errors.Add($"{spec.Id}: torreta sin blindaje declarado.");
 
+            if (spec.Guns != null)
+            {
+                if (spec.HasTurret && spec.Turret == null)
+                    errors.Add($"{spec.Id}: tiene cañones en torre pero no declara el montaje.");
+                if (!spec.HasTurret && spec.Turret != null)
+                    errors.Add($"{spec.Id}: declara montaje de torre sin cañones en torre.");
+            }
+            if (spec.Turret != null) ValidateTurret(spec.Id, spec.Turret, errors);
+
             return errors;
+        }
+
+        private static void ValidateTurret(string id, TurretMount turret, List<string> errors)
+        {
+            if (turret.traverseDegreesPerSecond <= 0f) errors.Add($"{id}: velocidad de giro de torre inválida.");
+            if (turret.elevationDegreesPerSecond <= 0f) errors.Add($"{id}: velocidad de elevación inválida.");
+            if (turret.minElevationDegrees >= turret.maxElevationDegrees) errors.Add($"{id}: límites de elevación incoherentes.");
+            if (turret.maxElevationDegrees <= 0f || turret.maxElevationDegrees >= 45f) errors.Add($"{id}: elevación máxima fuera de (0, 45)°.");
+            if (turret.minElevationDegrees < -15f) errors.Add($"{id}: depresión mínima por debajo de -15°.");
+            if (turret.muzzleVelocityMs <= 0f) errors.Add($"{id}: velocidad de boca de torre inválida.");
+            if (turret.barrelSeparationM < 0f) errors.Add($"{id}: separación de cañones negativa.");
+            if (turret.gunHeightM < 0f) errors.Add($"{id}: altura de cañones negativa.");
+            if (turret.blindSectors == null)
+            {
+                errors.Add($"{id}: lista de sectores enmascarados nula.");
+                return;
+            }
+            var blocked = 0f;
+            foreach (var sector in turret.blindSectors)
+            {
+                if (sector == null) { errors.Add($"{id}: sector enmascarado nulo."); continue; }
+                if (sector.halfWidthDegrees <= 0f || sector.halfWidthDegrees >= 180f)
+                    errors.Add($"{id}: sector enmascarado con semiancho inválido.");
+                blocked += 2f * sector.halfWidthDegrees;
+            }
+            if (blocked >= 360f) errors.Add($"{id}: los sectores enmascarados bloquean todo el horizonte.");
         }
     }
 }

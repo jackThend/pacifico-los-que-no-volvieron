@@ -53,6 +53,17 @@ namespace Pacifico.Tests
                 CollectionAssert.AreEqual(
                     original.Guns.Select(g => (g.gunName, g.count, g.projectileLbs, g.mount, g.reloadSeconds)).ToList(),
                     copy.Guns.Select(g => (g.gunName, g.count, g.projectileLbs, g.mount, g.reloadSeconds)).ToList());
+                Assert.AreEqual(original.Turret == null, copy.Turret == null, original.Id);
+                if (original.Turret != null)
+                {
+                    Assert.AreEqual(original.Turret.traverseDegreesPerSecond, copy.Turret.traverseDegreesPerSecond);
+                    Assert.AreEqual(original.Turret.maxElevationDegrees, copy.Turret.maxElevationDegrees);
+                    Assert.AreEqual(original.Turret.muzzleVelocityMs, copy.Turret.muzzleVelocityMs);
+                    CollectionAssert.AreEqual(
+                        original.Turret.blindSectors.Select(b => (b.centerDegrees, b.halfWidthDegrees, b.reason)).ToList(),
+                        copy.Turret.blindSectors.Select(b => (b.centerDegrees, b.halfWidthDegrees, b.reason)).ToList());
+                    Assert.AreNotSame(original.Turret, copy.Turret);
+                }
                 CollectionAssert.IsEmpty(ShipValidator.Validate(copy), original.Id);
             }
         }

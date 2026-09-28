@@ -23,6 +23,9 @@ namespace Pacifico.Core.Ships
         public float HullIntegrity { get; }
         public IReadOnlyList<ArmorPlate> Armor { get; }
         public IReadOnlyList<GunBattery> Guns { get; }
+
+        /// <summary>Montaje de torre giratoria; null si el buque no tiene torre.</summary>
+        public TurretMount Turret { get; }
         public string HistoricalNote { get; }
 
         public ShipSpec(
@@ -40,7 +43,8 @@ namespace Pacifico.Core.Ships
             float hullIntegrity,
             IReadOnlyList<ArmorPlate> armor,
             IReadOnlyList<GunBattery> guns,
-            string historicalNote)
+            string historicalNote,
+            TurretMount turret = null)
         {
             Id = id;
             DisplayName = displayName;
@@ -57,6 +61,7 @@ namespace Pacifico.Core.Ships
             Armor = armor;
             Guns = guns;
             HistoricalNote = historicalNote;
+            Turret = turret;
         }
 
         public bool HasTurret
