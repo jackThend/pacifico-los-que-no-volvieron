@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Solo compila Assets/Tests/EditModeUnity: son pruebas que necesitan el motor
+    (ScriptableObject.CreateInstance, JsonUtility) y únicamente se ejecutan en el Unity Test Runner.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Pacifico.Tests.Unity</AssemblyName>
+    <!-- CS0649: Unity lo suprime para campos [SerializeField] (los asigna el Inspector). -->
+    <NoWarn>$(NoWarn);CS1701;CS1702;CS0649</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(UnityAssets)Tests/EditModeUnity/**/*.cs" />
+    <ProjectReference Include="../Pacifico.Core/Pacifico.Core.csproj" />
+    <ProjectReference Include="../Pacifico.Runtime/Pacifico.Runtime.csproj" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="Unity3D.SDK" Version="$(UnitySdkVersion)" ExcludeAssets="all" GeneratePathProperty="true" NoWarn="NU1701" />
+    <Reference Include="UnityEngine">
+      <HintPath>$(PkgUnity3D_SDK)/lib/UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

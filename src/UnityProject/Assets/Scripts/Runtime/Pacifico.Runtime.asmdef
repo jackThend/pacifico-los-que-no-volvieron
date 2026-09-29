@@ -1,10 +1,9 @@
 {
     "name": "Pacifico.Runtime",
-    "rootNamespace": "Pacifico.Runtime",
+    "rootNamespace": "Pacifico",
     "references": [
         "Pacifico.Core",
-        "Unity.InputSystem",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -13,6 +12,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1.0.0",
+            "define": "PACIFICO_INPUT_SYSTEM"
+        }
+    ],
     "noEngineReferences": false
 }

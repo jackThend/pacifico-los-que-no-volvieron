@@ -1,170 +1,210 @@
+using System;
+using System.Collections.Generic;
+using Pacifico.Core.Common;
 using Pacifico.Core.Naval;
-using Pacifico.Core.Ships;
+using Pacifico.Input;
 using UnityEngine;
 
-namespace Pacifico.Runtime.Naval
+namespace Pacifico.Naval
 {
     /// <summary>
-    /// Torre Coles en escena: el jugador apunta con el ratón sobre el mar,
-    /// <see cref="ColesTurretModel"/> gira la torre (independiente del casco)
-    /// y eleva los cañones con las velocidades del montaje, y se dibuja la
-    /// retícula de convergencia de los dos Armstrong.
+    /// Torre Coles en escena (ROADMAP 2.2). Apunta con el ratón sobre el mar, dispara con clic izquierdo o Espacio,
+    /// ajusta la convergencia con R/F y amplía el telémetro manteniendo Mayús. Dibuja la retícula de convergencia:
+    /// los puntos de caída previstos de cada pieza y la dispersión esperada.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ColesTurretController : MonoBehaviour
     {
-        [SerializeField] private ShipNavigationController ship;
-        [SerializeField, Tooltip("Pivote de giro horizontal (hijo del buque).")] private Transform turretPivot;
-        [SerializeField, Tooltip("Pivote de elevación de los cañones (hijo de la torre).")] private Transform gunPivot;
-        [SerializeField] private Camera aimCamera;
+        [SerializeField] private ShipController ship;
+        [Tooltip("Pivote de giro de la torre (rota en Y local).")]
+        [SerializeField] private Transform turretPivot;
+        [Tooltip("Pivote de elevación de los cañones (rota en X local).")]
+        [SerializeField] private Transform gunCradle;
+        [Tooltip("Bocas de las piezas: 0 = babor de la torre, 1 = estribor.")]
+        [SerializeField] private Transform[] muzzles = new Transform[0];
+        [SerializeField] private NavalShell shellPrefab;
         [SerializeField] private bool playerControlled = true;
         [SerializeField] private float seaLevel;
-        [SerializeField] private bool showReticle = true;
 
-        private ColesTurretModel turret;
-        private GunBattery turretGuns;
-        private float reloadRemaining;
-        private string lastSalvo = string.Empty;
+        [Header("Telémetro")]
+        [SerializeField] private float normalFov = 60f;
+        [SerializeField] private float rangefinderFov = 14f;
+        [SerializeField] private float convergenceStepM = 100f;
 
-        public ColesTurretModel Turret => turret;
-        public float ReloadRemaining => reloadRemaining;
-        public bool IsLoaded => reloadRemaining <= 0f;
+        private ColesTurretModel _model;
+        private Camera _camera;
+        private bool _fireRequested;
+        private GUIStyle _style;
 
-        /// <summary>Se dispara por cada proyectil de la salva que alcanza a un buque.</summary>
-        public event System.Action<ShipDamageReceiver, ImpactReport> ShellHit;
+        public ColesTurretModel Model => _model;
 
-        public void Configure(ShipNavigationController owner, Transform yawPivot, Transform pitchPivot,
-            Camera camera, bool isPlayerControlled)
+        /// <summary>La torre ha disparado (una o las dos piezas).</summary>
+        public event Action<ColesTurretController> Fired;
+
+        public bool PlayerControlled
         {
-            ship = owner;
-            turretPivot = yawPivot;
-            gunPivot = pitchPivot;
-            aimCamera = camera;
-            playerControlled = isPlayerControlled;
+            get => playerControlled;
+            set => playerControlled = value;
         }
 
-        // Start (no Awake): el ShipNavigationController debe haber creado su modelo.
+        /// <summary>Configura la torre por código (escenas de prototipo generadas por el editor).</summary>
+        public void Configure(ShipController owner, Transform pivot, Transform cradle, Transform[] gunMuzzles, NavalShell prefab)
+        {
+            ship = owner;
+            turretPivot = pivot;
+            gunCradle = cradle;
+            muzzles = gunMuzzles;
+            shellPrefab = prefab;
+        }
+
         private void Start()
         {
-            if (ship == null) ship = GetComponent<ShipNavigationController>();
-            var spec = ship != null && ship.ShipData != null ? ship.ShipData.ToSpec() : null;
-            if (spec == null || spec.Turret == null)
+            _camera = Camera.main;
+            if (ship == null || ship.Spec == null || ship.Spec.Turret == null)
             {
-                Debug.LogError($"[ColesTurretController] {name}: el buque no tiene montaje de torre.", this);
+                Debug.LogError("[Pacífico] ColesTurretController necesita un ShipController con torre en su ficha.", this);
                 enabled = false;
                 return;
             }
-            turret = new ColesTurretModel(spec.Turret);
-            foreach (var battery in spec.Guns)
+            _model = ColesTurretModel.FromShip(ship.Spec, GetInstanceID());
+
+            NavalHud hud = NavalHud.Active;
+            if (hud != null)
             {
-                if (battery.mount == GunMount.Turret) turretGuns = battery;
+                hud.ExtraLines.Add(() => !playerControlled || hud.Ship != ship ? string.Empty
+                    : "Torre:      " + _model.TrainDeg.ToString("+000;-000") + "°  elev " + _model.ElevationDeg.ToString("0.0") + "°");
+                hud.ExtraLines.Add(() => !playerControlled || hud.Ship != ship ? string.Empty
+                    : "Convergencia: " + _model.ConvergenceRangeM.ToString("0") + " m   [R/F]");
             }
-            if (aimCamera == null) aimCamera = Camera.main;
         }
+
+        /// <summary>Orden de puntería para IA: punto del mundo con corrección por movimiento del blanco.</summary>
+        public void AimAt(Vector3 worldPoint, Vector3 targetVelocity)
+        {
+            if (_model == null) return;
+            Vector3 origin = PivotPosition;
+            Vector3 aim = ShellLauncher.Lead(origin, worldPoint, targetVelocity, _model.Gun.MuzzleVelocityMps);
+            _model.OrderAtPoint(origin.x, origin.z, ship.Motion.HeadingDeg, aim.x, aim.z);
+        }
+
+        public void RequestFire() => _fireRequested = true;
+
+        private Vector3 PivotPosition => turretPivot != null ? turretPivot.position : ship.transform.position;
 
         private void Update()
         {
-            if (!playerControlled || aimCamera == null) return;
-            if (!GameInput.TryGetPointer(out var pointer)) return;
+            if (_model == null) return;
 
-            var ray = aimCamera.ScreenPointToRay(pointer);
-            var sea = new Plane(Vector3.up, new Vector3(0f, seaLevel, 0f));
-            if (sea.Raycast(ray, out var distance))
+            if (playerControlled)
             {
-                var point = ray.GetPoint(distance);
-                turret.SetTarget(point.x, point.z);
-            }
-
-            if (GameInput.PrimaryClickDown()) TryFire();
-        }
-
-        /// <summary>
-        /// Dispara la salva de los dos Armstrong si están cargados y la torre
-        /// puede hacer fuego. Cada proyectil cae en su punto de la retícula y se
-        /// resuelve contra la silueta y el blindaje del buque alcanzado.
-        /// </summary>
-        public bool TryFire()
-        {
-            if (turret == null || turretGuns == null || !IsLoaded || !turret.CanFire) return false;
-            reloadRemaining = turretGuns.reloadSeconds;
-
-            var hits = 0;
-            foreach (var impact in new[] { turret.LeftImpact, turret.RightImpact })
-            {
-                foreach (var receiver in ShipDamageReceiver.All)
+                if (_camera != null && TryMouseOnSea(out Vector3 point))
                 {
-                    if (receiver.Ship == ship || receiver.Spec == null || receiver.Hull.IsSunk) continue;
-                    var pose = receiver.Pose;
-                    if (!NavalHitTest.TryHit(impact, pose, receiver.Spec, out var zone)) continue;
+                    Vector3 origin = PivotPosition;
+                    _model.OrderAtPoint(origin.x, origin.z, ship.Motion.HeadingDeg, point.x, point.z);
+                }
+                if (GameInput.MousePressed(0) || GameInput.Pressed(GameKey.Space)) _fireRequested = true;
+                if (GameInput.Pressed(GameKey.R)) _model.ConvergenceRangeM += convergenceStepM;
+                if (GameInput.Pressed(GameKey.F)) _model.ConvergenceRangeM -= convergenceStepM;
 
-                    var report = ArmorImpact.ResolveShot(turretGuns, turret.Mount.gunHeightM, turret.TurretPosition,
-                        pose, receiver.Spec, zone);
-                    receiver.ApplyImpact(report);
-                    ShellHit?.Invoke(receiver, report);
-                    lastSalvo = $"{receiver.Spec.DisplayName}: {Describe(report)}";
-                    hits++;
-                    break;
+                if (_camera != null)
+                {
+                    float fov = GameInput.Held(GameKey.LeftShift) ? rangefinderFov : normalFov;
+                    _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, fov, 1f - Mathf.Exp(-8f * Time.deltaTime));
                 }
             }
-            if (hits == 0) lastSalvo = "Agua: la salva no alcanza ningún buque";
-            return true;
-        }
 
-        private static string Describe(ImpactReport report)
-        {
-            var result = report.Result == ImpactResult.Ricochet ? "REBOTE"
-                : report.Result == ImpactResult.CriticalPenetration ? "PERFORACIÓN CRÍTICA" : "PERFORACIÓN";
-            return $"{result} ({report.Zone}, {report.IncidenceDegrees:0}°, perfora {report.PenetrationInches:0.0}\" " +
-                   $"vs {report.EffectiveArmorInches:0.0}\" efectivas) −{report.Damage:0}";
-        }
-
-        /// <summary>Asigna blanco desde código (IA, cinemáticas).</summary>
-        public void SetTarget(Vector3 worldPoint)
-        {
-            turret?.SetTarget(worldPoint.x, worldPoint.z);
+            // Visual: la torre y la cuna siguen al modelo (la simulación manda, la malla obedece).
+            if (turretPivot != null) turretPivot.localRotation = Quaternion.Euler(0f, _model.TrainDeg, 0f);
+            if (gunCradle != null) gunCradle.localRotation = Quaternion.Euler(-_model.ElevationDeg, 0f, 0f);
         }
 
         private void FixedUpdate()
         {
-            if (reloadRemaining > 0f) reloadRemaining -= Time.fixedDeltaTime;
-            var motion = ship.Motion;
-            if (motion == null) return;
-            turret.Step(Time.fixedDeltaTime, new ShipPose(motion.PositionX, motion.PositionZ, motion.HeadingDegrees));
+            if (_model == null) return;
+            _model.Step(Time.fixedDeltaTime);
+            if (_fireRequested)
+            {
+                _fireRequested = false;
+                Fire();
+            }
         }
 
-        private void LateUpdate()
+        private void Fire()
         {
-            if (turretPivot != null) turretPivot.localRotation = Quaternion.Euler(0f, turret.TrainDegrees, 0f);
-            if (gunPivot != null) gunPivot.localRotation = Quaternion.Euler(-turret.ElevationDegrees, 0f, 0f);
+            List<ShellLaunch> launches = _model.Fire(ship.Motion.HeadingDeg);
+            if (launches.Count == 0 || shellPrefab == null) return;
+
+            foreach (ShellLaunch launch in launches)
+            {
+                ShellLauncher.Launch(shellPrefab, MuzzlePosition(launch.GunIndex, launch.LateralOffsetM), launch, ship.Velocity, ship.gameObject);
+            }
+            Fired?.Invoke(this);
         }
+
+        private Vector3 MuzzlePosition(int gunIndex, float lateralOffset)
+        {
+            if (gunIndex < muzzles.Length && muzzles[gunIndex] != null) return muzzles[gunIndex].position;
+            Transform basis = turretPivot != null ? turretPivot : ship.transform;
+            return basis.position + basis.right * lateralOffset + Vector3.up * 2f;
+        }
+
+        private bool TryMouseOnSea(out Vector3 point)
+        {
+            Vector3 mouse = GameInput.MousePosition;
+            Ray ray = _camera.ScreenPointToRay(mouse);
+            var sea = new Plane(Vector3.up, new Vector3(0f, seaLevel, 0f));
+            if (sea.Raycast(ray, out float enter))
+            {
+                point = ray.GetPoint(enter);
+                return true;
+            }
+            point = default;
+            return false;
+        }
+
+        // ------------------------------------------------------------------------------------------
+        // Retícula de convergencia (IMGUI de prototipo)
+        // ------------------------------------------------------------------------------------------
 
         private void OnGUI()
         {
-            if (!showReticle || !playerControlled || turret == null || aimCamera == null) return;
+            if (_model == null || !playerControlled || _camera == null) return;
+            if (_style == null)
+            {
+                _style = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleCenter };
+            }
 
-            if (turret.HasTarget) DrawMarker(turret.Target, "+");
-            DrawMarker(turret.LeftImpact, "x");
-            DrawMarker(turret.RightImpact, "x");
+            Vector3 origin = PivotPosition;
+            float azimuth = ship.Motion.HeadingDeg + _model.TrainDeg;
+            float range = Ballistics.Range(_model.Gun.MuzzleVelocityMps, Mathf.Max(0.01f, _model.ElevationDeg));
+            Vector3 forward = Quaternion.Euler(0f, azimuth, 0f) * Vector3.forward;
+            Vector3 right = Quaternion.Euler(0f, azimuth, 0f) * Vector3.right;
+            Vector3 center = new Vector3(origin.x, seaLevel, origin.z) + forward * range;
 
-            string state;
-            if (!turret.HasTarget) state = "sin blanco";
-            else if (!turret.TargetInRange) state = "FUERA DE ALCANCE";
-            else if (turret.IsMasked) state = $"ENMASCARADO: {turret.MaskingSector.reason}";
-            else if (turret.CanFire) state = IsLoaded ? "EN PUNTERÍA — clic para disparar" : "EN PUNTERÍA";
-            else state = "apuntando…";
-            var loading = IsLoaded ? "cargados" : $"cargando {reloadRemaining:0.0} s";
+            bool blind = _model.IsInBlindArc(_model.TrainDeg);
+            GUI.color = blind ? new Color(1f, 0.3f, 0.2f) : _model.IsOnTarget() ? new Color(0.4f, 1f, 0.5f) : new Color(1f, 0.85f, 0.3f);
 
-            GUI.Label(new Rect(12f, 130f, 560f, 90f),
-                $"Torre Coles: marcación {turret.TrainDegrees:+000;-000}°  elevación {turret.ElevationDegrees:0.0}°  ({loading})\n" +
-                $"Alcance {turret.CurrentRangeM:0} m / blanco {turret.TargetRangeM:0} m (máx. {turret.MaxRangeM:0} m)\n" +
-                state + "\n" + lastSalvo);
+            for (int i = 0; i < _model.GunCount; i++)
+            {
+                Vector3 impact = center + right * _model.LateralMissAt(i, range);
+                DrawMarker(impact, _model.IsLoaded(i) ? "●" : "○");
+            }
+
+            float spread = range * Mathf.Tan(_model.DispersionDeg * Mathf.Deg2Rad);
+            DrawMarker(center + right * spread, "·");
+            DrawMarker(center - right * spread, "·");
+
+            string status = blind ? "SECTOR CIEGO" : _model.TargetOutOfRange ? "FUERA DE ALCANCE" : range.ToString("0") + " m";
+            DrawMarker(center + Vector3.up * 8f, status);
+            GUI.color = Color.white;
         }
 
-        private void DrawMarker(SeaPoint point, string glyph)
+        private void DrawMarker(Vector3 world, string text)
         {
-            var screen = aimCamera.WorldToScreenPoint(new Vector3(point.X, seaLevel, point.Z));
-            if (screen.z <= 0f) return; // detrás de la cámara
-            GUI.Label(new Rect(screen.x - 8f, Screen.height - screen.y - 10f, 20f, 20f), glyph);
+            Vector3 screen = _camera.WorldToScreenPoint(world);
+            if (screen.z <= 0f) return;
+            var rect = new Rect(screen.x - 60f, Screen.height - screen.y - 10f, 120f, 20f);
+            GUI.Label(rect, text, _style);
         }
     }
 }

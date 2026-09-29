@@ -1,145 +1,153 @@
 using System;
+using Pacifico.Core.Common;
 
 namespace Pacifico.Core.Naval
 {
     /// <summary>
-    /// Simulación plana (2D) de propulsión, inercia hidrodinámica y timón.
-    /// Determinista e independiente de Unity: el controlador de Runtime la
-    /// avanza en FixedUpdate y copia posición y rumbo al Transform.
-    /// Convención: rumbo 0° = +Z (norte), positivo en sentido horario (igual
-    /// que la rotación Y de Unity); X = este.
+    /// Modelo de maniobra en el plano (ROADMAP 2.1). Convenciones de Unity: X = este, Z = norte,
+    /// rumbo en grados en sentido horario desde +Z (igual que la rotación en Y de un Transform).
+    /// <para>
+    /// Inercia: la velocidad tiende a la ordenada por el telégrafo con respuesta exponencial. La constante de
+    /// tiempo al ganar arrancada (<see cref="ShipHandling.AccelerationTimeSeconds"/>) es mucho menor que al
+    /// perderla por rozamiento (<see cref="ShipHandling.CoastDownTimeSeconds"/>): un buque que corta máquina
+    /// sigue avanzando durante minutos.
+    /// </para>
+    /// <para>
+    /// Gobierno: el timón necesita arrancada. Por encima de la velocidad de gobierno la velocidad angular máxima
+    /// es constante, así que el radio de giro (v / ω) crece en proporción a la velocidad.
+    /// </para>
     /// </summary>
     public sealed class ShipMotionModel
     {
-        private const float MaxSubstepSeconds = 0.02f;
-        private const float DegreesPerRadian = 57.29578f;
+        /// <summary>Fracción de la velocidad máxima a partir de la cual el timón gobierna plenamente.</summary>
+        public const float SteerageSpeedFraction = 0.25f;
+        /// <summary>Pérdida de velocidad con el timón a la banda (los cascos de 1879 «frenaban» al caer).</summary>
+        public const float TurnSpeedLoss = 0.25f;
+        /// <summary>Constante de tiempo de la guiñada (inercia rotacional del casco), en segundos.</summary>
+        public const float YawResponseSeconds = 1.5f;
+        /// <summary>Las constantes se definen para alcanzar el 95 % del cambio: 3 constantes de tiempo.</summary>
+        private const float TimeConstantsTo95Percent = 3f;
+        /// <summary>Invertir la máquina frena con menos eficacia de la que acelera la hélice avante.</summary>
+        private const float AsternBrakingFactor = 1.5f;
 
-        private readonly float quadraticDrag;
+        private readonly ShipHandling _handling;
+        private readonly float _baseMaxSpeed;
 
-        public ShipHandling Handling { get; }
-        public EngineOrder Order { get; private set; }
+        public ShipMotionModel(ShipSpec spec) : this(spec.Handling, spec.MaxSpeedMps)
+        {
+        }
 
-        /// <summary>Potencia real entregada por las máquinas (-1..1), con retardo respecto al telégrafo.</summary>
-        public float EngineOutput { get; private set; }
+        public ShipMotionModel(ShipHandling handling, float maxSpeedMps)
+        {
+            _handling = handling ?? throw new ArgumentNullException(nameof(handling));
+            if (maxSpeedMps <= 0f) throw new ArgumentOutOfRangeException(nameof(maxSpeedMps));
+            _baseMaxSpeed = maxSpeedMps;
+        }
 
-        /// <summary>Velocidad sobre el agua (m/s); negativa si se navega hacia atrás.</summary>
-        public float SpeedMs { get; private set; }
+        public EngineTelegraph Telegraph { get; } = new EngineTelegraph();
 
-        /// <summary>Posición de la pala del timón (-1 = babor a la banda, +1 = estribor a la banda).</summary>
+        // --- Estado ------------------------------------------------------------------------------
+        public float X { get; private set; }
+        public float Z { get; private set; }
+        public float HeadingDeg { get; private set; }
+        /// <summary>Velocidad sobre el fondo en la dirección de la proa (m/s, negativa hacia atrás).</summary>
+        public float Speed { get; private set; }
+        /// <summary>Velocidad angular (°/s, positiva a estribor).</summary>
+        public float YawRateDegPerSecond { get; private set; }
+        /// <summary>Ángulo de timón real, normalizado [-1, 1] (negativo = babor).</summary>
         public float Rudder { get; private set; }
 
-        /// <summary>Entrada de timón solicitada (-1..1).</summary>
-        public float RudderCommand { get; private set; }
+        // --- Mandos ------------------------------------------------------------------------------
+        /// <summary>Timón ordenado [-1, 1] (A = -1 babor, D = +1 estribor).</summary>
+        public float RudderCommand { get; set; }
 
-        public float HeadingDegrees { get; private set; }
-        public float YawRateDegreesPerSecond { get; private set; }
-        public float PositionX { get; private set; }
-        public float PositionZ { get; private set; }
+        // --- Averías (ROADMAP 2.4) ---------------------------------------------------------------
+        /// <summary>Multiplicador de la potencia de máquina por daños en calderas o inundación [0, 1].</summary>
+        public float PropulsionFactor { get; set; } = 1f;
+        /// <summary>Si el servomotor está dañado, el timón queda trabado en su ángulo actual.</summary>
+        public bool RudderJammed { get; set; }
 
-        /// <summary>
-        /// Potencia máxima disponible (0..1): la reducen calderas averiadas e
-        /// inundación. El telégrafo puede pedir más, pero las máquinas no la dan.
-        /// </summary>
-        public float PowerLimit { get; private set; } = 1f;
+        public float MaxSpeed => _baseMaxSpeed;
+        public float SpeedKnots => Units.MetersPerSecondToKnots(Speed);
 
-        public float SpeedKnots => SpeedMs / ShipHandling.KnotsToMetersPerSecond;
-        public float RudderDegrees => Rudder * Handling.MaxRudderDegrees;
-
-        public ShipMotionModel(ShipHandling handling, float x = 0f, float z = 0f, float headingDegrees = 0f)
+        /// <summary>Velocidad que persigue la máquina con la orden y el timón actuales.</summary>
+        public float TargetSpeed
         {
-            Handling = handling ?? throw new ArgumentNullException(nameof(handling));
-            // Arrastre cuadrático calibrado: a toda fuerza desde parado la aceleración es MaxSpeed / Inercia.
-            quadraticDrag = 1f / (handling.MaxSpeedMs * handling.InertiaSeconds);
-            PositionX = x;
-            PositionZ = z;
-            HeadingDegrees = Angles.Normalize360(headingDegrees);
-            Order = EngineOrder.Stop;
+            get
+            {
+                float fraction = EngineTelegraph.SpeedFraction(Telegraph.Order);
+                float turnLoss = 1f - TurnSpeedLoss * Math.Abs(Rudder) * SteerageFactor(Speed);
+                return fraction * _baseMaxSpeed * MathUtil.Clamp01(PropulsionFactor) * turnLoss;
+            }
         }
 
-        public void SetOrder(EngineOrder order) => Order = order;
-
-        public void SetPowerLimit(float limit) => PowerLimit = Clamp(limit, 0f, 1f);
-
-        /// <summary>Choque (espolonazo): conserva solo <paramref name="keepFraction"/> de la velocidad.</summary>
-        public void ApplySpeedLoss(float keepFraction)
+        /// <summary>Radio de giro instantáneo (m); infinito si no gira.</summary>
+        public float TurnRadius
         {
-            SpeedMs *= Clamp(keepFraction, 0f, 1f);
+            get
+            {
+                float omega = Math.Abs(YawRateDegPerSecond) * MathUtil.Deg2Rad;
+                return omega < 1e-5f ? float.PositiveInfinity : Math.Abs(Speed) / omega;
+            }
         }
 
-        /// <summary>Sube una posición del telégrafo (W). Devuelve true si cambió.</summary>
-        public bool TelegraphUp()
+        public void SetPose(float x, float z, float headingDeg)
         {
-            if (Order == EngineOrder.Full) return false;
-            Order = (EngineOrder)((int)Order + 1);
-            return true;
+            X = x;
+            Z = z;
+            HeadingDeg = MathUtil.WrapAngle360(headingDeg);
         }
 
-        /// <summary>Baja una posición del telégrafo (S). Devuelve true si cambió.</summary>
-        public bool TelegraphDown()
+        /// <summary>Fija la velocidad (p. ej. al empezar una misión ya navegando).</summary>
+        public void SetSpeed(float speedMps) => Speed = speedMps;
+
+        /// <summary>Aplica una variación brusca de velocidad (espolonazo, varada).</summary>
+        public void ApplySpeedImpulse(float deltaSpeedMps) => Speed += deltaSpeedMps;
+
+        /// <summary>Avanza la simulación <paramref name="dt"/> segundos. Independiente de la tasa de fotogramas.</summary>
+        public void Step(float dt)
         {
-            if (Order == EngineOrder.Astern) return false;
-            Order = (EngineOrder)((int)Order - 1);
-            return true;
+            if (dt <= 0f) return;
+
+            // 1) Servomotor del timón.
+            if (!RudderJammed)
+            {
+                float rudderRate = 1f / Math.Max(0.01f, _handling.RudderTimeSeconds);
+                Rudder = MathUtil.MoveTowards(Rudder, MathUtil.Clamp(RudderCommand, -1f, 1f), rudderRate * dt);
+            }
+
+            // 2) Máquina e inercia hidrodinámica.
+            float target = TargetSpeed;
+            float tau = SpeedTimeConstant(Speed, target);
+            Speed += (target - Speed) * (1f - (float)Math.Exp(-dt / tau));
+
+            // 3) Guiñada: el timón solo actúa con arrancada; marcha atrás invierte el efecto.
+            float targetYaw = _handling.MaxTurnRateDegPerSecond * Rudder * SteerageFactor(Speed) * Math.Sign(Speed);
+            YawRateDegPerSecond += (targetYaw - YawRateDegPerSecond) * (1f - (float)Math.Exp(-dt / YawResponseSeconds));
+
+            // 4) Integración de la posición (punto medio del rumbo para reducir la deriva numérica en giros).
+            float midHeading = (HeadingDeg + YawRateDegPerSecond * dt * 0.5f) * MathUtil.Deg2Rad;
+            X += (float)Math.Sin(midHeading) * Speed * dt;
+            Z += (float)Math.Cos(midHeading) * Speed * dt;
+            HeadingDeg = MathUtil.WrapAngle360(HeadingDeg + YawRateDegPerSecond * dt);
         }
 
-        /// <summary>Entrada continua de timón (A = -1, D = +1, soltar = 0).</summary>
-        public void SetRudderCommand(float command)
+        /// <summary>Eficacia del timón según la arrancada, en [0, 1].</summary>
+        public float SteerageFactor(float speed)
         {
-            RudderCommand = Clamp(command, -1f, 1f);
+            return MathUtil.Clamp01(Math.Abs(speed) / (SteerageSpeedFraction * _baseMaxSpeed));
         }
 
-        /// <summary>Avanza la simulación. Pasos grandes se subdividen para mantener la estabilidad.</summary>
-        public void Step(float deltaSeconds)
+        private float SpeedTimeConstant(float current, float target)
         {
-            if (deltaSeconds <= 0f) return;
-            var steps = (int)Math.Ceiling(deltaSeconds / MaxSubstepSeconds);
-            var dt = deltaSeconds / steps;
-            for (var i = 0; i < steps; i++) Substep(dt);
+            float accelerate = _handling.AccelerationTimeSeconds / TimeConstantsTo95Percent;
+            float coast = _handling.CoastDownTimeSeconds / TimeConstantsTo95Percent;
+
+            bool reversing = Math.Abs(current) > 0.05f && Math.Sign(target) != Math.Sign(current) && target != 0f;
+            if (reversing) return accelerate * AsternBrakingFactor;
+
+            bool gainingWay = Math.Abs(target) > Math.Abs(current);
+            return gainingWay ? accelerate : coast;
         }
-
-        /// <summary>Radio de giro actual con el timón a la banda (m); crece con la velocidad.</summary>
-        public float TurnRadiusAtSpeed(float speedMs)
-        {
-            var speedRatio = Math.Min(Math.Abs(speedMs) / Handling.MaxSpeedMs, 1.5f);
-            return Handling.MinTurnRadiusM * (1f + Handling.TurnRadiusSpeedFactor * speedRatio);
-        }
-
-        private void Substep(float dt)
-        {
-            // 1. Calderas: la potencia sigue al telégrafo con retardo.
-            var requested = Clamp(Order.PowerFraction(), -PowerLimit, PowerLimit);
-            EngineOutput = MoveTowards(EngineOutput, requested, Handling.EngineResponsePerSecond * dt);
-
-            // 2. Propulsión vs. arrastre: velocidad terminal = potencia × velocidad máxima.
-            var targetSpeed = EngineOutput * Handling.MaxSpeedMs;
-            var thrust = quadraticDrag * targetSpeed * Math.Abs(targetSpeed) + Handling.LinearDragPerSecond * targetSpeed;
-            var drag = quadraticDrag * SpeedMs * Math.Abs(SpeedMs) + Handling.LinearDragPerSecond * SpeedMs;
-            var newSpeed = SpeedMs + (thrust - drag) * dt;
-            // Sin empuje, el arrastre frena pero nunca invierte la marcha.
-            if (thrust == 0f && Math.Sign(newSpeed) != Math.Sign(SpeedMs)) newSpeed = 0f;
-            SpeedMs = newSpeed;
-
-            // 3. Timón: la pala gira a velocidad limitada.
-            Rudder = MoveTowards(Rudder, RudderCommand, Handling.RudderRatePerSecond * 2f * dt);
-
-            // 4. Guiñada: sin arrancada no hay gobierno; el radio de giro crece con la velocidad.
-            var targetYaw = Rudder * SpeedMs / TurnRadiusAtSpeed(SpeedMs) * DegreesPerRadian;
-            var yawBlend = 1f - (float)Math.Exp(-dt / Handling.YawResponseSeconds);
-            YawRateDegreesPerSecond += (targetYaw - YawRateDegreesPerSecond) * yawBlend;
-            HeadingDegrees = Angles.Normalize360(HeadingDegrees + YawRateDegreesPerSecond * dt);
-
-            // 5. Traslación sobre el rumbo actual.
-            var headingRad = HeadingDegrees / DegreesPerRadian;
-            PositionX += (float)Math.Sin(headingRad) * SpeedMs * dt;
-            PositionZ += (float)Math.Cos(headingRad) * SpeedMs * dt;
-        }
-
-        private static float MoveTowards(float current, float target, float maxDelta)
-        {
-            if (Math.Abs(target - current) <= maxDelta) return target;
-            return current + Math.Sign(target - current) * maxDelta;
-        }
-
-        private static float Clamp(float value, float min, float max) => value < min ? min : value > max ? max : value;
     }
 }

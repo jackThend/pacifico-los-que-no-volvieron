@@ -1,89 +1,102 @@
-using Pacifico.Core;
-using Pacifico.Core.Collectibles;
+using System.Collections.Generic;
+using Pacifico.Core.Common;
+using Pacifico.Core.Narrative;
 using UnityEngine;
 
-namespace Pacifico.Runtime.Data
+namespace Pacifico.Data
 {
     /// <summary>
-    /// Coleccionable de "La Memoria Rota": carta, fotografía o documento con
-    /// su transcripción, facsímil 3D y narración. Los textos se importan desde
-    /// Archivo_Historico (menú Pacífico/Datos/Importar cartas históricas);
-    /// las referencias a textura, modelo y audio se asignan en el editor.
+    /// Coleccionable de «La Memoria Rota» (ROADMAP 1.3, GDD §4): texto transcrito, facsímil 3D y voz en off.
+    /// Se importa desde los Markdown del Archivo Histórico con «Pacífico/Datos/Generar ScriptableObjects históricos».
     /// </summary>
     [CreateAssetMenu(fileName = "Collectible_", menuName = "Pacífico/Datos/Coleccionable", order = 2)]
     public sealed class CollectibleDataSO : ScriptableObject
     {
         [Header("Identidad")]
-        [SerializeField] private string id;
-        [SerializeField] private string title;
-        [SerializeField] private CollectibleType collectibleType;
-        [SerializeField] private Faction faction;
-        [SerializeField, Range(1, 8)] private int chapter = 1;
+        public string id = string.Empty;
+        public CollectibleType type = CollectibleType.Letter;
+        public string title = string.Empty;
+        public string sender = string.Empty;
+        public string recipient = string.Empty;
+        public string dateLabel = string.Empty;
+        [Range(0, 8)] public int chapter;
+        public Faction faction = Faction.Neutral;
 
-        [Header("Documento")]
-        [SerializeField] private string sender;
-        [SerializeField] private string recipient;
-        [SerializeField] private string location;
-        [SerializeField] private string dateText;
-        [SerializeField] private int year;
-        [SerializeField, TextArea(8, 30)] private string transcription;
-        [SerializeField, TextArea] private string context;
-        [SerializeField, TextArea] private string sourceReference;
-        [SerializeField, TextArea] private string[] gameNotes = new string[0];
+        [Header("Texto")]
+        public string attribution = string.Empty;
+        [TextArea(8, 30)] public string body = string.Empty;
+        [TextArea(1, 4)] public string signature = string.Empty;
+        [Tooltip("Dedicatoria del reverso, visible al girar una fotografía en el visor.")]
+        [TextArea(1, 4)] public string reverseInscription = string.Empty;
+        [Min(0)] public int wordCount;
 
-        [Header("Origen en el repositorio")]
-        [SerializeField] private string sourceDocumentPath;
-        [SerializeField] private string facsimileImagePath;
+        [Header("Facsímil y audio")]
+        [Tooltip("Textura del documento original para el visor 3D.")]
+        public Texture2D facsimile;
+        [Tooltip("Voz en off para [Escuchar Carta]. Si falta, el visor muestra solo subtítulos.")]
+        public AudioClip narration;
+        public string audioClipKey = string.Empty;
 
-        [Header("Presentación")]
-        [SerializeField, Tooltip("Imagen del manuscrito o daguerrotipo para el visor.")] private Texture2D facsimileTexture;
-        [SerializeField, Tooltip("Modelo 3D del objeto (carta doblada, relicario, libreta).")] private GameObject facsimileModel;
-        [SerializeField, Tooltip("Voz en off para [Escuchar Carta].")] private AudioClip narrationClip;
-        [SerializeField] private string narrationKey;
+        [Header("Procedencia")]
+        public string sourceFile = string.Empty;
+        public string facsimileSourceImage = string.Empty;
+        public List<string> designNotes = new List<string>();
 
-        public string Id => id;
-        public string Title => title;
-        public string Transcription => transcription;
-        public Texture2D FacsimileTexture => facsimileTexture;
-        public GameObject FacsimileModel => facsimileModel;
-        public AudioClip NarrationClip => narrationClip;
+        /// <summary>Duración de la narración: la del clip si existe, o una estimación por número de palabras.</summary>
+        public float NarrationSeconds => narration != null ? narration.length : wordCount / CollectibleRecord.NarrationWordsPerMinute * 60f;
 
-        public CollectibleSpec ToSpec()
+        public CollectibleRecord ToRecord()
         {
-            return new CollectibleSpec(id, title, collectibleType, faction, sender, recipient, location,
-                dateText, year, chapter, transcription, context, sourceReference, sourceDocumentPath,
-                facsimileImagePath, narrationKey, (string[])gameNotes.Clone());
+            return new CollectibleRecord
+            {
+                Id = id,
+                Type = type,
+                Title = title,
+                Sender = sender,
+                Recipient = recipient,
+                DateLabel = dateLabel,
+                Chapter = chapter,
+                Faction = faction,
+                Attribution = attribution,
+                Body = body,
+                Signature = signature,
+                ReverseInscription = reverseInscription,
+                SourceFile = sourceFile,
+                FacsimileImage = facsimileSourceImage,
+                AudioClipKey = audioClipKey,
+                DesignNotes = new List<string>(designNotes),
+                WordCount = wordCount,
+            };
         }
 
-        /// <summary>Copia los datos textuales; conserva textura, modelo y audio ya asignados.</summary>
-        public void ApplySpec(CollectibleSpec spec)
+        /// <summary>Copia los datos textuales; las referencias a assets (textura, audio) se conservan.</summary>
+        public void CopyFrom(CollectibleRecord record)
         {
-            id = spec.Id;
-            title = spec.Title;
-            collectibleType = spec.Type;
-            faction = spec.Faction;
-            chapter = spec.Chapter;
-            sender = spec.Sender;
-            recipient = spec.Recipient;
-            location = spec.Location;
-            dateText = spec.DateText;
-            year = spec.Year;
-            transcription = spec.Transcription;
-            context = spec.Context;
-            sourceReference = spec.SourceReference;
-            gameNotes = new string[spec.GameNotes.Count];
-            for (var i = 0; i < gameNotes.Length; i++) gameNotes[i] = spec.GameNotes[i];
-            sourceDocumentPath = spec.SourceDocumentPath;
-            facsimileImagePath = spec.FacsimileImagePath;
-            narrationKey = spec.NarrationKey;
+            id = record.Id;
+            type = record.Type;
+            title = record.Title;
+            sender = record.Sender;
+            recipient = record.Recipient;
+            dateLabel = record.DateLabel;
+            chapter = record.Chapter;
+            faction = record.Faction;
+            attribution = record.Attribution;
+            body = record.Body;
+            signature = record.Signature;
+            if (!string.IsNullOrEmpty(record.ReverseInscription)) reverseInscription = record.ReverseInscription;
+            sourceFile = record.SourceFile;
+            facsimileSourceImage = record.FacsimileImage;
+            audioClipKey = record.AudioClipKey;
+            designNotes = new List<string>(record.DesignNotes);
+            wordCount = record.WordCount;
         }
+
+        public ValidationResult Validate() => ToRecord().Validate();
 
         private void OnValidate()
         {
-            foreach (var error in CollectibleValidator.Validate(ToSpec()))
-            {
-                Debug.LogWarning($"[CollectibleDataSO] {name}: {error}", this);
-            }
+            var result = Validate();
+            if (!result.IsValid) Debug.LogWarning(result.ToString(), this);
         }
     }
 }

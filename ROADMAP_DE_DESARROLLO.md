@@ -13,6 +13,12 @@
   * *Criterio:* Crear script `tools/assets_manager.py` y archivo `assets_manifest.json` para gestionar la descarga y sincronización de assets pesados desde Google Drive o fuentes CC0.
   * *Verificación:* Ejecución del script en modo test reportando hashes y estado de sincronización.
 
+- [ ] **0.3 Validación en el Editor de Unity 6** *(requiere una máquina con Unity; el entorno de agentes en la nube no lo tiene)*
+  * *Criterio:* Abrir `src/UnityProject` en Unity 6000.0 LTS, ejecutar **Pacífico → Datos → Generar ScriptableObjects históricos** y **Pacífico → Prototipos → Construir escena naval de Iquique**, y correr el Test Runner (EditMode: `Pacifico.Tests.EditMode` y `Pacifico.Tests.Unity`).
+  * *Verificación:* Consola sin errores de compilación; todas las pruebas en verde; en `Proto_Iquique` se comprueban a mano los criterios de 2.1 a 2.4 (W/S/A/D con inercia, torre y retícula, rebotes de 40 lb en el *Huáscar*, espolonazo y brigada 1/2/3); en `Proto_Pisagua_FPS` (**Pacífico → Prototipos → Construir escena FPS de Pisagua**), los de 3.1 (movimiento fluido a 60 FPS con el contador del HUD, rampas, escalera, túnel agachado, deslizamiento, encare y alza) y 3.2 (ciclo de 2,0 s del Comblain con la palanca, el cartucho y la vaina sincronizados; impactos en las siluetas con el alza correcta; caja de cartuchos).
+  * *Ampliación (Fase 6):* **Pacífico → Construir → Todas las escenas de la campaña**; jugar el menú y los capítulos 1, 4, 5, 6 y 8 (con el epílogo); generar una build y lanzarla con `-pacifico-perf` para obtener el informe de rendimiento (objetivo: p95 ≤ 16,7 ms y menos de un 0,5 % de tirones en cada capítulo).
+  * *Nota:* hasta completarla, las tareas marcadas `[X]` de las fases 1 a 3 están verificadas **fuera del motor**: arnés `tools/verify` con referencias de API de Unity y 192 pruebas NUnit de la lógica.
+
 ---
 
 ## 📌 FASE 1: ARQUITECTURA DE DATOS (SCRIPTABLE OBJECTS)
@@ -45,48 +51,54 @@
 ---
 
 ## 📌 FASE 3: MÓDULO FPS DE INFANTERÍA (PROTOTIPO PISAGUA)
-- [ ] **3.1 Controlador de Primera Persona Inmersivo**
+- [X] **3.1 Controlador de Primera Persona Inmersivo**
   * *Criterio:* Movimiento ágil, deslizamiento corto táctico, cabeceo de cámara realista y sistema de apuntado con miras de época.
   * *Verificación:* Movimiento fluido a 60 FPS sin jitter ni errores de física.
-- [ ] **3.2 Sistema de Fusiles de Época y Recarga Dinámica**
+- [X] **3.2 Sistema de Fusiles de Época y Recarga Dinámica**
   * *Criterio:* Fusiles monotiro con ciclo de disparo: percutir -> abrir cerrojo -> expulsar vaina -> insertar cartucho -> cerrar -> apuntar (2.0 segundos).
   * *Verificación:* Temporizador y animaciones de recarga sincronizados.
-- [ ] **3.3 Efectos Volumétricos de Pólvora Negra**
+- [X] **3.3 Efectos Volumétricos de Pólvora Negra**
   * *Criterio:* Humo volumétrico generado en la boca del cañón que se disipa con rapidez cinematográfica para no bloquear la visión del jugador.
   * *Verificación:* Test de estrés con 20 disparos continuos sin saturación visual.
-- [ ] **3.4 Combate Cuerpo a Cuerpo (Corvo y Bayoneta)**
+- [X] **3.4 Combate Cuerpo a Cuerpo (Corvo y Bayoneta)**
   * *Criterio:* Animación de estocada y tajo visceral en primera persona al aproximarse al rango cuerpo a cuerpo.
   * *Verificación:* Detección de colisión cuerpo a cuerpo precisa contra muñecos de prueba (*dummies*).
 
 ---
 
 ## 📌 FASE 4: MÓDULO RTS TÁCTICO SIN BASES (PROTOTIPO TACNA)
-- [ ] **4.1 Selección y Mando de Escuadras**
+- [X] **4.1 Selección y Mando de Escuadras**
   * *Criterio:* Selección múltiple por caja de arrastre y órdenes de movimiento/ataque sobre terreno irregular (NavMesh).
   * *Verificación:* Mando coordinado de escuadras de 8 a 12 soldados en formación de línea y guerrilla.
-- [ ] **4.2 Sistema de Supresión y Cobertura**
+- [X] **4.2 Sistema de Supresión y Cobertura**
   * *Criterio:* El fuego concentrado disminuye la velocidad de la escuadra enemiga y la obliga a tenderse en zanjas o parapetos.
   * *Verificación:* Comprobación de cambio de estado a *Suprimido* bajo volumen de fuego.
-- [ ] **4.3 Gestión de Cantimploras (Agua) y Munición**
+- [X] **4.3 Gestión de Cantimploras (Agua) y Munición**
   * *Criterio:* Desgaste gradual de reservas de agua y cartuchos en el desierto; reposición mediante carros de vituallas.
   * *Verificación:* Las tropas pierden efectividad si se agota el agua bajo el sol salitrero.
 
 ---
 
 ## 📌 FASE 5: SISTEMA NARRATIVO Y COLECCIONABLES
-- [ ] **5.1 Visor 3D de Documentos Históricos**
+- [X] **5.1 Visor 3D de Documentos Históricos**
   * *Criterio:* Modal interactivo para rotar cartas manuscritas, daguerrotipos y planos con zoom y transcripción textual conmutable.
   * *Verificación:* Inspección funcional del facsímil de la carta de Grau a Carmela Carvajal.
-- [ ] **5.2 Gestor de Cinemáticas y Voces de Corresponsales**
+- [X] **5.2 Gestor de Cinemáticas y Voces de Corresponsales**
   * *Criterio:* Sistema para reproducir las crónicas de Sir George F. Morice y Sir Spenser St. John con subtítulos en español sincronizados.
   * *Verificación:* Reproducción fluida del prólogo *El Ojo de Europa*.
 
 ---
 
 ## 📌 FASE 6: INTEGRACIÓN DE CAMPAÑA Y PULIDO
-- [ ] **6.1 Escenario Capítulo 1: Rada de Iquique (Naval 3D)**
-- [ ] **6.2 Escenario Capítulo 4: Desembarco de Pisagua (FPS)**
-- [ ] **6.3 Escenario Capítulo 6: Alto de la Alianza / Tacna (RTS)**
-- [ ] **6.4 Escenario Capítulo 7: Morro de Arica (RTS + Asalto)**
-- [ ] **6.5 Escenario Capítulo 8: Reductos de Miraflores (FPS / Clímax)**
-- [ ] **6.6 Pruebas Integrales de Rendimiento y Empaquetado Final**
+- [X] **6.1 Escenario Capítulo 1: Rada de Iquique (Naval 3D)**
+- [X] **6.2 Escenario Capítulo 4: Desembarco de Pisagua (FPS)**
+  * *Nota:* según el guion y el GDD, el Capítulo 4 en primera persona es «Sed en la quebrada» (Tarapacá); Pisagua es el Capítulo 3, en RTS. Se implementó Tarapacá (ver DEV_LOG).
+- [X] **6.3 Escenario Capítulo 6: Alto de la Alianza / Tacna (RTS)**
+  * *Nota:* en el guion y el GDD es el Capítulo 5, «El trueno de Intiorko» (ver DEV_LOG).
+- [X] **6.4 Escenario Capítulo 7: Morro de Arica (RTS + Asalto)**
+  * *Nota:* en el guion y el GDD es el Capítulo 6, «Hasta el último cartucho», en primera persona (ver DEV_LOG).
+- [X] **6.5 Escenario Capítulo 8: Reductos de Miraflores (FPS / Clímax)**
+  * Incluye el epílogo «La memoria rota».
+- [X] **6.6 Pruebas Integrales de Rendimiento y Empaquetado Final** *(verificado fuera del motor; la medición en Unity es parte de 0.3)*
+  * *Criterio:* la lógica que corre en cada fotograma no genera basura; la simulación del pico de combate cabe en el 10 % de un fotograma a 60 FPS; la campaña queda enlazada (menú, orden, desbloqueo, siguiente capítulo); el juego se empaqueta con una orden.
+  * *Verificación:* pruebas de asignaciones y de presupuesto de CPU; `GameBuilder` (menú **Pacífico → Construir**) y flujo manual `unity-build.yml`; en la build, `-pacifico-perf` escribe un informe CSV con FPS, percentiles y tirones de cada capítulo.

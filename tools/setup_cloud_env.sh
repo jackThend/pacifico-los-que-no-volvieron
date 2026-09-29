@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Prepara el entorno de Claude Code en la nube: instala el SDK de .NET 8 si
-# falta (necesario para tools/verify_all.sh). En máquinas locales no hace nada.
+# falta (necesario para tools/verify/verify.sh). En máquinas locales no hace nada.
 set -u
 [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0
 command -v dotnet >/dev/null 2>&1 && exit 0

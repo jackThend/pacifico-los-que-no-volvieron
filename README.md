@@ -98,13 +98,13 @@ La historia se divide en **8 capítulos dinámicos más prólogo y epílogo**, a
 
 ---
 
-## 🕹️ Cómo probar el prototipo (3 pasos)
+## 🕹️ Cómo probar el juego (3 pasos)
 
 1. **Descargar:** en GitHub pulsa *Code → Download ZIP* y descomprímelo.
 2. **Abrir:** en Unity Hub, *Add → Add project from disk* y elige la carpeta **`src/UnityProject`** (dentro de lo descomprimido). Si el Hub pregunta por la versión del editor, acepta abrirlo con tu Unity 6.
-3. **Jugar:** espera a que termine de cargar (la primera vez tarda unos minutos y se prepara sola la escena de la rada de Iquique) y pulsa **Play** (▶). Haz clic en la vista *Game* para darle el teclado.
+3. **Jugar:** espera a que termine de cargar. La primera vez tarda unos minutos: se construyen solos el menú principal y todos los capítulos, y se abre el menú. Pulsa **Play** (▶) y haz clic en la vista *Game* para darle el teclado y el ratón.
 
-**Controles del prototipo naval:** `W`/`S` telégrafo · `A`/`D` timón · ratón apunta la torre Coles · clic izquierdo dispara · embestir con la proa a Media o Toda fuerza · `1`/`2`/`3` cuadrilla de averías (fuego / achique / calderas).
+Desde el menú eliges el capítulo. Al terminar uno, `N` pasa al siguiente y `M` vuelve al menú. Los controles de cada capítulo están más abajo, en «Desarrollo en Unity 6».
 
 Si la consola de Unity (*Window → General → Console*) muestra errores en rojo, cópialos para corregirlos.
 
@@ -127,22 +127,23 @@ El repositorio cuenta con una base documental de **48 archivos de alta definici�
 ## 📂 Estructura del Repositorio
 
 ```text
-├── Archivo_Historico/
-│   ├── 01_Barcos_y_Combate_Naval/        # Fotografías, planos y grabados navales
-│   ├── 02_Fotos_Soldados_y_Personajes/   # Daguerrotipos y retratos de combatientes
-│   ├── 03_Lugares_y_Campos_de_Batalla/   # Fotografías de campamentos y campos de batalla
-│   ├── 04_Uniformes_y_Armamento/         # Planos técnicos de fusilería y uniformología
-│   ├── 05_Cartas_y_Documentos/           # Facsímiles, cartas y crónicas transcritas
-│   └── README_Indice_Archivo_Historico.md # Índice catalogado con resolución y metadatos
-├── AGENTS.md                             # Protocolo y directivas de desarrollo para Agentes de IA
-├── ROADMAP_DE_DESARROLLO.md              # Plan maestro de trabajo, fases y criterios de verificación
-├── DEV_LOG.md                            # Bitácora de iteraciones autónomas y resolución de errores
-├── CLAUDE.md                             # Guía rápida para asistentes de codificación en terminal
-├── GDD_Narrativo_y_Misiones.md           # Game Design Document técnico y narrativo (Unity URP)
-├── Historia_Completa_Guion.md            # Guion narrativo detallado con diálogos y cinemáticas
-├── download_historical_archive.py        # Herramienta de sincronización con Wikimedia Commons
-├── .gitignore                            # Exclusiones de Python, SO y previsión para Unity
-└── README.md                             # Documento maestro del proyecto
+├── Archivo_Historico/                    # 48 fuentes primarias (fotos, planos, facsímiles, cartas transcritas)
+├── src/UnityProject/                     # Proyecto Unity 6 (URP)
+│   ├── Assets/Scripts/Core/              # Simulación en C# puro, sin motor (armas, buques, balística, narrativa)
+│   ├── Assets/Scripts/Runtime/           # MonoBehaviours y ScriptableObjects (WeaponDataSO, ShipDataSO...)
+│   ├── Assets/Scripts/Editor/            # Generadores de datos y de escenas de prototipo
+│   ├── Assets/Tests/EditMode/            # Pruebas NUnit de Core (Unity Test Runner y dotnet)
+│   ├── Assets/Tests/EditModeUnity/       # Pruebas que requieren el motor (serialización de assets)
+│   └── Assets/{Prefabs,Scenes,ScriptableObjects,Audio,Materials,UI}/
+├── tools/
+│   ├── assets_manager.py                 # Manifiesto de assets con SHA-256, sync y Google Drive
+│   ├── tests/                            # Pruebas de las herramientas Python
+│   └── verify/                           # Arnés de compilación y pruebas fuera de Unity (dotnet)
+├── assets_manifest.json                  # Inventario de assets con hashes, tamaños y origen
+├── .github/workflows/ci.yml              # Verificación automática en cada push
+├── AGENTS.md · ROADMAP_DE_DESARROLLO.md · DEV_LOG.md · CLAUDE.md
+├── GDD_Narrativo_y_Misiones.md · Historia_Completa_Guion.md
+└── download_historical_archive.py        # Descarga del archivo desde Wikimedia Commons
 ```
 
 ---
@@ -160,10 +161,107 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ---
 
+## 🛠️ Desarrollo en Unity 6
+
+**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, la fase FPS (3.1–3.4), la fase RTS (4.1–4.3) y la fase narrativa (5.1–5.2) y los primeros capítulos jugables (6.1, la rada de Iquique; 6.2, la quebrada de Tarapacá; 6.3, el Alto de la Alianza; 6.4, el Morro de Arica; 6.5, Miraflores y el epílogo) y el empaquetado de la campaña (6.6): estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar), el cuerpo a cuerpo con bayoneta y corvo, el mando de escuadras en formación de línea y guerrilla sobre NavMesh, la supresión y la cobertura (zanjas y parapetos), la sed y los cartuchos con carros de vituallas, el visor 3D de documentos históricos, las cinemáticas de corresponsal con subtítulos sincronizados y el motor de misiones con los capítulos 1 (Esmeralda, Huáscar, náufragos y la carta de Grau) 4 (Tarapacá, con fusileros de la IA en primera persona) 5 (el Alto de la Alianza, con cargas a la bayoneta entre escuadras) 6 (el Morro de Arica) y 8 (Miraflores, con el epílogo «La memoria rota»). Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
+
+### Abrir el proyecto
+1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
+2. La primera vez, `FirstRunSetup` genera los datos históricos, construye el menú y los capítulos, y abre el menú: basta con pulsar Play. A mano: **Pacífico → Datos → Generar ScriptableObjects históricos** y **Pacífico → Construir → Todas las escenas de la campaña**.
+3. Los prototipos de cada módulo siguen en el menú **Pacífico → Prototipos → Construir escena naval de Iquique** (o **…FPS de Pisagua**, **…RTS de Tacna**, **…visor de documentos** o **…prólogo «El Ojo de Europa»**) y pulsa Play.
+
+**Naval (Iquique):**
+
+| Control | Acción |
+| :--- | :--- |
+| `W` / `S` | Telégrafo de máquinas (Atrás media · Detener · 1/4 · Media · Toda) |
+| `A` / `D` | Timón a babor / estribor |
+| Ratón · clic o `Espacio` | Apuntar la torre Coles · disparar |
+| `R` / `F` | Convergencia de las piezas · `Mayús`: telémetro |
+| `1` / `2` / `3` | Brigada de averías: incendios · achique · vapor |
+
+**Infantería (Pisagua):**
+
+| Control | Acción |
+| :--- | :--- |
+| `WASD` · ratón | Moverse · mirar |
+| `Mayús` | Correr (gasta resistencia) |
+| `C` / `Ctrl` | Agacharse; corriendo: deslizamiento táctico |
+| `Espacio` | Saltar |
+| Botón derecho | Encarar el fusil con las miras |
+| Clic izquierdo · `R` | Disparar · recargar (tras cada disparo se recarga solo: ~2 s) |
+| Rueda (al encarar) o `RePág`/`AvPág` | Graduar el alza (100 m por muesca) |
+| `F` · `G` | Estocada con la bayoneta · tajo con el corvo (al acercarte a un enemigo, el fusil se pone en guardia) |
+| `V` | Prueba del humo: descarga de 20 fusiles a tu lado (arriba a la izquierda, la claridad de la vista) |
+| `Esc` | Liberar o capturar el ratón |
+
+**RTS (Tacna):**
+
+| Control | Acción |
+| :--- | :--- |
+| Clic izquierdo · recuadro | Seleccionar escuadras (`Mayús` añade, `Ctrl` alterna) |
+| Clic derecho | Mover (arrastrando: el trazo marca el frente y la orientación) |
+| Clic derecho sobre el enemigo | Atacar |
+| `1` / `2` · `H` | Formar en línea / en guerrilla · alto |
+| `WASD` · `Q`/`E` · rueda | Desplazar, girar y acercar la cámara |
+
+**Capítulo 1 jugable, «Madera y blindaje»** (menú **Pacífico → Capítulos → Capítulo 1: Rada de Iquique**): en el acto I eres el grumete Wenceslao Vargas en la batería de la Esmeralda y pulsas `Espacio` para disparar la andanada cuando la cubierta pasa por la horizontal (el clinómetro anuncia «CORTO / AL BLANCO / LARGO»); en el acto II, el cabo Dámaso Antúnez en la torre Coles del Huáscar (ratón y clic). Tras el hundimiento gobiernas el Huáscar (`W`/`S`, `A`/`D`) para recoger a los náufragos acercándote despacio. Termina con la carta de Grau en el visor. `R` reintenta al fracasar.
+
+**Capítulo 4 jugable, «Sed en la quebrada»** (menú **Pacífico → Capítulos → Capítulo 4: Quebrada de Tarapacá**): eres Mariano Santos, del Zepita, con un Chassepot y solo 10 cartuchos. Defiendes el pueblo de adobe de la vanguardia chilena y, cuando se acaban los cartuchos, `E` recoge el Comblain de un caído con los suyos. Después cargas a la bayoneta (`F`) contra los Krupp de la pampa. Al final puedes dar tu caramayola al tambor herido (`E`) antes de unirte a la columna hacia Arica.
+
+**Capítulo 5 jugable, «El trueno de Intiorko»** (menú **Pacífico → Capítulos → Capítulo 5: Alto de la Alianza**), con los mandos del RTS de Tacna:
+* Llevas a los Colorados y a la reserva boliviana a la zanja antes de que se levante la camanchaca y contienes el avance chileno.
+* Cuando la izquierda cede, `C` (o el botón «¡A LA CARGA!») lanza la carga a la bayoneta para recuperar los cañones.
+* Al final, llevas a los heridos a la retaguardia antes de que la caballería chilena cierre la tenaza.
+
+**Capítulo 6 jugable, «Hasta el último cartucho»** (menú **Pacífico → Capítulos → Capítulo 6: Morro de Arica**):
+* La junta de oficiales, con la respuesta de Bolognesi.
+* La defensa del parapeto de caliza como Manuel Salazar, con la Gatling y los Artesanos de Tacna. `E` acciona el detonador de las minas: los cables están cortados.
+* La retirada disparando hasta la explanada y la resistencia junto a la bandera mientras caen Bolognesi y sus oficiales y Ugarte se lanza al vacío.
+
+**Capítulo 8 jugable, «Los que no volvieron»**, y el epílogo «La memoria rota» (menú **Pacífico → Capítulos → Capítulo 8: Reductos de Miraflores**):
+* El prólogo del corresponsal.
+* Como Abraham Quiroz, avanzas con tu escuadra por los jardines bajo el bombardeo, asaltas el Reducto N.º 3 y silencias sus piezas.
+* Después, `E` para sentarte contra el parapeto. El final no es jugable: es el desenlace del guion.
+
+**Visor de documentos (camarote de Grau):** arrastrar para girar · `F` dar la vuelta · rueda: acercar hacia el cursor · botón derecho: desplazar · `T` transcripción (`RePág`/`AvPág` páginas) · `R` restablecer · `Esc` cerrar.
+
+### La campaña completa y el empaquetado
+* **Pacífico → Construir → Todas las escenas de la campaña** construye el menú principal y los capítulos desde el guion y el Archivo, y deja la build en el orden de la campaña: prólogo, capítulos 1, 4, 5, 6 y 8, y epílogo.
+  * Desde el menú: continuar, elegir un capítulo abierto o leer los coleccionables desbloqueados.
+  * Al acabar un capítulo: `N` pasa al siguiente y `M` vuelve al menú.
+* **Pacífico → Construir → Build de Windows / Linux / macOS** genera el ejecutable en `src/UnityProject/Builds/`. En modo batch: `-executeMethod Pacifico.EditorTools.GameBuilder.BuildLinuxBatch`, o `BuildWindowsBatch` / `BuildMacBatch`. También hay un flujo manual de GitHub Actions, `unity-build.yml`, que necesita la licencia de Unity en los secretos del repositorio.
+* **Rendimiento:**
+  * `F3` en cualquier escena muestra FPS, percentiles, tirones y recolecciones del GC.
+  * El ejecutable lanzado con `-pacifico-perf` (y opcionalmente `-pacifico-perf-seconds 60`) recorre todos los capítulos y escribe un informe CSV en la carpeta de datos del juego.
+
+### Arquitectura
+* **`Pacifico.Core`** (`noEngineReferences`) contiene toda la lógica de simulación: se prueba sin abrir Unity y es determinista.
+* **Datos con procedencia:** cada arma y buque separa los datos históricos (con referencias y la lista de campos estimados) de los ajustes de jugabilidad del GDD.
+* **Los coleccionables leen el texto del propio Archivo Histórico** (`05_Cartas_y_Documentos/*.md`): no se duplica en código.
+
+### Verificación sin Unity
+```bash
+tools/verify/verify.sh                          # compila Core/Runtime/Editor y ejecuta las pruebas (requiere .NET 8)
+python -m unittest discover -s tools/tests      # pruebas del gestor de assets
+python tools/assets_manager.py test             # integridad del Archivo Histórico (SHA-256)
+```
+El arnés compila `Runtime` y `Editor` contra ensamblados de referencia de UnityEngine/UnityEditor para detectar errores de API. La validación final sigue siendo el **Test Runner** de Unity (Window → General → Test Runner).
+
+### Assets pesados
+Los binarios > 50 MB no van a git: se registran en `assets_manifest.json` y se guardan en `assets_cache/` o en Google Drive.
+```bash
+python tools/assets_manager.py add assets_cache/audio/canon.wav --gdrive-id <ID> --license CC0
+python tools/assets_manager.py sync             # descarga lo que falte y verifica el hash
+python tools/assets_manager.py push --remote gdrive:Pacifico/assets_cache   # requiere rclone
+```
+
+---
+
 ## ⚖️ Licencia y Rigor Histórico
 
 * **Documentación y Guion:** Los textos creativos, guiones y documentos de diseño son obra de autor original basada en investigación histórica.
-* **Material Gráfico y Documental:** Todas las fotografías de época, planos, facsímiles y pinturas pertenecen al **Dominio Público** internacional (obras de más de 140 años de antigüedad originadas entre 1879 y 1884, albergadas en museos nacionales y bibliotecas públicas).
+* **Material Gráfico y Documental:** Las fotografías de época, planos, facsímiles y pinturas de 1879–1884 son de **dominio público**. Algunas imágenes del archivo son fotografías modernas (réplicas de uniformes, monumentos) que pueden tener licencias Creative Commons: la ficha de Wikimedia Commons de cada archivo figura en `assets_manifest.json` (`source.page`) y debe consultarse antes de usarlas en el juego.
 
 ---
 *«La contienda es desigual, pero en las sombras de la historia todos los caídos comparten la misma tierra y el mismo mar.»*

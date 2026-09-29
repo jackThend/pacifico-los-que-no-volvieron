@@ -1,6 +1,6 @@
 {
     "name": "Pacifico.Editor",
-    "rootNamespace": "Pacifico.Editor",
+    "rootNamespace": "Pacifico.EditorTools",
     "references": [
         "Pacifico.Core",
         "Pacifico.Runtime"

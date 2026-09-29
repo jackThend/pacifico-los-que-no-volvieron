@@ -1,176 +1,214 @@
 using System;
-using Pacifico.Core.Ships;
+using System.Collections.Generic;
+using Pacifico.Core.Common;
 
 namespace Pacifico.Core.Naval
 {
-    /// <summary>Posición y rumbo del buque que porta la torre.</summary>
-    public readonly struct ShipPose
+    /// <summary>Disparo de una pieza de la torre, en coordenadas del mundo.</summary>
+    public struct ShellLaunch
     {
-        public readonly float X;
-        public readonly float Z;
-        public readonly float HeadingDegrees;
-
-        public ShipPose(float x, float z, float headingDegrees)
-        {
-            X = x;
-            Z = z;
-            HeadingDegrees = headingDegrees;
-        }
-    }
-
-    /// <summary>Punto sobre el agua (coordenadas de mundo X/Z).</summary>
-    public readonly struct SeaPoint
-    {
-        public readonly float X;
-        public readonly float Z;
-
-        public SeaPoint(float x, float z)
-        {
-            X = x;
-            Z = z;
-        }
-
-        public float DistanceTo(SeaPoint other)
-        {
-            var dx = other.X - X;
-            var dz = other.Z - Z;
-            return (float)Math.Sqrt(dx * dx + dz * dz);
-        }
+        public int GunIndex;
+        /// <summary>Desplazamiento lateral de la boca respecto al eje de la torre (m, + estribor). Solo torres.</summary>
+        public float LateralOffsetM;
+        /// <summary>Banda que dispara. Solo baterías de costado (None en torres).</summary>
+        public BroadsideSide Side;
+        public float AzimuthDeg;
+        public float ElevationDeg;
+        public float MuzzleVelocity;
+        public float ShellMassKg;
+        public float CaliberMm;
     }
 
     /// <summary>
-    /// Torre giratoria con puntería independiente del casco (tarea 2.2).
-    /// La marcación (<see cref="TrainDegrees"/>) es relativa a la proa, así que
-    /// al caer el buque la torre compensa sola para seguir al blanco, limitada
-    /// por su velocidad de giro. Los dos cañones convergen a la distancia del
-    /// blanco: <see cref="LeftImpact"/>/<see cref="RightImpact"/> forman la
-    /// retícula de convergencia.
+    /// Torre giratoria Coles del Huáscar (ROADMAP 2.2). Gira independiente del casco, con aceleración limitada
+    /// para un apuntado suave, elevación entre los topes históricos y un sector ciego hacia popa en el que no
+    /// puede disparar sin barrer la propia superestructura. Las dos piezas convergen a una distancia ajustable.
     /// </summary>
     public sealed class ColesTurretModel
     {
-        public const float OnTargetTrainToleranceDegrees = 0.5f;
-        public const float OnTargetElevationToleranceDegrees = 0.1f;
-        public const float DefaultConvergenceM = 1000f;
-        private const double DegToRad = Math.PI / 180.0;
+        /// <summary>Separación entre las dos piezas de la torre (m). Estimación a partir del diámetro de la torre.</summary>
+        public const float DefaultGunSeparationM = 2.4f;
+        public const float DefaultTraverseAcceleration = 4f;
+        /// <summary>Dispersión angular de juego por disparo (desviación típica, grados).</summary>
+        public const float DefaultDispersionDeg = 0.25f;
 
-        public TurretMount Mount { get; }
+        private readonly TurretSpec _turret;
+        private readonly GunMount _gun;
+        private readonly float[] _reloadRemaining;
+        private readonly Random _random;
+        private float _trainVelocity;
 
-        /// <summary>Marcación actual de la torre respecto a la proa, en (-180, 180].</summary>
-        public float TrainDegrees { get; private set; }
-        public float ElevationDegrees { get; private set; }
-
-        public bool HasTarget { get; private set; }
-        public SeaPoint Target { get; private set; }
-        public float DesiredTrainDegrees { get; private set; }
-        public float DesiredElevationDegrees { get; private set; }
-        public float TargetRangeM { get; private set; }
-        public bool TargetInRange { get; private set; }
-
-        /// <summary>Distancia a la que convergen los ejes de ambos cañones (m).</summary>
-        public float ConvergenceM { get; private set; } = DefaultConvergenceM;
-
-        public SeaPoint TurretPosition { get; private set; }
-        public SeaPoint AimPoint { get; private set; }
-        public SeaPoint LeftImpact { get; private set; }
-        public SeaPoint RightImpact { get; private set; }
-
-        public ColesTurretModel(TurretMount mount, float initialTrainDegrees = 0f)
+        public ColesTurretModel(TurretSpec turret, GunMount gun, int seed = 1879)
         {
-            Mount = mount ?? throw new ArgumentNullException(nameof(mount));
-            TrainDegrees = Angles.Normalize180(initialTrainDegrees);
-            ElevationDegrees = Clamp(0f, mount.minElevationDegrees, mount.maxElevationDegrees);
+            _turret = turret ?? throw new ArgumentNullException(nameof(turret));
+            _gun = gun ?? throw new ArgumentNullException(nameof(gun));
+            _reloadRemaining = new float[Math.Max(1, gun.Count)];
+            _random = new Random(seed);
+            ConvergenceRangeM = 800f;
         }
 
-        /// <summary>Alcance que tendrían los disparos con la elevación actual (m).</summary>
-        public float CurrentRangeM =>
-            NavalBallistics.RangeForElevation(Mount.muzzleVelocityMs, ElevationDegrees, Mount.gunHeightM);
-
-        public float MaxRangeM =>
-            NavalBallistics.RangeForElevation(Mount.muzzleVelocityMs, Mount.maxElevationDegrees, Mount.gunHeightM);
-
-        public float TrainErrorDegrees => HasTarget ? Angles.DeltaDegrees(TrainDegrees, DesiredTrainDegrees) : 0f;
-        public float ElevationErrorDegrees => HasTarget ? DesiredElevationDegrees - ElevationDegrees : 0f;
-
-        /// <summary>Sector de superestructura que bloquea el tiro con la marcación actual, o null.</summary>
-        public FiringArcBlock MaskingSector => Mount.MaskingSector(TrainDegrees);
-        public bool IsMasked => MaskingSector != null;
-
-        public bool IsOnTarget =>
-            HasTarget && TargetInRange &&
-            Math.Abs(TrainErrorDegrees) <= OnTargetTrainToleranceDegrees &&
-            Math.Abs(ElevationErrorDegrees) <= OnTargetElevationToleranceDegrees;
-
-        /// <summary>La torre apunta al blanco y ninguna superestructura se interpone.</summary>
-        public bool CanFire => IsOnTarget && !IsMasked;
-
-        public void SetTarget(float x, float z)
+        /// <summary>Crea la torre de un buque a partir de su ficha (pieza más pesada montada en torre).</summary>
+        public static ColesTurretModel FromShip(ShipSpec ship, int seed = 1879)
         {
-            HasTarget = true;
-            Target = new SeaPoint(x, z);
+            if (ship.Turret == null) throw new ArgumentException(ship.Id + " no tiene torre giratoria", nameof(ship));
+            GunMount gun = ship.Guns.Find(g => g.Placement == GunPlacement.Turret);
+            return new ColesTurretModel(ship.Turret, gun, seed);
         }
 
-        public void ClearTarget() => HasTarget = false;
+        public TurretSpec Spec => _turret;
+        public GunMount Gun => _gun;
+        public int GunCount => _reloadRemaining.Length;
 
-        /// <summary>Avanza la puntería hacia el blanco con las velocidades de giro y elevación del montaje.</summary>
-        public void Step(float deltaSeconds, ShipPose ship)
+        public float GunSeparationM { get; set; } = DefaultGunSeparationM;
+        public float TraverseAccelerationDegPerSecond2 { get; set; } = DefaultTraverseAcceleration;
+        public float DispersionDeg { get; set; } = DefaultDispersionDeg;
+
+        /// <summary>Marcación de la torre respecto a la proa (°, (-180, 180], positiva a estribor).</summary>
+        public float TrainDeg { get; private set; }
+        public float ElevationDeg { get; private set; }
+
+        public float OrderedTrainDeg { get; private set; }
+        public float OrderedElevationDeg { get; private set; }
+
+        /// <summary>El blanco ordenado está más allá del alcance máximo con la elevación disponible.</summary>
+        public bool TargetOutOfRange { get; private set; }
+
+        private float _convergenceRange;
+
+        /// <summary>Distancia a la que se cruzan los ejes de las dos piezas (retícula de convergencia).</summary>
+        public float ConvergenceRangeM
         {
-            if (deltaSeconds < 0f) deltaSeconds = 0f;
-            TurretPosition = Offset(new SeaPoint(ship.X, ship.Z), ship.HeadingDegrees, Mount.offsetForwardM, 0f);
+            get => _convergenceRange;
+            set => _convergenceRange = MathUtil.Clamp(value, 100f, 5000f);
+        }
 
-            if (HasTarget)
+        public float MaxRangeM => Ballistics.Range(_gun.MuzzleVelocityMps, Math.Min(_turret.MaxElevationDeg, 45f));
+
+        public bool IsInBlindArc(float trainDeg)
+        {
+            if (_turret.BlindArcHalfWidthDeg <= 0f) return false;
+            return Math.Abs(MathUtil.DeltaAngle(_turret.BlindArcCenterDeg, trainDeg)) < _turret.BlindArcHalfWidthDeg;
+        }
+
+        /// <summary>La torre ha llegado a la orden (dentro de la tolerancia).</summary>
+        public bool IsOnTarget(float toleranceDeg = 0.5f)
+        {
+            return Math.Abs(MathUtil.DeltaAngle(TrainDeg, OrderedTrainDeg)) <= toleranceDeg &&
+                   Math.Abs(ElevationDeg - OrderedElevationDeg) <= toleranceDeg;
+        }
+
+        public bool IsLoaded(int gunIndex) => _reloadRemaining[gunIndex] <= 0f;
+
+        public float ReloadProgress(int gunIndex) => 1f - MathUtil.Clamp01(_reloadRemaining[gunIndex] / _gun.ReloadSeconds);
+
+        public bool CanFire => !IsInBlindArc(TrainDeg) && Array.Exists(_reloadRemaining, r => r <= 0f);
+
+        /// <summary>Ordena apuntar a una marcación y elevación concretas (se aplican los topes).</summary>
+        public void Order(float trainDeg, float elevationDeg)
+        {
+            OrderedTrainDeg = MathUtil.WrapAngle180(trainDeg);
+            OrderedElevationDeg = MathUtil.Clamp(elevationDeg, _turret.MinElevationDeg, _turret.MaxElevationDeg);
+        }
+
+        /// <summary>
+        /// Ordena apuntar a un punto del mar desde la posición de la torre y el rumbo del buque.
+        /// Calcula la elevación de tiro tenso; si el blanco excede el alcance, eleva al máximo y lo indica.
+        /// </summary>
+        public void OrderAtPoint(float turretX, float turretZ, float shipHeadingDeg, float targetX, float targetZ)
+        {
+            float bearing = Ballistics.Bearing(turretX, turretZ, targetX, targetZ);
+            float range = Ballistics.Distance(turretX, turretZ, targetX, targetZ);
+            bool solved = Ballistics.TrySolveElevation(_gun.MuzzleVelocityMps, range, out float elevation);
+            TargetOutOfRange = !solved || elevation > _turret.MaxElevationDeg;
+            Order(bearing - shipHeadingDeg, solved ? elevation : _turret.MaxElevationDeg);
+        }
+
+        public void Step(float dt)
+        {
+            if (dt <= 0f) return;
+
+            // Giro: perfil de velocidad trapezoidal (acelera, crucero, frena para detenerse justo en la orden).
+            float error = MathUtil.DeltaAngle(TrainDeg, OrderedTrainDeg);
+            float accel = TraverseAccelerationDegPerSecond2;
+            float stoppingSpeed = (float)Math.Sqrt(2f * accel * Math.Abs(error));
+            float desiredVelocity = Math.Sign(error) * Math.Min(_turret.TraverseDegPerSecond, stoppingSpeed);
+            _trainVelocity = MathUtil.MoveTowards(_trainVelocity, desiredVelocity, accel * dt);
+            float move = _trainVelocity * dt;
+            if (Math.Abs(move) >= Math.Abs(error) || Math.Abs(error) < 1e-3f)
             {
-                var dx = Target.X - TurretPosition.X;
-                var dz = Target.Z - TurretPosition.Z;
-                var worldBearing = (float)(Math.Atan2(dx, dz) / DegToRad);
-                DesiredTrainDegrees = Angles.Normalize180(worldBearing - ship.HeadingDegrees);
-                TargetRangeM = (float)Math.Sqrt(dx * dx + dz * dz);
-                DesiredElevationDegrees = NavalBallistics.ElevationForRange(Mount.muzzleVelocityMs, TargetRangeM,
-                    Mount.gunHeightM, Mount.minElevationDegrees, Mount.maxElevationDegrees, out var inRange);
-                TargetInRange = inRange;
-                ConvergenceM = Math.Max(TargetRangeM, 1f);
-
-                // Giro por el camino más corto: la torre Coles da la vuelta completa.
-                TrainDegrees = Angles.Normalize180(TrainDegrees +
-                    ClampMagnitude(TrainErrorDegrees, Mount.traverseDegreesPerSecond * deltaSeconds));
-                ElevationDegrees += ClampMagnitude(DesiredElevationDegrees - ElevationDegrees,
-                    Mount.elevationDegreesPerSecond * deltaSeconds);
+                TrainDeg = OrderedTrainDeg;
+                _trainVelocity = 0f;
+            }
+            else
+            {
+                TrainDeg = MathUtil.WrapAngle180(TrainDeg + move);
             }
 
-            UpdateReticle(ship.HeadingDegrees);
+            ElevationDeg = MathUtil.MoveTowards(ElevationDeg, OrderedElevationDeg, _turret.ElevationDegPerSecond * dt);
+
+            for (int i = 0; i < _reloadRemaining.Length; i++)
+            {
+                _reloadRemaining[i] = Math.Max(0f, _reloadRemaining[i] - dt);
+            }
         }
 
-        private void UpdateReticle(float shipHeadingDegrees)
+        /// <summary>
+        /// Guiñada (°) de cada pieza hacia el eje para que ambas converjan a <see cref="ConvergenceRangeM"/>.
+        /// Índice 0 = pieza de babor de la torre (desplazada a la izquierda).
+        /// </summary>
+        public float ConvergenceYawDeg(int gunIndex)
         {
-            var bearing = shipHeadingDegrees + TrainDegrees;
-            var range = CurrentRangeM;
-            AimPoint = Offset(TurretPosition, bearing, range, 0f);
-
-            // Cada cañón está desplazado media separación a su banda y tiene los ejes
-            // convergentes (toe-in) hacia ConvergenceM: sus impactos coinciden solo
-            // cuando el alcance actual iguala la distancia de convergencia.
-            var half = Mount.barrelSeparationM * 0.5f;
-            var toeIn = (float)(Math.Atan2(half, ConvergenceM) / DegToRad);
-            var leftOrigin = Offset(TurretPosition, bearing, 0f, -half);
-            var rightOrigin = Offset(TurretPosition, bearing, 0f, half);
-            LeftImpact = Offset(leftOrigin, bearing + toeIn, range, 0f);
-            RightImpact = Offset(rightOrigin, bearing - toeIn, range, 0f);
+            float half = GunSeparationM * 0.5f;
+            float angle = (float)Math.Atan2(half, ConvergenceRangeM) * MathUtil.Rad2Deg;
+            return GunLateralOffset(gunIndex) < 0f ? angle : -angle;
         }
 
-        /// <summary>Desplaza un punto <paramref name="forward"/> m según el rumbo y <paramref name="right"/> m a estribor.</summary>
-        private static SeaPoint Offset(SeaPoint origin, float headingDegrees, float forward, float right)
+        /// <summary>Desviación lateral (m) del impacto de una pieza respecto al eje de la torre a <paramref name="distanceM"/>.</summary>
+        public float LateralMissAt(int gunIndex, float distanceM)
         {
-            var rad = headingDegrees * DegToRad;
-            var sin = Math.Sin(rad);
-            var cos = Math.Cos(rad);
-            return new SeaPoint(
-                (float)(origin.X + sin * forward + cos * right),
-                (float)(origin.Z + cos * forward - sin * right));
+            float offset = GunLateralOffset(gunIndex);
+            return offset * (1f - distanceM / ConvergenceRangeM);
         }
 
-        private static float ClampMagnitude(float value, float max) =>
-            value > max ? max : value < -max ? -max : value;
+        public float GunLateralOffset(int gunIndex)
+        {
+            if (GunCount == 1) return 0f;
+            return gunIndex == 0 ? -GunSeparationM * 0.5f : GunSeparationM * 0.5f;
+        }
 
-        private static float Clamp(float value, float min, float max) =>
-            value < min ? min : value > max ? max : value;
+        /// <summary>
+        /// Dispara las piezas cargadas (andanada de torre). Devuelve una lista vacía si la torre apunta al sector ciego.
+        /// </summary>
+        public List<ShellLaunch> Fire(float shipHeadingDeg)
+        {
+            var launches = new List<ShellLaunch>();
+            if (IsInBlindArc(TrainDeg)) return launches;
+
+            for (int i = 0; i < _reloadRemaining.Length; i++)
+            {
+                if (_reloadRemaining[i] > 0f) continue;
+                _reloadRemaining[i] = _gun.ReloadSeconds;
+                launches.Add(new ShellLaunch
+                {
+                    GunIndex = i,
+                    LateralOffsetM = GunLateralOffset(i),
+                    AzimuthDeg = MathUtil.WrapAngle360(shipHeadingDeg + TrainDeg + ConvergenceYawDeg(i) + Gaussian() * DispersionDeg),
+                    ElevationDeg = ElevationDeg + Gaussian() * DispersionDeg * 0.5f,
+                    MuzzleVelocity = _gun.MuzzleVelocityMps,
+                    ShellMassKg = _gun.ShellMassKg,
+                    CaliberMm = _gun.BoreMm,
+                });
+            }
+            return launches;
+        }
+
+        /// <summary>Normal estándar (Box-Muller) truncada a ±3σ.</summary>
+        private float Gaussian()
+        {
+            double u1 = 1.0 - _random.NextDouble();
+            double u2 = _random.NextDouble();
+            double z = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
+            return (float)Math.Max(-3.0, Math.Min(3.0, z));
+        }
     }
 }
