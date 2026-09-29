@@ -603,3 +603,17 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
   * `FrameStats`: percentiles, tirones, veredicto, CSV y búfer circular sin basura.
 * **Pendiente (tarea 0.3):** construir la campaña en Unity 6, jugarla de principio a fin, generar la build y pasar `-pacifico-perf` para rellenar la tabla de rendimiento real por capítulo.
 * **Con esto, todas las tareas del roadmap que no requieren el Editor de Unity quedan completas.** Sigue pendiente la tarea 0.3.
+
+---
+
+### [2026-09-29] - Integración de `main` (PR #2) en la rama de la campaña
+* **Situación:** en `main` se fusionó el PR #2, una implementación paralela de las fases 0 a 2.4 hecha en otra sesión, más una preparación automática al abrir Unity. Esta rama ya implementaba las mismas tareas (y las fases 3 a 6) con otras clases y otras firmas. Mezclar ambas habría dejado tipos duplicados (`WeaponSpec`, `ShipMotionModel`, `ColesTurretModel`, `GameInput`, los `*DataSO`…) y el proyecto no compilaría en Unity.
+* **Resolución:**
+  * Se conserva la implementación de esta rama: cubre las mismas tareas, con 388 pruebas, y todos los capítulos dependen de ella.
+  * Se retiran los archivos duplicados del PR #2: su código de Core, Runtime y Editor, sus pruebas y su arnés `tools/ci` con stubs. El arnés de esta rama (`tools/verify/verify.sh`) compila contra las DLL reales de Unity.
+* **Lo que se incorpora del PR #2:**
+  * `Editor/FirstRunSetup.cs`, adaptado a la campaña: la primera vez que se abre el proyecto construye el menú y todos los capítulos (`GameBuilder.BuildAllScenes`) y abre el menú. Cada sesión del editor se ejecuta una sola vez, y no pisa una escena con cambios sin guardar.
+  * Los «3 pasos» para probar del README, ahora para la campaña completa.
+  * El hook `SessionStart` (`.claude/settings.json` y `tools/setup_cloud_env.sh`) que instala .NET 8 en la nube.
+  * `src/UnityProject/.gitignore`, las carpetas vacías con `.gitkeep` y la revisión exacta del editor en `ProjectVersion.txt`.
+* **`CLAUDE.md`:** el estado del proyecto y las convenciones de la sección «Estado actual» se actualizan a esta rama (verificación con `tools/verify/verify.sh`, capítulos y el flujo de `FirstRunSetup`).

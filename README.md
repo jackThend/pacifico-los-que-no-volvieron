@@ -98,6 +98,18 @@ La historia se divide en **8 capítulos dinámicos más prólogo y epílogo**, a
 
 ---
 
+## 🕹️ Cómo probar el juego (3 pasos)
+
+1. **Descargar:** en GitHub pulsa *Code → Download ZIP* y descomprímelo.
+2. **Abrir:** en Unity Hub, *Add → Add project from disk* y elige la carpeta **`src/UnityProject`** (dentro de lo descomprimido). Si el Hub pregunta por la versión del editor, acepta abrirlo con tu Unity 6.
+3. **Jugar:** espera a que termine de cargar. La primera vez tarda unos minutos: se construyen solos el menú principal y todos los capítulos, y se abre el menú. Pulsa **Play** (▶) y haz clic en la vista *Game* para darle el teclado y el ratón.
+
+Desde el menú eliges el capítulo. Al terminar uno, `N` pasa al siguiente y `M` vuelve al menú. Los controles de cada capítulo están más abajo, en «Desarrollo en Unity 6».
+
+Si la consola de Unity (*Window → General → Console*) muestra errores en rojo, cópialos para corregirlos.
+
+---
+
 ## 🏛️ Archivo Histórico y Multimedia
 
 El repositorio cuenta con una base documental de **48 archivos de alta definición** curados directamente de archivos nacionales (Biblioteca Nacional de Chile, Archivo General de la Nación del Perú, Archivo Histórico de La Paz y Library of Congress):
@@ -155,8 +167,8 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ### Abrir el proyecto
 1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
-2. Menú **Pacífico → Datos → Generar ScriptableObjects históricos**: crea los assets de armas, buques y coleccionables desde los catálogos y el Archivo Histórico.
-3. Menú **Pacífico → Prototipos → Construir escena naval de Iquique** (o **…FPS de Pisagua**, **…RTS de Tacna**, **…visor de documentos** o **…prólogo «El Ojo de Europa»**) y pulsa Play.
+2. La primera vez, `FirstRunSetup` genera los datos históricos, construye el menú y los capítulos, y abre el menú: basta con pulsar Play. A mano: **Pacífico → Datos → Generar ScriptableObjects históricos** y **Pacífico → Construir → Todas las escenas de la campaña**.
+3. Los prototipos de cada módulo siguen en el menú **Pacífico → Prototipos → Construir escena naval de Iquique** (o **…FPS de Pisagua**, **…RTS de Tacna**, **…visor de documentos** o **…prólogo «El Ojo de Europa»**) y pulsa Play.
 
 **Naval (Iquique):**
 
