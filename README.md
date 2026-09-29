@@ -151,7 +151,7 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 
 ## 🛠️ Desarrollo en Unity 6
 
-**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, la fase FPS (3.1–3.4), la fase RTS (4.1–4.3) y la fase narrativa (5.1–5.2) y los primeros capítulos jugables (6.1, la rada de Iquique; 6.2, la quebrada de Tarapacá; 6.3, el Alto de la Alianza; 6.4, el Morro de Arica; 6.5, Miraflores y el epílogo): estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar), el cuerpo a cuerpo con bayoneta y corvo, el mando de escuadras en formación de línea y guerrilla sobre NavMesh, la supresión y la cobertura (zanjas y parapetos), la sed y los cartuchos con carros de vituallas, el visor 3D de documentos históricos, las cinemáticas de corresponsal con subtítulos sincronizados y el motor de misiones con los capítulos 1 (Esmeralda, Huáscar, náufragos y la carta de Grau) 4 (Tarapacá, con fusileros de la IA en primera persona) 5 (el Alto de la Alianza, con cargas a la bayoneta entre escuadras) 6 (el Morro de Arica) y 8 (Miraflores, con el epílogo «La memoria rota»). Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
+**Estado:** Fases 0, 1 y 2 del [ROADMAP](ROADMAP_DE_DESARROLLO.md) completadas, la fase FPS (3.1–3.4), la fase RTS (4.1–4.3) y la fase narrativa (5.1–5.2) y los primeros capítulos jugables (6.1, la rada de Iquique; 6.2, la quebrada de Tarapacá; 6.3, el Alto de la Alianza; 6.4, el Morro de Arica; 6.5, Miraflores y el epílogo) y el empaquetado de la campaña (6.6): estructura del proyecto, datos históricos con fuentes, módulo naval (telégrafo e inercia, torre Coles, blindaje angular, espolonazo y control de averías), controlador de infantería en primera persona con alzas graduadas de época, fusiles con su ciclo real de disparo y recarga, el humo blanco de la pólvora negra (visible, pero sin cegar), el cuerpo a cuerpo con bayoneta y corvo, el mando de escuadras en formación de línea y guerrilla sobre NavMesh, la supresión y la cobertura (zanjas y parapetos), la sed y los cartuchos con carros de vituallas, el visor 3D de documentos históricos, las cinemáticas de corresponsal con subtítulos sincronizados y el motor de misiones con los capítulos 1 (Esmeralda, Huáscar, náufragos y la carta de Grau) 4 (Tarapacá, con fusileros de la IA en primera persona) 5 (el Alto de la Alianza, con cargas a la bayoneta entre escuadras) 6 (el Morro de Arica) y 8 (Miraflores, con el epílogo «La memoria rota»). Falta la validación dentro de Unity 6 (tarea 0.3). El detalle de cada iteración está en el [DEV_LOG](DEV_LOG.md).
 
 ### Abrir el proyecto
 1. Abre `src/UnityProject` con **Unity 6 (6000.0 LTS)** desde Unity Hub. Los paquetes (URP, Input System, Test Framework, AI Navigation) se resuelven solos.
@@ -213,6 +213,15 @@ El script utiliza endpoints oficiales de Wikimedia Commons y la API pública de 
 * Después, `E` para sentarte contra el parapeto. El final no es jugable: es el desenlace del guion.
 
 **Visor de documentos (camarote de Grau):** arrastrar para girar · `F` dar la vuelta · rueda: acercar hacia el cursor · botón derecho: desplazar · `T` transcripción (`RePág`/`AvPág` páginas) · `R` restablecer · `Esc` cerrar.
+
+### La campaña completa y el empaquetado
+* **Pacífico → Construir → Todas las escenas de la campaña** construye el menú principal y los capítulos desde el guion y el Archivo, y deja la build en el orden de la campaña: prólogo, capítulos 1, 4, 5, 6 y 8, y epílogo.
+  * Desde el menú: continuar, elegir un capítulo abierto o leer los coleccionables desbloqueados.
+  * Al acabar un capítulo: `N` pasa al siguiente y `M` vuelve al menú.
+* **Pacífico → Construir → Build de Windows / Linux / macOS** genera el ejecutable en `src/UnityProject/Builds/`. En modo batch: `-executeMethod Pacifico.EditorTools.GameBuilder.BuildLinuxBatch`, o `BuildWindowsBatch` / `BuildMacBatch`. También hay un flujo manual de GitHub Actions, `unity-build.yml`, que necesita la licencia de Unity en los secretos del repositorio.
+* **Rendimiento:**
+  * `F3` en cualquier escena muestra FPS, percentiles, tirones y recolecciones del GC.
+  * El ejecutable lanzado con `-pacifico-perf` (y opcionalmente `-pacifico-perf-seconds 60`) recorre todos los capítulos y escribe un informe CSV en la carpeta de datos del juego.
 
 ### Arquitectura
 * **`Pacifico.Core`** (`noEngineReferences`) contiene toda la lógica de simulación: se prueba sin abrir Unity y es determinista.

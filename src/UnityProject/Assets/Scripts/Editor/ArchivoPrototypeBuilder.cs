@@ -51,7 +51,7 @@ namespace Pacifico.EditorTools
             }
         }
 
-        private static void BuildScene()
+        internal static void BuildScene()
         {
             HistoricalDataAssetGenerator.GenerateAll();
             string collectiblePath = ProjectPaths.CollectibleData + "/Collectible_" + CollectibleCatalog.GrauLetterId + ".asset";

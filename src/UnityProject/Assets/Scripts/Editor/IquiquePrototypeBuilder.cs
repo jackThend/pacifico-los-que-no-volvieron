@@ -51,7 +51,7 @@ namespace Pacifico.EditorTools
             }
         }
 
-        private static void BuildScene()
+        internal static void BuildScene()
         {
             HistoricalDataAssetGenerator.GenerateAll();
             var huascarData = AssetDatabase.LoadAssetAtPath<ShipDataSO>(ProjectPaths.ShipData + "/Ship_" + ShipCatalog.HuascarId + ".asset");

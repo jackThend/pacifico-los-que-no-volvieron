@@ -56,7 +56,7 @@ namespace Pacifico.EditorTools
             }
         }
 
-        private static void BuildScene()
+        internal static void BuildScene()
         {
             HistoricalDataAssetGenerator.GenerateAll();
             WeaponDataSO remington = T.LoadWeapon(WeaponCatalog.RemingtonId);

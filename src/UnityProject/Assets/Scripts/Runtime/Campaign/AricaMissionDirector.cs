@@ -139,6 +139,7 @@ namespace Pacifico.Campaign
                     _recorded = true;
                     CampaignSave.Record(_runner.Script);
                 }
+                CampaignNavigator.HandleEndKeys(_runner.Script.Id, _runner.State == MissionState.Complete);
                 if (GameInput.Pressed(GameKey.R)) SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
                 return;
             }

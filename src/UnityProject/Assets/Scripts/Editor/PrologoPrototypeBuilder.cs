@@ -77,7 +77,7 @@ namespace Pacifico.EditorTools
             return guid == null ? null : AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath(guid));
         }
 
-        private static void BuildScene()
+        internal static void BuildScene()
         {
             CinematicDataSO asset = GenerateAsset();
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -87,7 +87,9 @@ namespace Pacifico.EditorTools
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = Color.black;
             cameraObject.AddComponent<AudioListener>();
-            new GameObject("Cinematica_Prologo").AddComponent<CinematicPlayer>().Cinematic = asset;
+            var cinematic = new GameObject("Cinematica_Prologo");
+            cinematic.AddComponent<CinematicPlayer>().Cinematic = asset;
+            cinematic.AddComponent<Pacifico.Campaign.PrologueCampaignLink>(); // al terminar, pasa al capítulo 1
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);

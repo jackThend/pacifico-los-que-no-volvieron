@@ -27,6 +27,12 @@ namespace Pacifico.Core.Campaign
             return !string.IsNullOrEmpty(mission.RewardCollectibleId) && _collectibles.Add(mission.RewardCollectibleId);
         }
 
+        /// <summary>Anota un capítulo sin misión (el prólogo) como visto.</summary>
+        public void CompleteChapter(string chapterId)
+        {
+            if (!string.IsNullOrEmpty(chapterId)) _chapters.Add(chapterId);
+        }
+
         public bool Unlock(string collectibleId) => !string.IsNullOrEmpty(collectibleId) && _collectibles.Add(collectibleId);
 
         public string Serialize() => "cap:" + string.Join(",", _chapters) + ";col:" + string.Join(",", _collectibles);

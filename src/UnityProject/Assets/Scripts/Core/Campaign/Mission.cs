@@ -80,10 +80,25 @@ namespace Pacifico.Core.Campaign
             new MissionCondition(c => !condition.IsMet(c), "no " + condition.Description);
 
         public static MissionCondition All(params MissionCondition[] all) =>
-            new MissionCondition(c => all.All(x => x.IsMet(c)), "(" + string.Join(" y ", all.Select(x => x.Description)) + ")");
+            new MissionCondition(c =>
+            {
+                // Bucle en vez de LINQ: se evalúa cada fotograma y no debe generar basura (ROADMAP 6.6).
+                for (int i = 0; i < all.Length; i++)
+                {
+                    if (!all[i].IsMet(c)) return false;
+                }
+                return true;
+            }, "(" + string.Join(" y ", all.Select(x => x.Description)) + ")");
 
         public static MissionCondition Any(params MissionCondition[] any) =>
-            new MissionCondition(c => any.Any(x => x.IsMet(c)), "(" + string.Join(" o ", any.Select(x => x.Description)) + ")");
+            new MissionCondition(c =>
+            {
+                for (int i = 0; i < any.Length; i++)
+                {
+                    if (any[i].IsMet(c)) return true;
+                }
+                return false;
+            }, "(" + string.Join(" o ", any.Select(x => x.Description)) + ")");
     }
 
     // ==============================================================================================
@@ -342,8 +357,9 @@ namespace Pacifico.Core.Campaign
         public const int MaxStagesPerStep = 8;
 
         private readonly MissionContext _context = new MissionContext();
-        private readonly HashSet<string> _completedObjectives = new HashSet<string>(StringComparer.Ordinal);
-        private readonly HashSet<string> _firedTriggers = new HashSet<string>(StringComparer.Ordinal);
+        // Por referencia: cada objetivo y cada reacción pertenecen a una sola etapa (sin claves de texto por fotograma).
+        private readonly HashSet<MissionObjective> _completedObjectives = new HashSet<MissionObjective>();
+        private readonly HashSet<MissionTrigger> _firedTriggers = new HashSet<MissionTrigger>();
         private readonly List<MissionEvent> _history = new List<MissionEvent>();
         private readonly List<string> _visited = new List<string>();
 
@@ -371,7 +387,7 @@ namespace Pacifico.Core.Campaign
 
         public event Action<MissionEvent> Event;
 
-        public bool IsObjectiveComplete(MissionObjective objective) => _completedObjectives.Contains(Key(objective));
+        public bool IsObjectiveComplete(MissionObjective objective) => _completedObjectives.Contains(objective);
 
         /// <summary>Progreso de 0 a 1 de un objetivo (1 si está cumplido).</summary>
         public float Progress(MissionObjective objective)
@@ -410,9 +426,8 @@ namespace Pacifico.Core.Campaign
 
                 foreach (MissionTrigger trigger in stage.Triggers)
                 {
-                    string key = stage.Id + "/" + trigger.Id;
-                    if (_firedTriggers.Contains(key) || !trigger.When.IsMet(_context)) continue;
-                    _firedTriggers.Add(key);
+                    if (_firedTriggers.Contains(trigger) || !trigger.When.IsMet(_context)) continue;
+                    _firedTriggers.Add(trigger);
                     if (trigger.SetsFlag != null) Facts.SetFlag(trigger.SetsFlag);
                     Emit(MissionEventKind.TriggerFired, trigger.Id, null);
                     for (int i = 0; i < trigger.Lines.Count; i++)
@@ -428,7 +443,7 @@ namespace Pacifico.Core.Campaign
                 foreach (MissionObjective objective in stage.Objectives)
                 {
                     if (IsObjectiveComplete(objective) || objective.Complete == null || !objective.Complete.IsMet(_context)) continue;
-                    _completedObjectives.Add(Key(objective));
+                    _completedObjectives.Add(objective);
                     Emit(MissionEventKind.ObjectiveCompleted, objective.Id, null);
                 }
 
@@ -441,7 +456,11 @@ namespace Pacifico.Core.Campaign
                     return;
                 }
 
-                MissionTransition next = stage.Transitions.FirstOrDefault(t => t.When.IsMet(_context));
+                MissionTransition next = null;
+                for (int i = 0; i < stage.Transitions.Count && next == null; i++)
+                {
+                    if (stage.Transitions[i].When.IsMet(_context)) next = stage.Transitions[i];
+                }
                 if (next == null) return;
                 if (next.Next == MissionScript.CompleteStage)
                 {
@@ -461,17 +480,6 @@ namespace Pacifico.Core.Campaign
             Emit(MissionEventKind.StageStarted, stage.Title, null);
             foreach (MissionLine line in stage.OnEnter) Dialogue.Enqueue(line);
             _context.DialogueIdle = Dialogue.IsIdle;
-        }
-
-        private string Key(MissionObjective objective) => CurrentStageIdFor(objective) + "/" + objective.Id;
-
-        private string CurrentStageIdFor(MissionObjective objective)
-        {
-            foreach (MissionStage stage in Script.Stages)
-            {
-                if (stage.Objectives.Contains(objective)) return stage.Id;
-            }
-            return string.Empty;
         }
 
         private void Emit(MissionEventKind kind, string detail, MissionLine line)

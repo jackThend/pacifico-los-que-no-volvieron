@@ -16,6 +16,7 @@
 - [ ] **0.3 Validación en el Editor de Unity 6** *(requiere una máquina con Unity; el entorno de agentes en la nube no lo tiene)*
   * *Criterio:* Abrir `src/UnityProject` en Unity 6000.0 LTS, ejecutar **Pacífico → Datos → Generar ScriptableObjects históricos** y **Pacífico → Prototipos → Construir escena naval de Iquique**, y correr el Test Runner (EditMode: `Pacifico.Tests.EditMode` y `Pacifico.Tests.Unity`).
   * *Verificación:* Consola sin errores de compilación; todas las pruebas en verde; en `Proto_Iquique` se comprueban a mano los criterios de 2.1 a 2.4 (W/S/A/D con inercia, torre y retícula, rebotes de 40 lb en el *Huáscar*, espolonazo y brigada 1/2/3); en `Proto_Pisagua_FPS` (**Pacífico → Prototipos → Construir escena FPS de Pisagua**), los de 3.1 (movimiento fluido a 60 FPS con el contador del HUD, rampas, escalera, túnel agachado, deslizamiento, encare y alza) y 3.2 (ciclo de 2,0 s del Comblain con la palanca, el cartucho y la vaina sincronizados; impactos en las siluetas con el alza correcta; caja de cartuchos).
+  * *Ampliación (Fase 6):* **Pacífico → Construir → Todas las escenas de la campaña**; jugar el menú y los capítulos 1, 4, 5, 6 y 8 (con el epílogo); generar una build y lanzarla con `-pacifico-perf` para obtener el informe de rendimiento (objetivo: p95 ≤ 16,7 ms y menos de un 0,5 % de tirones en cada capítulo).
   * *Nota:* hasta completarla, las tareas marcadas `[X]` de las fases 1 a 3 están verificadas **fuera del motor**: arnés `tools/verify` con referencias de API de Unity y 192 pruebas NUnit de la lógica.
 
 ---
@@ -98,4 +99,6 @@
   * *Nota:* en el guion y el GDD es el Capítulo 6, «Hasta el último cartucho», en primera persona (ver DEV_LOG).
 - [X] **6.5 Escenario Capítulo 8: Reductos de Miraflores (FPS / Clímax)**
   * Incluye el epílogo «La memoria rota».
-- [ ] **6.6 Pruebas Integrales de Rendimiento y Empaquetado Final**
+- [X] **6.6 Pruebas Integrales de Rendimiento y Empaquetado Final** *(verificado fuera del motor; la medición en Unity es parte de 0.3)*
+  * *Criterio:* la lógica que corre en cada fotograma no genera basura; la simulación del pico de combate cabe en el 10 % de un fotograma a 60 FPS; la campaña queda enlazada (menú, orden, desbloqueo, siguiente capítulo); el juego se empaqueta con una orden.
+  * *Verificación:* pruebas de asignaciones y de presupuesto de CPU; `GameBuilder` (menú **Pacífico → Construir**) y flujo manual `unity-build.yml`; en la build, `-pacifico-perf` escribe un informe CSV con FPS, percentiles y tirones de cada capítulo.

@@ -18,6 +18,8 @@ __pycache__/
 *.so
 .Python
 build/
+# Ejecutables generados por GameBuilder (ROADMAP 6.6)
+Builds/
 develop-eggs/
 dist/
 downloads/

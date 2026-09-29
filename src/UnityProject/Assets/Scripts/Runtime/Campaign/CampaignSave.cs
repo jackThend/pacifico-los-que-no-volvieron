@@ -10,6 +10,15 @@ namespace Pacifico.Campaign
 
         public static CampaignProgress Load() => CampaignProgress.Parse(PlayerPrefs.GetString(Key, string.Empty));
 
+        /// <summary>Anota un capítulo sin misión (el prólogo) como visto.</summary>
+        public static void RecordChapter(string chapterId)
+        {
+            CampaignProgress progress = Load();
+            progress.CompleteChapter(chapterId);
+            PlayerPrefs.SetString(Key, progress.Serialize());
+            PlayerPrefs.Save();
+        }
+
         /// <summary>Anota la misión completada. Devuelve true si su coleccionable es nuevo.</summary>
         public static bool Record(MissionScript mission)
         {

@@ -145,8 +145,11 @@ namespace Pacifico.Core.Weapons
             SpentCaseInChamber = Profile.EjectsCase;
 
             _sequence.Clear();
-            foreach (StageSpec s in Profile.FireCycle)
+            // Bucle con índice: un foreach sobre IReadOnlyList encajona el enumerador (basura en cada disparo, ROADMAP 6.6).
+            IReadOnlyList<StageSpec> cycle = Profile.FireCycle;
+            for (int i = 0; i < cycle.Count; i++)
             {
+                StageSpec s = cycle[i];
                 // Sin munición no hay recarga: tras percutir, el arma queda vacía con la vaina dentro.
                 if (s.Stage != RifleStage.Firing && !Profile.UsesMagazine && (!AutoReload || Reserve <= 0)) break;
                 _sequence.Add(s);

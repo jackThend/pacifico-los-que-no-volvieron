@@ -1,0 +1,70 @@
+name: Build de Unity (manual)
+
+# ROADMAP 6.6 — pruebas dentro de Unity 6 y empaquetado de la campaña con GameCI.
+# Solo se lanza a mano (pestaña Actions → «Run workflow»): necesita una licencia de Unity en los secretos del
+# repositorio (UNITY_LICENSE, o UNITY_EMAIL y UNITY_PASSWORD para una licencia personal). Sin ellos falla al activar.
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Plataforma de la build
+        type: choice
+        options: [StandaloneLinux64, StandaloneWindows64, StandaloneOSX]
+        default: StandaloneLinux64
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+jobs:
+  tests:
+    name: Test Runner de Unity (EditMode)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/cache@v4
+        with:
+          path: src/UnityProject/Library
+          key: Library-tests-${{ hashFiles('src/UnityProject/Packages/manifest.json') }}
+      - uses: game-ci/unity-test-runner@v4
+        with:
+          projectPath: src/UnityProject
+          unityVersion: 6000.0.23f1
+          testMode: editmode
+          artifactsPath: test-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resultados-de-pruebas-unity
+          path: test-results
+
+  build:
+    name: Empaquetado (${{ inputs.platform }})
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/cache@v4
+        with:
+          path: src/UnityProject/Library
+          key: Library-build-${{ inputs.platform }}-${{ hashFiles('src/UnityProject/Packages/manifest.json') }}
+      # Construye el menú y las escenas de la campaña desde el guion y el Archivo, y genera el ejecutable.
+      - uses: game-ci/unity-builder@v4
+        with:
+          projectPath: src/UnityProject
+          unityVersion: 6000.0.23f1
+          targetPlatform: ${{ inputs.platform }}
+          buildMethod: >-
+            ${{ inputs.platform == 'StandaloneWindows64' && 'Pacifico.EditorTools.GameBuilder.BuildWindowsBatch'
+            || inputs.platform == 'StandaloneOSX' && 'Pacifico.EditorTools.GameBuilder.BuildMacBatch'
+            || 'Pacifico.EditorTools.GameBuilder.BuildLinuxBatch' }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pacifico-${{ inputs.platform }}
+          path: src/UnityProject/Builds/${{ inputs.platform }}

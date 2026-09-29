@@ -169,6 +169,7 @@ namespace Pacifico.Campaign
                     _recorded = true;
                     CampaignSave.Record(_runner.Script);
                 }
+                CampaignNavigator.HandleEndKeys(_runner.Script.Id, _runner.State == MissionState.Complete);
                 if (GameInput.Pressed(GameKey.R))
                 {
                     Time.timeScale = 1f;
@@ -284,7 +285,19 @@ namespace Pacifico.Campaign
 
         private void OnGUI()
         {
-            if (_runner == null || _epilogueStarted) return;
+            if (_runner == null) return;
+            if (_epilogueStarted)
+            {
+                // Tras el epílogo, en negro, solo la salida discreta al menú.
+                if (_runner.State == MissionState.Complete && epilogue != null && !epilogue.IsPlaying)
+                {
+                    GUI.depth = -400;
+                    GUI.color = new Color(1f, 1f, 1f, 0.5f);
+                    GUI.Label(new Rect(0f, Screen.height - 40f, Screen.width - 20f, 24f), "[M] menú   ", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight });
+                    GUI.color = Color.white;
+                }
+                return;
+            }
             GUI.depth = -100;
             bool seated = _runner.Facts.Flag(G.Seated);
             if (_stage == S.Prologue && _runner.State == MissionState.Running)

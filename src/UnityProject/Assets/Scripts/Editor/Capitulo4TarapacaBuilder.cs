@@ -81,7 +81,7 @@ namespace Pacifico.EditorTools
             return go;
         }
 
-        private static void BuildScene()
+        internal static void BuildScene()
         {
             HistoricalDataAssetGenerator.GenerateAll();
             WeaponDataSO chassepot = LoadWeapon(WeaponCatalog.ChassepotId);

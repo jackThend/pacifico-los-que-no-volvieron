@@ -69,6 +69,11 @@ namespace Pacifico.Campaign
 
         public void DrawEnd(MissionRunner runner, string chapterLabel, string completeDetail)
         {
+            DrawEnd(runner, chapterLabel, completeDetail, CampaignNavigator.EndHint(runner.Script.Id, runner.State == MissionState.Complete));
+        }
+
+        public void DrawEnd(MissionRunner runner, string chapterLabel, string completeDetail, string hint)
+        {
             EnsureStyles();
             var rect = new Rect(Screen.width * 0.5f - 300f, Screen.height * 0.5f - 90f, 600f, 180f);
             GUI.color = new Color(0f, 0f, 0f, 0.75f);
@@ -77,7 +82,7 @@ namespace Pacifico.Campaign
             bool complete = runner.State == MissionState.Complete;
             GUI.Label(new Rect(rect.x, rect.y + 20f, rect.width, 30f), complete ? chapterLabel + " COMPLETADO" : "MISIÓN FRACASADA", _title);
             GUI.Label(new Rect(rect.x + 20f, rect.y + 64f, rect.width - 40f, 60f), complete ? completeDetail : runner.FailureReason, _center);
-            GUI.Label(new Rect(rect.x, rect.y + 130f, rect.width, 24f), complete ? "[R] volver a jugar" : "[R] reintentar", _center);
+            GUI.Label(new Rect(rect.x, rect.y + 130f, rect.width, 24f), hint, _center);
         }
 
         public static void DrawFade(float alpha, Color color)

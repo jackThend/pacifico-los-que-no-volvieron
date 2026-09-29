@@ -60,7 +60,7 @@ namespace Pacifico.EditorTools
             }
         }
 
-        private static void BuildScene()
+        internal static void BuildScene()
         {
             HistoricalDataAssetGenerator.GenerateAll();
             var comblain = AssetDatabase.LoadAssetAtPath<WeaponDataSO>(ProjectPaths.WeaponData + "/Weapon_" + WeaponCatalog.ComblainId + ".asset");

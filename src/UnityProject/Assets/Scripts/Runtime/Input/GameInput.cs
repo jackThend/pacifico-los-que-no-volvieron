@@ -10,7 +10,7 @@ namespace Pacifico.Input
     {
         W, A, S, D, Q, E, R, F, G, H, Space, Tab, Escape, LeftShift,
         Digit1, Digit2, Digit3,
-        C, LeftControl, PageUp, PageDown, V, T, L,
+        C, LeftControl, PageUp, PageDown, V, T, L, N, M, F3,
     }
 
     /// <summary>
@@ -158,6 +158,9 @@ namespace Pacifico.Input
                 case GameKey.V: return k.vKey;
                 case GameKey.T: return k.tKey;
                 case GameKey.L: return k.lKey;
+                case GameKey.N: return k.nKey;
+                case GameKey.M: return k.mKey;
+                case GameKey.F3: return k.f3Key;
                 case GameKey.LeftControl: return k.leftCtrlKey;
                 case GameKey.PageUp: return k.pageUpKey;
                 case GameKey.PageDown: return k.pageDownKey;
@@ -191,6 +194,9 @@ namespace Pacifico.Input
                 case GameKey.V: return KeyCode.V;
                 case GameKey.T: return KeyCode.T;
                 case GameKey.L: return KeyCode.L;
+                case GameKey.N: return KeyCode.N;
+                case GameKey.M: return KeyCode.M;
+                case GameKey.F3: return KeyCode.F3;
                 case GameKey.LeftControl: return KeyCode.LeftControl;
                 case GameKey.PageUp: return KeyCode.PageUp;
                 case GameKey.PageDown: return KeyCode.PageDown;

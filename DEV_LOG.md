@@ -561,3 +561,45 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
   * La regresión del motor de misiones.
 * **Pendiente:** comprobar en Unity 6 (tarea 0.3) el asalto al reducto, el ralentizado y la secuencia del disparo; grabar la voz de la carta y el sonido del viento y del disparo.
 * **Con esto, los capítulos de la Fase 6 quedan completos fuera del motor.** Queda la tarea 6.6 (pruebas integrales de rendimiento y empaquetado).
+
+
+---
+
+### [2026-09-29] - Tarea 6.6: Pruebas integrales de rendimiento y empaquetado final — [X] (verificado fuera del motor; ver 0.3)
+* **Criterios** (el roadmap no los fijaba):
+  1. La lógica que corre en cada fotograma no genera basura.
+  2. La simulación del pico de combate cabe en el 10 % de un fotograma a 60 FPS.
+  3. La campaña queda enlazada.
+  4. El juego se empaqueta con una orden.
+  5. Hay con qué medir el rendimiento real dentro de Unity.
+* **Sin basura por fotograma** (`AllocationTests`, en régimen estable):
+  * **El motor de misiones generaba unos 416 bytes por fotograma** (≈ 1,5 MB por minuto): claves de texto `etapa/reacción` y `etapa/objetivo` construidas en cada evaluación, y LINQ con cierres en `All`, `Any` y la búsqueda de transiciones. Ahora usa conjuntos por referencia y bucles: **0 bytes**.
+  * **El ciclo del fusil generaba 32 bytes por disparo:** un `foreach` sobre `IReadOnlyList` encajonaba el enumerador. Ahora es un bucle con índice: **0 bytes**.
+  * Fusilero de la IA, escuadra (marcha, fuego, supresión, sed), humo, maniobra naval y balanceo: 0 bytes.
+* **Presupuesto de CPU** (`FrameBudgetTests`, objetivo ≤ 1,67 ms, el 10 % de un fotograma a 60 FPS):
+  * Pico del capítulo 5 (16 escuadras en fuego con reasignación de cobertura, 160 bocanadas de humo y el guion): **0,06 ms**.
+  * 40 fusileros de la IA con su misión: **0,01 ms**.
+  * El coste real estará en render, física y NavMesh, y se mide en el motor.
+* **Campaña enlazada:**
+  * `CampaignCatalog`: el prólogo y los ocho capítulos en el orden del GDD. Los capítulos 2, 3 y 7 figuran como «en desarrollo». Cada capítulo se abre al completar el jugable anterior; también da el «Continuar» y el orden de las escenas de la build.
+  * `CampaignProgress.CompleteChapter` para el prólogo.
+  * En Unity:
+    * `MainMenu`: continuar, capítulos, coleccionables en el visor 3D y salir.
+    * `CampaignNavigator`: al acabar, `N` pasa al siguiente capítulo y `M` vuelve al menú; lo usan los cinco directores y `MissionHud` muestra la ayuda.
+    * `PrologueCampaignLink`: el prólogo pasa al capítulo 1.
+* **Rendimiento en el motor:**
+  * `FrameStats` (Core, sin basura): media, percentiles, peor fotograma, tirones (más del doble del presupuesto) y veredicto (p95 ≤ 16,7 ms y menos de un 0,5 % de tirones), exportable a CSV.
+  * `PerformanceProbe`: `F3` en cualquier escena; se instala solo al cargar el juego.
+  * `PerformanceSuite`: con `-pacifico-perf`, la build recorre los capítulos, mide tras asentarse y escribe `rendimiento_*.csv` en `persistentDataPath`.
+* **Empaquetado:**
+  * `GameBuilder`: construye todas las escenas desde el guion y el Archivo, más el menú principal con los coleccionables y el óleo de Somerscales de fondo.
+    * La build lleva solo la campaña, en su orden, sin los prototipos. Nombre del producto y versión 0.6.0.
+    * Ejecutables para Windows, Linux y macOS en `Builds/`; menú **Pacífico → Construir** y métodos batch.
+  * Flujo manual `.github/workflows/unity-build.yml` (GameCI): Test Runner EditMode de Unity y build de la plataforma elegida. Necesita la licencia de Unity en los secretos; no se lanza en cada push.
+  * Los constructores de escenas exponen `BuildScene` para el empaquetado; `Builds/` queda en `.gitignore`.
+* **Verificación:** 12 pruebas nuevas (388 en total).
+  * Asignaciones (4) y presupuesto (2).
+  * Campaña: orden del GDD, desbloqueo y salto de los capítulos en desarrollo; todas las escenas de la build tienen constructor; cada capítulo con su guion de misión válido, su id y su recompensa.
+  * `FrameStats`: percentiles, tirones, veredicto, CSV y búfer circular sin basura.
+* **Pendiente (tarea 0.3):** construir la campaña en Unity 6, jugarla de principio a fin, generar la build y pasar `-pacifico-perf` para rellenar la tabla de rendimiento real por capítulo.
+* **Con esto, todas las tareas del roadmap que no requieren el Editor de Unity quedan completas.** Sigue pendiente la tarea 0.3.
