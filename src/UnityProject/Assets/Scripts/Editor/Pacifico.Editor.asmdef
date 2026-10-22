@@ -3,7 +3,9 @@
     "rootNamespace": "Pacifico.EditorTools",
     "references": [
         "Pacifico.Core",
-        "Pacifico.Runtime"
+        "Pacifico.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [
         "Editor"
@@ -14,6 +16,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "12.0.0",
+            "define": "PACIFICO_URP"
+        }
+    ],
     "noEngineReferences": false
 }

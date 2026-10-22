@@ -35,6 +35,7 @@ namespace Pacifico.EditorTools
 
             try
             {
+                RenderPipelineSetup.Ensure();
                 Scene active = EditorSceneManager.GetActiveScene();
                 bool menuExists = AssetDatabase.LoadAssetAtPath<SceneAsset>(GameBuilder.MenuScenePath) != null;
                 if (!menuExists)

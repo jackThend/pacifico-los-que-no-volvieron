@@ -68,6 +68,7 @@ namespace Pacifico.EditorTools
         /// <summary>Construye el menú y cada capítulo, y fija la lista de escenas de la build.</summary>
         public static void BuildAllScenes()
         {
+            RenderPipelineSetup.Ensure();
             HistoricalDataAssetGenerator.GenerateAll();
             PrologoPrototypeBuilder.BuildScene();
             Capitulo1IquiqueBuilder.BuildScene();

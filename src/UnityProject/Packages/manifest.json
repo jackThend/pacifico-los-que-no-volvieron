@@ -1,11 +1,8 @@
 {
   "dependencies": {
     "com.unity.ai.navigation": "2.0.14",
+    "com.unity.cloud.gltfast": "6.20.0",
     "com.unity.inputsystem": "1.20.0",
-    "com.unity.render-pipelines.universal": "17.6.0",
-    "com.unity.test-framework": "1.8.0",
-    "com.unity.timeline": "6.6.0",
-    "com.unity.ugui": "2.6.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
@@ -25,7 +22,11 @@
     "com.unity.modules.unitywebrequest": "1.0.0",
     "com.unity.modules.unitywebrequesttexture": "1.0.0",
     "com.unity.modules.vectorgraphics": "1.0.0",
-    "com.unity.modules.video": "1.0.0"
+    "com.unity.modules.video": "1.0.0",
+    "com.unity.render-pipelines.universal": "17.6.0",
+    "com.unity.test-framework": "1.8.0",
+    "com.unity.timeline": "6.6.0",
+    "com.unity.ugui": "2.6.0"
   },
   "testables": [
     "com.unity.inputsystem"

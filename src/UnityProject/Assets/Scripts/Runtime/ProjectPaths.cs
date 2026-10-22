@@ -17,6 +17,9 @@ namespace Pacifico
         /// <summary>Modelos y texturas de licencia libre (CC0) descargados de repositorios abiertos (AGENTS.md §4.A).</summary>
         public const string ArtCC0 = "Assets/Art/CC0";
 
+        /// <summary>Modelos con licencia CC-BY (hay que citar al autor; créditos en su CREDITOS.md).</summary>
+        public const string ArtCCBY = "Assets/Art/CCBY";
+
         public const string WeaponData = ScriptableObjects + "/Weapons";
         public const string ShipData = ScriptableObjects + "/Ships";
         public const string CollectibleData = ScriptableObjects + "/Collectibles";

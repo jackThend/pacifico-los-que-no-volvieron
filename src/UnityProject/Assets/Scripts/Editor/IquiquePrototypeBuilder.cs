@@ -30,6 +30,23 @@ namespace Pacifico.EditorTools
         /// <summary>Tono que enfría el hierro de la textura CC0 hacia el gris oscuro de los blindados.</summary>
         internal static readonly Color HullIronTint = new Color(0.55f, 0.57f, 0.6f);
 
+        // Encaje visual de los modelos de Sketchfab (valores de ajuste a ojo, comprobados con ShipModelPreview).
+        // DraftM no es el calado histórico, sino lo que hay que hundir cada modelo para que la flotación caiga en su
+        // sitio: el Rolf Krake solo tiene la obra muerta (francobordo bajo de monitor) y la fragata trae la obra viva
+        // forrada de cobre.
+        internal static readonly ShipModelLibrary.Fit HuascarModelFit = new ShipModelLibrary.Fit
+        {
+            // Obra viva roja hasta 2,9 m sobre la quilla; la cubierta queda a 1,4 m del agua.
+            HullFraction = 1f, HullOffset = 0f, BowTowardsMinusZ = false, DraftM = 2.9f,
+        };
+        internal static readonly ShipModelLibrary.Fit EsmeraldaModelFit = new ShipModelLibrary.Fit
+        {
+            // El modelo mide 93 m con bauprés para 62 m de casco (USS Constitution). Flaga_143 es la bandera de
+            // Estados Unidos de la cangreja.
+            HullFraction = 0.67f, HullOffset = 0f, BowTowardsMinusZ = false, DraftM = 6.8f,
+            HiddenParts = new[] { "Flaga_143" },
+        };
+
         [MenuItem("Pacífico/Prototipos/Construir escena naval de Iquique")]
         public static void Build()
         {
@@ -166,6 +183,13 @@ namespace Pacifico.EditorTools
             ramCollider.size = new Vector3(2f, 2.5f, 3f);
             ram.AddComponent<RamBow>().Owner = root.GetComponent<ShipController>();
 
+            // Modelo CC-BY (tarea 7.2): el Rolf Krake danés, blindado de torre Coles de la misma época. La torre del
+            // juego sigue siendo la de primitivas porque es la que gira y dispara.
+            if (ShipModelLibrary.Place(ShipModelLibrary.RolfKrake, "Modelo_Rolf_Krake", hull, length, HuascarModelFit) != null)
+            {
+                ShipModelLibrary.HideStandIns(hull, "Casco_Visual", "Chimenea", "Palo", "Torre_de_Mando_Visual");
+            }
+
             var turret = root.AddComponent<ColesTurretController>();
             turret.Configure(root.GetComponent<ShipController>(), pivot, cradle, muzzles, shellPrefab);
             return root.GetComponent<ShipController>();
@@ -191,6 +215,17 @@ namespace Pacifico.EditorTools
             }
             Plated(Primitive(PrimitiveType.Cylinder, "Chimenea", hull, new Vector3(0f, 5f, -4f), new Vector3(1.8f, 3f, 1.8f), IronColor, keepCollider: false));
             AddArmorZones(hull, spec);
+
+            // Modelo CC-BY (tarea 7.2): fragata de tres palos como silueta; la chimenea de la corbeta de hélice es la
+            // primitiva, que el modelo no trae.
+            if (ShipModelLibrary.Place(ShipModelLibrary.Constitution, "Modelo_Fragata", hull, spec.LengthM, EsmeraldaModelFit) != null)
+            {
+                ShipModelLibrary.HideStandIns(hull, "Casco_Visual", "Palo_1", "Palo_2", "Palo_3");
+                // Chimenea entre el trinquete y el mayor, asomando sobre la cubierta del modelo.
+                Transform funnel = hull.Find("Chimenea");
+                funnel.localPosition = new Vector3(0f, 7.5f, 3f);
+                funnel.localScale = new Vector3(2f, 4f, 2f);
+            }
 
             var battery = root.AddComponent<BroadsideBatteryController>();
             battery.ShellPrefab = shellPrefab;
