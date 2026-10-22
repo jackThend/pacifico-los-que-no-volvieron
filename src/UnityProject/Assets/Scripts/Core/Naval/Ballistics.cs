@@ -78,5 +78,16 @@ namespace Pacifico.Core.Naval
             float dz = bz - az;
             return (float)Math.Sqrt(dx * dx + dz * dz);
         }
+
+        /// <summary>
+        /// Oblicuidad (°) con la que el fuego de un enemigo en el rumbo <paramref name="bearingToEnemyDeg"/> alcanza el
+        /// costado de un buque que navega a <paramref name="headingDeg"/>: 0 con el enemigo por el través (impacto
+        /// perpendicular a la coraza), 90 con el enemigo por la proa o la popa. «Presentar la coraza a 45°» es esto.
+        /// </summary>
+        public static float SideObliquityDeg(float headingDeg, float bearingToEnemyDeg)
+        {
+            float relative = Math.Abs(MathUtil.DeltaAngle(headingDeg, bearingToEnemyDeg));
+            return Math.Abs(90f - relative);
+        }
     }
 }

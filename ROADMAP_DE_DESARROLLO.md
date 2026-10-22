@@ -102,3 +102,13 @@
 - [X] **6.6 Pruebas Integrales de Rendimiento y Empaquetado Final** *(verificado fuera del motor; la medición en Unity es parte de 0.3)*
   * *Criterio:* la lógica que corre en cada fotograma no genera basura; la simulación del pico de combate cabe en el 10 % de un fotograma a 60 FPS; la campaña queda enlazada (menú, orden, desbloqueo, siguiente capítulo); el juego se empaqueta con una orden.
   * *Verificación:* pruebas de asignaciones y de presupuesto de CPU; `GameBuilder` (menú **Pacífico → Construir**) y flujo manual `unity-build.yml`; en la build, `-pacifico-perf` escribe un informe CSV con FPS, percentiles y tirones de cada capítulo.
+
+---
+
+## 📌 FASE 6 (AMPLIACIÓN): LOS CAPÍTULOS QUE FALTABAN
+Los capítulos 2, 3 y 7 del guion y del GDD no estaban en el roadmap original. Se añaden como tareas 6.7 a 6.9.
+- [X] **6.7 Escenario Capítulo 2: Punta Angamos, «Caza en alta mar» (Naval 3D)** *(verificado fuera del motor; ver 0.3)*
+  * *Criterio:* el jugador manda el Cochrane, corta la retirada del Huáscar, abre fuego a la distancia en que sus piezas perforan la coraza enemiga y presenta la suya en ángulo. Le siguen el intercalado de la torre de mando y el relevo de los comandantes peruanos, y el abordaje que cierra las válvulas antes de que el Huáscar se hunda.
+  * *Verificación:* guion de misión válido leído del guion; distancia de apertura de fuego calculada por el modelo de blindaje (2.200 m); partidas completas, fracasos y caminos por tiempo probados; simulación de maniobra y artillería con 300 partidas.
+- [ ] **6.8 Escenario Capítulo 3: Desembarco de Pisagua, «Sangre en el salitre» (RTS)**
+- [ ] **6.9 Escenario Capítulo 7: Cañete, «Cadenas rotas» (FPS, infiltración y asalto)**

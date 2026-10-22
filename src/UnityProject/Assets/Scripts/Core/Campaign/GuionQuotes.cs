@@ -15,13 +15,28 @@ namespace Pacifico.Core.Campaign
         public const string ScriptFile = "Historia_Completa_Guion.md";
 
         private static readonly Regex Quote = new Regex("«(?<q>[^»]+)»");
+        /// <summary>Viñeta con etiqueta en negrita: «* **Prólogo:** Durante cinco meses…».</summary>
+        private static readonly Regex LabeledBullet = new Regex(@"^\s*[*-]\s+\*\*(?<k>[^*:]+):\*\*\s*(?<v>.*)$");
 
-        private GuionQuotes(string chapterTitle, List<string> quotes, List<string[]> blocks, string[] fenced)
+        private readonly Dictionary<string, string> _fields;
+
+        private GuionQuotes(string chapterTitle, List<string> quotes, List<string[]> blocks, string[] fenced, Dictionary<string, string> fields)
         {
             ChapterTitle = chapterTitle;
             All = quotes;
             Blocks = blocks;
             Fenced = fenced;
+            _fields = fields;
+        }
+
+        /// <summary>
+        /// Texto de la viñeta etiquetada «* **<paramref name="label"/>:** …» de la sección (la primera, sin marcas
+        /// Markdown): el prólogo de un capítulo cuyo guion no lo pone entre comillas, o la descripción del coleccionable.
+        /// </summary>
+        public string Field(string label)
+        {
+            if (_fields.TryGetValue(label, out string value) && value.Length > 0) return value;
+            throw new KeyNotFoundException("El guion (" + ChapterTitle + ") no tiene la viñeta «**" + label + ":**» con texto.");
         }
 
         /// <summary>
@@ -77,6 +92,7 @@ namespace Pacifico.Core.Campaign
             var blocks = new List<string[]>();
             var current = new List<string>();
             var fenced = new List<string>();
+            var fields = new Dictionary<string, string>();
             bool inFence = false, fenceDone = false;
             for (int i = 1; i < lines.Length; i++)
             {
@@ -84,6 +100,13 @@ namespace Pacifico.Core.Campaign
                 {
                     string q = Regex.Replace(m.Groups["q"].Value.Replace("*", string.Empty), @"\s+", " ").Trim();
                     if (q.Length > 0) quotes.Add(q);
+                }
+
+                Match field = LabeledBullet.Match(lines[i]);
+                if (field.Success)
+                {
+                    string key = field.Groups["k"].Value.Trim();
+                    if (!fields.ContainsKey(key)) fields.Add(key, Regex.Replace(field.Groups["v"].Value.Replace("*", string.Empty), @"\s+", " ").Trim());
                 }
 
                 string trimmed = lines[i].Trim();
@@ -110,7 +133,7 @@ namespace Pacifico.Core.Campaign
                 }
             }
             if (current.Count > 0) blocks.Add(current.ToArray());
-            return new GuionQuotes(lines[0].Substring(3).Trim(), quotes, blocks, fenced.ToArray());
+            return new GuionQuotes(lines[0].Substring(3).Trim(), quotes, blocks, fenced.ToArray(), fields);
         }
 
         public static GuionQuotes Load(Func<string, string> readRepositoryFile, string headingContains) =>

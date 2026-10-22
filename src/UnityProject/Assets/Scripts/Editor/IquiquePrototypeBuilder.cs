@@ -228,7 +228,7 @@ namespace Pacifico.EditorTools
         }
 
         /// <summary>Colisionadores de blindaje: flotación (abre vías de agua), cinturón central, extremos y cubierta.</summary>
-        private static void AddArmorZones(Transform hull, ShipSpec spec)
+        internal static void AddArmorZones(Transform hull, ShipSpec spec)
         {
             float length = spec.LengthM;
             float beam = spec.BeamM + 0.2f;
@@ -242,7 +242,7 @@ namespace Pacifico.EditorTools
             Zone(hull, "Cubierta", ArmorZone.Deck, new Vector3(0f, 2.1f, 0f), new Vector3(beam - 0.4f, 0.2f, length), false);
         }
 
-        private static void Zone(Transform parent, string name, ArmorZone zone, Vector3 position, Vector3 size, bool belowWaterline)
+        internal static void Zone(Transform parent, string name, ArmorZone zone, Vector3 position, Vector3 size, bool belowWaterline)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);

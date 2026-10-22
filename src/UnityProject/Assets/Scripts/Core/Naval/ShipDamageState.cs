@@ -229,6 +229,17 @@ namespace Pacifico.Core.Naval
             CheckSunk();
         }
 
+        /// <summary>
+        /// Traba el timón ya: un impacto en la popa ha cortado los guardines del gobierno (el Huáscar en Angamos). La
+        /// brigada de vapor puede liberarlo como cualquier otra avería del servomotor.
+        /// </summary>
+        public void JamSteering()
+        {
+            if (IsSunk || SteeringJammed) return;
+            SteeringJammed = true;
+            _steeringRepairProgress = 0f;
+        }
+
         /// <summary>Tope de agua y de daño estructural mientras <see cref="KeepAfloat"/> está activo (fracción).</summary>
         public const float KeepAfloatMaxFraction = 0.92f;
 

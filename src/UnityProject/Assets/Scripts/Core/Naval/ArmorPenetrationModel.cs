@@ -147,6 +147,26 @@ namespace Pacifico.Core.Naval
         }
 
         /// <summary>
+        /// Distancia máxima (m) a la que <paramref name="gun"/> perfora la zona de <paramref name="target"/> con la
+        /// oblicuidad dada, o 0 si no la perfora ni a quemarropa. La perforación decrece con la distancia, así que basta
+        /// una búsqueda binaria (al metro). En Angamos decide cuándo abre fuego el Cochrane.
+        /// </summary>
+        public static float PenetrationRangeM(GunMount gun, ShipSpec target, ArmorZone zone, float obliquityDeg = 0f, float maxRangeM = 10000f)
+        {
+            bool Penetrates(float range) => ResolveAgainstShip(gun, range, obliquityDeg, target, zone).Penetrated;
+            if (!Penetrates(0f)) return 0f;
+            if (Penetrates(maxRangeM)) return maxRangeM;
+            float low = 0f, high = maxRangeM;
+            while (high - low > 1f)
+            {
+                float mid = 0.5f * (low + high);
+                if (Penetrates(mid)) low = mid;
+                else high = mid;
+            }
+            return low;
+        }
+
+        /// <summary>
         /// Resuelve un impacto sobre una zona de un buque a una distancia dada (atajo usado por el juego y las pruebas).
         /// </summary>
         public static ArmorImpactResult ResolveAgainstShip(GunMount gun, float rangeM, float obliquityDeg, ShipSpec target, ArmorZone zone)
