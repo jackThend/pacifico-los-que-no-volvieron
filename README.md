@@ -134,6 +134,7 @@ El repositorio cuenta con una base documental de **48 archivos de alta definici�
 │   ├── Assets/Scripts/Editor/            # Generadores de datos y de escenas de prototipo
 │   ├── Assets/Tests/EditMode/            # Pruebas NUnit de Core (Unity Test Runner y dotnet)
 │   ├── Assets/Tests/EditModeUnity/       # Pruebas que requieren el motor (serialización de assets)
+│   ├── Assets/Art/CC0/                   # Modelos y texturas de licencia libre (Poly Haven), con CREDITOS.md
 │   └── Assets/{Prefabs,Scenes,ScriptableObjects,Audio,Materials,UI}/
 ├── tools/
 │   ├── assets_manager.py                 # Manifiesto de assets con SHA-256, sync y Google Drive
@@ -263,6 +264,9 @@ python -m unittest discover -s tools/tests      # pruebas del gestor de assets
 python tools/assets_manager.py test             # integridad del Archivo Histórico (SHA-256)
 ```
 El arnés compila `Runtime` y `Editor` contra ensamblados de referencia de UnityEngine/UnityEditor para detectar errores de API. La validación final sigue siendo el **Test Runner** de Unity (Window → General → Test Runner).
+
+### Modelos y texturas libres
+Los modelos y texturas de `Assets/Art/CC0/` son de [Poly Haven](https://polyhaven.com) (licencia CC0; créditos en `Assets/Art/CC0/CREDITOS.md`) y van en git para que el ZIP del juego los incluya. `Editor/ArtLibrary.cs` los coloca al construir las escenas; si falta alguno, la escena usa la primitiva de siempre. El capítulo 1 ya los usa: acantilados y peñascos de costa árida, cañones de avancarga en las baterías y cascos con tablazón o planchas remachadas.
 
 ### Assets pesados
 Los binarios > 50 MB no van a git: se registran en `assets_manifest.json` y se guardan en `assets_cache/` o en Google Drive.

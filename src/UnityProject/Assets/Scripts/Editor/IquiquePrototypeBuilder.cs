@@ -27,6 +27,8 @@ namespace Pacifico.EditorTools
         internal static readonly Color IronColor = new Color(0.12f, 0.12f, 0.13f);
         internal static readonly Color WoodColor = new Color(0.36f, 0.24f, 0.14f);
         internal static readonly Color BrassColor = new Color(0.55f, 0.45f, 0.25f);
+        /// <summary>Tono que enfría el hierro de la textura CC0 hacia el gris oscuro de los blindados.</summary>
+        internal static readonly Color HullIronTint = new Color(0.55f, 0.57f, 0.6f);
 
         [MenuItem("Pacífico/Prototipos/Construir escena naval de Iquique")]
         public static void Build()
@@ -122,19 +124,19 @@ namespace Pacifico.EditorTools
 
             float length = spec.LengthM;
             float beam = spec.BeamM;
-            Primitive(PrimitiveType.Cube, "Casco_Visual", hull, Vector3.zero, new Vector3(beam, 4f, length), IronColor, keepCollider: false);
-            Primitive(PrimitiveType.Cylinder, "Chimenea", hull, new Vector3(0f, 5f, -6f), new Vector3(2.2f, 3f, 2.2f), IronColor, keepCollider: false);
+            Plated(Primitive(PrimitiveType.Cube, "Casco_Visual", hull, Vector3.zero, new Vector3(beam, 4f, length), IronColor, keepCollider: false));
+            Plated(Primitive(PrimitiveType.Cylinder, "Chimenea", hull, new Vector3(0f, 5f, -6f), new Vector3(2.2f, 3f, 2.2f), IronColor, keepCollider: false));
             Primitive(PrimitiveType.Cylinder, "Palo", hull, new Vector3(0f, 10f, -12f), new Vector3(0.5f, 9f, 0.5f), WoodColor, keepCollider: false);
 
             AddArmorZones(hull, spec);
             Zone(hull, "Torre_de_Mando", ArmorZone.ConningTower, new Vector3(0f, 3.2f, 4f), new Vector3(2.4f, 2.4f, 2.4f), false);
-            Primitive(PrimitiveType.Cylinder, "Torre_de_Mando_Visual", hull, new Vector3(0f, 3.2f, 4f), new Vector3(2.4f, 1.2f, 2.4f), IronColor, keepCollider: false);
+            Plated(Primitive(PrimitiveType.Cylinder, "Torre_de_Mando_Visual", hull, new Vector3(0f, 3.2f, 4f), new Vector3(2.4f, 1.2f, 2.4f), IronColor, keepCollider: false));
 
             // Torre Coles: pivote de giro → cuna de elevación → dos piezas de 300 lb.
             var pivot = new GameObject("Torre_Coles").transform;
             pivot.SetParent(hull, false);
             pivot.localPosition = new Vector3(0f, 2.5f, 12f);
-            GameObject turretBody = Primitive(PrimitiveType.Cylinder, "Torre_Coles_Visual", pivot, Vector3.zero, new Vector3(6.7f, 1.3f, 6.7f), IronColor, keepCollider: false);
+            GameObject turretBody = Plated(Primitive(PrimitiveType.Cylinder, "Torre_Coles_Visual", pivot, Vector3.zero, new Vector3(6.7f, 1.3f, 6.7f), IronColor, keepCollider: false));
             // Caja en espacio local del cilindro (altura 2, radio 0,5): una cápsula degeneraría en esfera.
             turretBody.AddComponent<BoxCollider>().size = new Vector3(1f, 2f, 1f);
             turretBody.AddComponent<ArmorZoneMarker>().Zone = ArmorZone.MainBattery;
@@ -182,12 +184,12 @@ namespace Pacifico.EditorTools
             GameObject root = ShipRoot("Esmeralda", data, position, heading, player: false, EngineOrder.QuarterAhead, 0.5f);
             Transform hull = root.transform.Find("Casco");
 
-            Primitive(PrimitiveType.Cube, "Casco_Visual", hull, Vector3.zero, new Vector3(spec.BeamM, 5f, spec.LengthM), WoodColor, keepCollider: false);
+            Planked(Primitive(PrimitiveType.Cube, "Casco_Visual", hull, Vector3.zero, new Vector3(spec.BeamM, 5f, spec.LengthM), WoodColor, keepCollider: false));
             for (int i = -1; i <= 1; i++)
             {
                 Primitive(PrimitiveType.Cylinder, "Palo_" + (i + 2), hull, new Vector3(0f, 16f, i * 18f), new Vector3(0.6f, 14f, 0.6f), WoodColor, keepCollider: false);
             }
-            Primitive(PrimitiveType.Cylinder, "Chimenea", hull, new Vector3(0f, 5f, -4f), new Vector3(1.8f, 3f, 1.8f), IronColor, keepCollider: false);
+            Plated(Primitive(PrimitiveType.Cylinder, "Chimenea", hull, new Vector3(0f, 5f, -4f), new Vector3(1.8f, 3f, 1.8f), IronColor, keepCollider: false));
             AddArmorZones(hull, spec);
 
             var battery = root.AddComponent<BroadsideBatteryController>();
@@ -251,6 +253,20 @@ namespace Pacifico.EditorTools
             var marker = go.AddComponent<ArmorZoneMarker>();
             marker.Zone = zone;
             marker.BelowWaterline = belowWaterline;
+        }
+
+        /// <summary>Planchas de hierro remachadas (textura CC0) sobre una pieza de un blindado; si falta, queda el color plano.</summary>
+        internal static GameObject Plated(GameObject piece)
+        {
+            ArtLibrary.Dress(piece, ArtLibrary.MetalPlate, 3f, HullIronTint);
+            return piece;
+        }
+
+        /// <summary>Tablazón pintada de negro (textura CC0) sobre el casco de un buque de madera.</summary>
+        internal static GameObject Planked(GameObject piece)
+        {
+            ArtLibrary.Dress(piece, ArtLibrary.BlackPaintedPlanks, 2.5f, Color.white);
+            return piece;
         }
 
         internal static GameObject Primitive(PrimitiveType type, string name, Transform parent, Vector3 localPosition,

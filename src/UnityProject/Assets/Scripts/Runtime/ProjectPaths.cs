@@ -14,6 +14,9 @@ namespace Pacifico
         public const string Materials = "Assets/Materials";
         public const string UI = "Assets/UI";
 
+        /// <summary>Modelos y texturas de licencia libre (CC0) descargados de repositorios abiertos (AGENTS.md §4.A).</summary>
+        public const string ArtCC0 = "Assets/Art/CC0";
+
         public const string WeaponData = ScriptableObjects + "/Weapons";
         public const string ShipData = ScriptableObjects + "/Ships";
         public const string CollectibleData = ScriptableObjects + "/Collectibles";
