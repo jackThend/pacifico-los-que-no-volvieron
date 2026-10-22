@@ -65,7 +65,7 @@ namespace Pacifico.Infantry
         private void Awake()
         {
             _fps = GetComponent<FirstPersonController>();
-            _random = new System.Random(GetInstanceID());
+            _random = new System.Random(this.StableId());
         }
 
         private void OnEnable()

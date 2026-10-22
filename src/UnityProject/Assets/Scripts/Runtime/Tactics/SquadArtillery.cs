@@ -56,7 +56,7 @@ namespace Pacifico.Tactics
 
         private void Awake()
         {
-            _random = new System.Random(GetInstanceID());
+            _random = new System.Random(this.StableId());
             _nextShot = Time.time + fireIntervalSeconds * (float)_random.NextDouble();
         }
 

@@ -103,7 +103,7 @@ namespace Pacifico.Effects
         private void Awake()
         {
             var settings = new BlackPowderSmokeSettings { MaxPuffs = maxPuffs, FadeSeconds = fadeSeconds };
-            Model = new BlackPowderSmokeModel(settings, GetInstanceID());
+            Model = new BlackPowderSmokeModel(settings, this.StableId());
             _sprites = spritesPerPuff;
             _buffer = new ParticleSystem.Particle[maxPuffs * _sprites];
             _particles = GetComponent<ParticleSystem>();
@@ -216,7 +216,7 @@ namespace Pacifico.Effects
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             renderer.receiveShadows = false;
 
-            _texture = CreateSmokeTexture(64, GetInstanceID());
+            _texture = CreateSmokeTexture(64, this.StableId());
             _runtimeMaterial = material != null ? new Material(material) : CreateMaterial();
             if (_runtimeMaterial.HasProperty("_BaseMap")) _runtimeMaterial.SetTexture("_BaseMap", _texture);
             if (_runtimeMaterial.HasProperty("_MainTex")) _runtimeMaterial.SetTexture("_MainTex", _texture);

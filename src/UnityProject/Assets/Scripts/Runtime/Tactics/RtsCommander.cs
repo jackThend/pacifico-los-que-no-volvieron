@@ -55,7 +55,7 @@ namespace Pacifico.Tactics
                 _selected.Clear();
                 foreach (SquadController s in SquadController.All)
                 {
-                    if (s.PlayerControlled && s.IsAlive && _selection.Contains(s.GetInstanceID())) _selected.Add(s);
+                    if (s.PlayerControlled && s.IsAlive && _selection.Contains(s.StableId())) _selected.Add(s);
                 }
                 return _selected;
             }
@@ -132,7 +132,7 @@ namespace Pacifico.Tactics
             foreach (SquadController squad in SquadController.All)
             {
                 if (!squad.PlayerControlled || !squad.IsAlive) continue;
-                int id = squad.GetInstanceID();
+                int id = squad.StableId();
                 foreach (SoldierUnit soldier in squad.Soldiers)
                 {
                     Vector3 p = viewCamera.WorldToScreenPoint(soldier.transform.position + Vector3.up);
@@ -233,7 +233,7 @@ namespace Pacifico.Tactics
             for (int i = own.Count - 1; i >= 0; i--)
             {
                 SquadController s = own[i];
-                bool selected = _selection.Contains(s.GetInstanceID());
+                bool selected = _selection.Contains(s.StableId());
                 string state = s.Order == SquadOrderKind.Attack ? "Atacando" : s.Command.March.Moving ? "En marcha" : s.Target != null ? "Haciendo fuego" : "Alto";
                 string text = (selected ? "> " : "   ") + s.DisplayName + " — " + s.Strength + "/" + s.InitialStrength + " · " +
                               (s.Formation == FormationType.Line ? "Línea" : "Guerrilla") + " · " + state +

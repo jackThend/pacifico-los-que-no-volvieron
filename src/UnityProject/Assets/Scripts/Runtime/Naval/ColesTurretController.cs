@@ -66,7 +66,7 @@ namespace Pacifico.Naval
                 enabled = false;
                 return;
             }
-            _model = ColesTurretModel.FromShip(ship.Spec, GetInstanceID());
+            _model = ColesTurretModel.FromShip(ship.Spec, this.StableId());
 
             NavalHud hud = NavalHud.Active;
             if (hud != null)

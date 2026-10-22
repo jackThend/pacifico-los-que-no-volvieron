@@ -46,7 +46,7 @@ namespace Pacifico.Tests.Weapons
             rifle.PullTrigger();
             var log = Run(rifle, 3f, 1f / 60f);
             var stages = StagesOf(log);
-            Assert.That(stages, Does.Not.Contain(RifleStage.Extracting));
+            Assert.That(stages, Has.No.Member(RifleStage.Extracting));
             Assert.That(stages[1], Is.EqualTo(RifleStage.Cocking));
             Assert.That(log.Any(x => x.Event.Type == RifleEventType.CaseEjected), Is.False);
         }

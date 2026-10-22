@@ -46,7 +46,7 @@ namespace Pacifico.Campaign
         {
             _weapon = cartridge != null ? cartridge.ToSpec() : WeaponCatalog.Remington();
             _drag = SmallArmsBallistics.DragFactor(_weapon);
-            _random = new System.Random(GetInstanceID());
+            _random = new System.Random(this.StableId());
         }
 
         private void Update()

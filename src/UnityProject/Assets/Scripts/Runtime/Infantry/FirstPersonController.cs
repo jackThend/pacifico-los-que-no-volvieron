@@ -103,7 +103,7 @@ namespace Pacifico.Infantry
             _controller = GetComponent<CharacterController>();
             Motor = new InfantryMotor();
             HeadBob = new HeadBobModel { ReferenceSpeed = Motor.Settings.SprintSpeed };
-            Recoil = new RecoilModel(GetInstanceID());
+            Recoil = new RecoilModel(this.StableId());
             EquipWeapon(weapon);
             _yaw = transform.eulerAngles.y;
             ApplyCapsule(Motor.Height);

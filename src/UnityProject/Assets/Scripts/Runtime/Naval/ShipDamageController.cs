@@ -43,7 +43,7 @@ namespace Pacifico.Naval
                 return;
             }
 
-            State = new ShipDamageState(_ship.Spec, GetInstanceID());
+            State = new ShipDamageState(_ship.Spec, this.StableId());
             State.Sunk += OnSunk;
 
             _hull = GetComponent<ArmoredHull>();

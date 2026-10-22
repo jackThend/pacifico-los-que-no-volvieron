@@ -27,7 +27,7 @@ namespace Pacifico.Naval
         private void Start()
         {
             _ship = GetComponent<ShipController>();
-            if (_ship.Spec != null) Model = BroadsideBatteryModel.FromShip(_ship.Spec, GetInstanceID());
+            if (_ship.Spec != null) Model = BroadsideBatteryModel.FromShip(_ship.Spec, this.StableId());
         }
 
         private void FixedUpdate()

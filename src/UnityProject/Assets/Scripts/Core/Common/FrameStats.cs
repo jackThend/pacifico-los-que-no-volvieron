@@ -91,7 +91,7 @@ namespace Pacifico.Core.Common
         }
 
         /// <summary>Cumple si el percentil 95 está dentro del presupuesto de 60 FPS y los tirones son menos del 0,5 %.</summary>
-        public bool MeetsTarget => _count > 0 && PercentileMs(95f) <= BudgetMs && Hitches <= _count * 0.005f;
+        public bool MeetsTarget => _count > 0 && PercentileMs(95f) <= BudgetMs && Hitches * 200 <= _count; // 0,5 % en enteros: con float, 1000 * 0.005f da 4,99… en Mono
 
         public const string CsvHeader = "escena;fotogramas;media_ms;fps_medio;p50_ms;p95_ms;p99_ms;max_ms;tirones;recolecciones_gc;cumple_60fps";
 

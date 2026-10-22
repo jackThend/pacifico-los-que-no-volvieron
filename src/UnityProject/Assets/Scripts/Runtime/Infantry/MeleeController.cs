@@ -166,8 +166,8 @@ namespace Pacifico.Infantry
                 if (!TryGetCapsule(c, out Capsule capsule)) continue;
                 if (!InSight(eye, c, owner)) continue;
 
-                int targetId = owner.GetInstanceID();
-                int partId = c.GetInstanceID();
+                int targetId = owner.StableId();
+                int partId = c.StableId();
                 _targets[targetId] = target;
                 _parts[partId] = c;
                 _shapes.Add(new MeleeTargetShape(targetId, partId, capsule, target.DamageMultiplier(c)));

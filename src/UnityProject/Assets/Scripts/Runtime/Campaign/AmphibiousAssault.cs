@@ -55,7 +55,7 @@ namespace Pacifico.Campaign
             Vector3 run = beachPoint - _start;
             run.y = 0f;
             _boat = new LandingBoat(men, Mathf.Max(1f, run.magnitude));
-            _random = new System.Random(GetInstanceID());
+            _random = new System.Random(this.StableId());
         }
 
         private void Update()
@@ -65,7 +65,7 @@ namespace Pacifico.Campaign
             int fallen = _boat.Step(Time.deltaTime, intensity, _random);
             if (fallen > 0) HideHeads();
             Vector3 p = Vector3.Lerp(_start, beachPoint, _boat.Progress);
-            p.y = _start.y + Mathf.Sin(Time.time * 1.7f + GetInstanceID()) * 0.15f; // cabeceo del bote
+            p.y = _start.y + Mathf.Sin(Time.time * 1.7f + this.StableId()) * 0.15f; // cabeceo del bote
             transform.position = p;
             if (!_boat.Beached) return;
             _announced = true;
@@ -162,8 +162,8 @@ namespace Pacifico.Campaign
 
         private void Awake()
         {
-            _fleet = new NavalBombardment(GetInstanceID());
-            _random = new System.Random(GetInstanceID() + 1);
+            _fleet = new NavalBombardment(this.StableId());
+            _random = new System.Random(this.StableId() + 1);
         }
 
         public void Designate(Vector3 point)

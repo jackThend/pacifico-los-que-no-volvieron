@@ -198,8 +198,8 @@ namespace Pacifico.Tactics
             }
             InitialStrength = _soldiers.Count;
             Command = new SquadCommand(formation, _positions, ToVec3(anchor), ToVec3(facing));
-            Fire = new SquadFireControl(Weapon, _soldiers.Count, GetInstanceID());
-            Supply = new SquadSupply(_soldiers.Count, new SupplySettings { TimeScale = BattlefieldClimate.TimeScale }, GetInstanceID());
+            Fire = new SquadFireControl(Weapon, _soldiers.Count, this.StableId());
+            Supply = new SquadSupply(_soldiers.Count, new SupplySettings { TimeScale = BattlefieldClimate.TimeScale }, this.StableId());
         }
 
         // ------------------------------------------------------------------------------------------
@@ -623,7 +623,7 @@ namespace Pacifico.Tactics
             if (_shock == null)
             {
                 Command.Halt();
-                _shock = new ShockCombat(Strength, enemy.Strength, GetInstanceID() ^ enemy.GetInstanceID());
+                _shock = new ShockCombat(Strength, enemy.Strength, this.StableId() ^ enemy.StableId());
                 _shockSuppressed = enemy.Suppression.State != SuppressionState.Normal;
             }
             ShockStep step = _shock.Step(dt, Strength, enemy.Strength, _shockSuppressed);

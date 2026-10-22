@@ -48,7 +48,7 @@ namespace Pacifico.Campaign
 
         private void Awake()
         {
-            _random = new System.Random(GetInstanceID());
+            _random = new System.Random(this.StableId());
             _nextShot = Time.time + fireIntervalSeconds * (0.5f + (float)_random.NextDouble());
         }
 

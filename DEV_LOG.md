@@ -760,3 +760,15 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Rendimiento (a medir en 0.3):** unos 30 acantilados escaneados suman del orden de 4–5 millones de triángulos. Si en Unity no se llega a 60 FPS, reducir el tramo vestido (`CoastDressHalfLengthM`) o usar la versión de menos detalle.
 * **Pendiente (7.2):** los buques siguen siendo bloques. Hay candidatos CC-BY en Sketchfab (Rolf Krake de 1863, primo del Huáscar; una fragata de tres palos; el cañón Armstrong de 40 libras de la Esmeralda), pero su descarga exige una cuenta y un token de la API.
 * **Verificación:** `tools/verify/verify.sh` → 424 pruebas en verde.
+
+---
+
+### [2026-10-22] - Tarea 0.3: primera apertura en Unity real — [EN PROCESO]
+* **Responsable:** Claude Code (sesión local en Windows del usuario)
+* **Entorno:** Unity 6000.6.3f1 (el proyecto estaba en 6000.0.23f1; Unity lo actualizó al abrirlo). Ejecución en modo batch.
+* **Errores encontrados y corregidos:**
+  * 25 × `CS0619 Object.GetInstanceID() is obsolete: Use GetEntityId instead` (error en Unity 6.6). Nueva extensión `Runtime/UnityObjectIds.cs` → `StableId()`, que usa `GetEntityId().GetHashCode()` con `UNITY_6000_4_OR_NEWER` y `GetInstanceID()` en versiones anteriores (sigue compilando en `tools/verify`). Sustituidas todas las llamadas de Runtime.
+  * `RifleCycleTests`: `Does.Not.Contain(enum)` solo admite cadenas en el NUnit de Unity; cambiado a `Has.No.Member(...)`.
+  * `FrameStats.MeetsTarget`: `Hitches <= _count * 0.005f` daba 4,99… en Mono y fallaba con 5 tirones de 1000. Ahora compara en enteros (`Hitches * 200 <= _count`).
+* **Resultado:** compila sin errores; Test Runner EditMode 430/430; `GameBuilder.BuildAllScenesBatch` genera datos, menú, prólogo y los 8 capítulos sin errores.
+* **Falta para cerrar 0.3:** jugar la campaña en el editor, medir con `-pacifico-perf`, voces y música.
