@@ -108,8 +108,7 @@ namespace Pacifico.Core.Campaign
         public const string Guacas = "Punta Guacas";
 
         /// <summary>El prólogo del corresponsal, literal del guion y sin sus comillas.</summary>
-        public static string Prologue(GuionQuotes guion) =>
-            guion.Field("Prólogo del Corresponsal").Trim().Trim('"', '“', '”', '«', '»').Trim();
+        public static string Prologue(GuionQuotes guion) => guion.QuotedField("Prólogo del Corresponsal");
 
         public static MissionScript Build(Func<string, string> readRepositoryFile, int boats = DefaultBoats) =>
             Build(GuionQuotes.Load(readRepositoryFile, ChapterHeading), boats);

@@ -24,8 +24,13 @@ namespace Pacifico.Tactics
         [SerializeField, Range(0.05f, 0.5f)] private float voxelSize = 0.2f;
 
         private NavMeshDataInstance _instance;
+        private NavMeshData _data;
+        private NavMeshBuildSettings _settings;
         private bool _hasSettings;
         private int _agentTypeId;
+
+        /// <summary>El generador de la escena (para regenerar el NavMesh cuando cambia la geometría).</summary>
+        public static NavMeshRuntimeBaker Active { get; private set; }
 
         /// <summary>Tipo de agente creado para este NavMesh (los NavMeshAgent de los soldados deben usarlo).</summary>
         public static int AgentTypeId { get; private set; }
@@ -55,12 +60,29 @@ namespace Pacifico.Tactics
                 return;
             }
             _instance = NavMesh.AddNavMeshData(data);
+            _data = data;
+            _settings = settings;
             AgentTypeId = settings.agentTypeID;
             Ready = true;
+            Active = this;
+        }
+
+        /// <summary>
+        /// Vuelve a generar el NavMesh con la geometría actual (p. ej. tras volar el portón de la hacienda en el capítulo 7).
+        /// Síncrono: un tirón de una vez, en un momento en que la explosión ya lo disimula.
+        /// </summary>
+        public void Rebuild()
+        {
+            if (_data == null) return;
+            var bounds = new Bounds(transform.position, size);
+            var sources = new List<NavMeshBuildSource>();
+            NavMeshBuilder.CollectSources(bounds, geometry, NavMeshCollectGeometry.PhysicsColliders, 0, new List<NavMeshBuildMarkup>(), sources);
+            NavMeshBuilder.UpdateNavMeshData(_data, _settings, sources, bounds);
         }
 
         private void OnDestroy()
         {
+            if (Active == this) Active = null;
             if (_instance.valid) _instance.Remove();
             if (_hasSettings) NavMesh.RemoveSettings(_agentTypeId);
             if (AgentTypeId == _agentTypeId) Ready = false;

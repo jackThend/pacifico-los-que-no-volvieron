@@ -692,3 +692,40 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Notas para el equipo narrativo:**
   * El coleccionable del guion (la fotografía de una mujer y dos niños en Oruro, «Vuelve pronto, Pedro…») no está en el Archivo. Se usa el despacho del coronel Wood.
   * El grabado `03_Bombardeo_de_Pisagua_1879.jpg` del Archivo es el bombardeo del 18 de abril, no el desembarco de noviembre: no se usa para este capítulo.
+
+---
+
+### [2026-10-22] - Tarea 6.9: Escenario Capítulo 7, Cañete, «Cadenas rotas» (FPS, infiltración y asalto) — [X] (verificado fuera del motor; ver 0.3)
+* **Integración previa:** el capítulo 3 se fusionó en `main` (PR #4) y esta rama se restableció desde ahí.
+* **Núcleo:**
+  * `CaneteChapter`: el guion de la misión, con prólogo, tres actos y amanecer.
+    * **Prólogo:** la fotografía de época de un culí encadenado (Archivo) y el texto del corresponsal, literal del guion.
+    * **Acto I:** cinco torpedos de tierra en la senda.
+    * **Acto II:** la mina de la patrulla, los dos tiradores que van a rematar al herido y la acequia.
+    * **Acto III:** la Winchester, la dinamita, el portón y ocho defensores.
+    * Fracasos: cruzar un alambre, que rematen al herido o se desangre, o que caiga Quintín.
+  * `Tripwire`:
+    * El alambre solo se descubre agachado a 4 m.
+    * Se corta con 3,5 s de pulso firme, quieto y agachado junto a la carga.
+    * Estalla si se cruza (intersección de segmentos) y mata a 7 m.
+  * `WoundedComrade`:
+    * Se desangra en 3 minutos; cargado, a la mitad de ritmo.
+    * Se carga en 1,5 s y se lleva al 45 % de la velocidad, sin correr ni armas.
+    * Lo remata un enemigo que se quede 3 s a 2,5 m.
+  * `InfantryMotor.LoadSpeedFactor`: el factor de carga.
+  * `GuionQuotes.QuotedField`: lee una viñeta y quita sus comillas. Lo usan los prólogos de los capítulos 3 y 7.
+  * El **machete cañero** entra en el catálogo de armas: arma blanca de 1,25 m de alcance, citada en el guion. La Winchester 1873 ya estaba.
+* **Unity:**
+  * `TripwireMine`, `WoundedSoldier` y `CaneteMissionDirector`.
+  * `NavMeshRuntimeBaker.Rebuild()`: regenera el NavMesh cuando vuela el portón, para que culíes y soldados entren por la brecha.
+  * Escena `Capitulo7_Canaverales_de_Canete`: de noche; hileras de caña macizas a ambos lados de la senda (el alambre va de caña a caña, no se puede rodear); la acequia; la hacienda con tapias, banquetas de tirador y portón.
+  * Catálogo y `GameBuilder` actualizados: la campaña tiene ya sus ocho capítulos jugables.
+* **Equilibrio y errores de diseño encontrados al calcularlo:**
+  * **Campo de tiro imposible.** Con el modelo de puntería del juego, un Remington acierta a un hombre que corre a 60 m el 40 % de los tiros, y dos impactos (80 cada uno) lo matan. Con la vista de día, seis fusileros en la tapia harían imposible cruzar el campo de tiro.
+    * Licencia de diseño, justificada por la noche del guion: los fusileros solo apuntan a quien tienen a 35 m, y los dos tiradores, que van a por el herido, a 8 m.
+    * La «granizada de balas» es ambiente: tierra que salta alrededor del jugador, sin daño a ciegas.
+  * **Rodear los alambres.** Con 0,3 m libres en cada extremo se podía pasar rozando la estaca; ahora el alambre va de caña a caña.
+* **Verificación:** 9 pruebas nuevas en `CaneteChapterTests` y la campaña actualizada (416 en total), todas en verde. Página de verificación visual con la puntería según la distancia, las mecánicas y el guion etapa por etapa.
+* **Notas para el equipo narrativo:**
+  * El coleccionable del guion (el contrato de servidumbre de Quintín con «LIBRE» estampado en sangre) no está en el Archivo Histórico y no se ha inventado: el capítulo no da coleccionable.
+  * Si se escribe ese documento, debería marcarse como recreación y no como documento de época.

@@ -27,8 +27,8 @@ namespace Pacifico.Core.Campaign
     }
 
     /// <summary>
-    /// La campaña en el orden del GDD (§5): el prólogo y los ocho capítulos, con la escena de cada uno. El capítulo 7
-    /// (Cañete) aún no tiene escena: figura en el menú como «en desarrollo» y la campaña salta del 6 al 8. El orden de las escenas de la build sale de aquí.
+    /// La campaña en el orden del GDD (§5): el prólogo y los ocho capítulos, con la escena de cada uno. Todos los
+    /// capítulos tienen ya su escena; si alguno se quedara sin ella, figuraría como «en desarrollo» y la campaña lo saltaría. El orden de las escenas de la build sale de aquí.
     /// </summary>
     public static class CampaignCatalog
     {
@@ -44,7 +44,7 @@ namespace Pacifico.Core.Campaign
             new ChapterEntry { Id = TarapacaChapter.Id, Number = 4, Title = "Sed en la quebrada", Date = "27 de noviembre de 1879", Mode = ChapterMode.Fps, Scene = "Capitulo4_Quebrada_de_Tarapaca" },
             new ChapterEntry { Id = AltoDeLaAlianzaChapter.Id, Number = 5, Title = "El trueno de Intiorko", Date = "26 de mayo de 1880", Mode = ChapterMode.Rts, Scene = "Capitulo5_Alto_de_la_Alianza" },
             new ChapterEntry { Id = AricaChapter.Id, Number = 6, Title = "Hasta el último cartucho", Date = "7 de junio de 1880", Mode = ChapterMode.Fps, Scene = "Capitulo6_Morro_de_Arica" },
-            new ChapterEntry { Id = "cap7_canete", Number = 7, Title = "Cadenas rotas", Date = "Diciembre de 1880", Mode = ChapterMode.Fps },
+            new ChapterEntry { Id = CaneteChapter.Id, Number = 7, Title = "Cadenas rotas", Date = "Diciembre de 1880", Mode = ChapterMode.Fps, Scene = "Capitulo7_Canaverales_de_Canete" },
             new ChapterEntry { Id = MirafloresChapter.Id, Number = 8, Title = "Los que no volvieron", Date = "15 de enero de 1881", Mode = ChapterMode.Fps, Scene = "Capitulo8_Reductos_de_Miraflores" },
         };
 
