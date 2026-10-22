@@ -96,3 +96,7 @@ sysinfo.txt
 
 # Caché local de assets pesados (ver tools/assets_manager.py y AGENTS.md §4.B)
 /assets_cache/
+
+# Máscaras URP generadas por el editor a partir de las texturas ARM (ArtLibrary)
+*_urp_mask_*.png
+*_urp_mask_*.png.meta

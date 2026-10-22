@@ -675,6 +675,552 @@
       },
       "size_bytes": 22984,
       "sha256": "9a5e4d2e056e09f4737305168854ff76030a36e44c824a962ebbddb99e4e9365"
+    },
+    {
+      "name": "black_painted_planks_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/black_painted_planks/black_painted_planks_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/black_painted_planks/black_painted_planks_arm_2k.jpg"
+      },
+      "description": "Poly Haven «black_painted_planks»: https://polyhaven.com/a/black_painted_planks",
+      "size_bytes": 2134641,
+      "sha256": "b0e017f696235195b182f6a60c42e7d50c98ae98d053dae6c14418dfe2c7979d"
+    },
+    {
+      "name": "black_painted_planks_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/black_painted_planks/black_painted_planks_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/black_painted_planks/black_painted_planks_diff_2k.jpg"
+      },
+      "description": "Poly Haven «black_painted_planks»: https://polyhaven.com/a/black_painted_planks",
+      "size_bytes": 2463246,
+      "sha256": "36d7fa384d81d52da800d6dec9a0d992fe8444fee05a1e5cc692cf2b07947e83"
+    },
+    {
+      "name": "black_painted_planks_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/black_painted_planks/black_painted_planks_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/black_painted_planks/black_painted_planks_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «black_painted_planks»: https://polyhaven.com/a/black_painted_planks",
+      "size_bytes": 3130670,
+      "sha256": "b02246c35bb5ac4020afb57479469b8019dbf8c0419a8312c2df2c83438cb724"
+    },
+    {
+      "name": "brown_planks_07_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/brown_planks_07/brown_planks_07_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_planks_07/brown_planks_07_arm_2k.jpg"
+      },
+      "description": "Poly Haven «brown_planks_07»: https://polyhaven.com/a/brown_planks_07",
+      "size_bytes": 384122,
+      "sha256": "de6f427c605e177ccf5ddd2371d3603eaf32de8b1300aaf44ac58ff626d81adb"
+    },
+    {
+      "name": "brown_planks_07_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/brown_planks_07/brown_planks_07_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_planks_07/brown_planks_07_diff_2k.jpg"
+      },
+      "description": "Poly Haven «brown_planks_07»: https://polyhaven.com/a/brown_planks_07",
+      "size_bytes": 1785085,
+      "sha256": "0a7cf9f859cfd4d8d6efaefcb168fad11be849b5f46699ae044218dd768f485b"
+    },
+    {
+      "name": "brown_planks_07_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/brown_planks_07/brown_planks_07_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/brown_planks_07/brown_planks_07_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «brown_planks_07»: https://polyhaven.com/a/brown_planks_07",
+      "size_bytes": 2141354,
+      "sha256": "72733e82d85b50b430522cc940641c87c98a82c911a349808553b2a306238cd3"
+    },
+    {
+      "name": "cannon_01",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/cannon_01/cannon_01.fbx",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/cannon_01/cannon_01_2k.fbx"
+      },
+      "description": "Poly Haven «cannon_01»: https://polyhaven.com/a/cannon_01",
+      "size_bytes": 1686156,
+      "sha256": "8c9feb0fdf5430d3c535d77d312f7cee01443d6119ba1712ad2a1ae61aa47a5f"
+    },
+    {
+      "name": "cannon_01_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/cannon_01/cannon_01_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/cannon_01/cannon_01_arm_2k.jpg"
+      },
+      "description": "Poly Haven «cannon_01»: https://polyhaven.com/a/cannon_01",
+      "size_bytes": 3016433,
+      "sha256": "97a027a6721d508140843700df9cebba4b4b48910497948648f02b33229bf5e6"
+    },
+    {
+      "name": "cannon_01_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/cannon_01/cannon_01_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/cannon_01/cannon_01_diff_2k.jpg"
+      },
+      "description": "Poly Haven «cannon_01»: https://polyhaven.com/a/cannon_01",
+      "size_bytes": 2692403,
+      "sha256": "bbc11c247254391809e0c453a7ddcb80706e74e30a9c769d47d2931cc0324020"
+    },
+    {
+      "name": "cannon_01_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/cannon_01/cannon_01_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/cannon_01/cannon_01_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «cannon_01»: https://polyhaven.com/a/cannon_01",
+      "size_bytes": 3050903,
+      "sha256": "e7c72b1515f0940b9244f6f6be1c577bc46140a75bd4e94b1f011e86dc3c028b"
+    },
+    {
+      "name": "cliff_side_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/cliff_side/cliff_side_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cliff_side/cliff_side_arm_2k.jpg"
+      },
+      "description": "Poly Haven «cliff_side»: https://polyhaven.com/a/cliff_side",
+      "size_bytes": 2130381,
+      "sha256": "4c7eda3983f14892717baea852690840e6b4f6e7f30fb95f4f2c7c25b1856230"
+    },
+    {
+      "name": "cliff_side_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/cliff_side/cliff_side_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cliff_side/cliff_side_diff_2k.jpg"
+      },
+      "description": "Poly Haven «cliff_side»: https://polyhaven.com/a/cliff_side",
+      "size_bytes": 3387348,
+      "sha256": "bc6f92d72eb6383ecc3a1094ed9f5b37efb36ccf83cf29699bb5990e6775afee"
+    },
+    {
+      "name": "cliff_side_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/cliff_side/cliff_side_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cliff_side/cliff_side_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «cliff_side»: https://polyhaven.com/a/cliff_side",
+      "size_bytes": 3585856,
+      "sha256": "eec5c0bb3daa1ad72f0f9c1d19caf78e84dfedcf3283b35b5a5dcf163718025f"
+    },
+    {
+      "name": "gravelly_sand_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/gravelly_sand/gravelly_sand_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/gravelly_sand/gravelly_sand_arm_2k.jpg"
+      },
+      "description": "Poly Haven «gravelly_sand»: https://polyhaven.com/a/gravelly_sand",
+      "size_bytes": 3413124,
+      "sha256": "ebbb750c2112813901f424e83c901a0bb103276755beb4fb9b7df7ab0e0732fc"
+    },
+    {
+      "name": "gravelly_sand_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/gravelly_sand/gravelly_sand_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/gravelly_sand/gravelly_sand_diff_2k.jpg"
+      },
+      "description": "Poly Haven «gravelly_sand»: https://polyhaven.com/a/gravelly_sand",
+      "size_bytes": 4402825,
+      "sha256": "cdab7130a67bc70f8c241b9ab2cd41b731d2baf1ec533939a333573b80070dd6"
+    },
+    {
+      "name": "gravelly_sand_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/gravelly_sand/gravelly_sand_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/gravelly_sand/gravelly_sand_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «gravelly_sand»: https://polyhaven.com/a/gravelly_sand",
+      "size_bytes": 5955314,
+      "sha256": "191985454de9403961aab2a6ffd33b6ca1e4c2715712e03f3c928a8140322719"
+    },
+    {
+      "name": "metal_plate_02_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/metal_plate_02/metal_plate_02_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_arm_2k.jpg"
+      },
+      "description": "Poly Haven «metal_plate_02»: https://polyhaven.com/a/metal_plate_02",
+      "size_bytes": 4445975,
+      "sha256": "7224eb8f7563ba0822fc882dff8d287049929a5cb17299f08004b1a3c3fe9e55"
+    },
+    {
+      "name": "metal_plate_02_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/metal_plate_02/metal_plate_02_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_diff_2k.jpg"
+      },
+      "description": "Poly Haven «metal_plate_02»: https://polyhaven.com/a/metal_plate_02",
+      "size_bytes": 2604239,
+      "sha256": "2bf77bbcf18c862bf1e1501d1953ce9d511e80df6305b46e2f38b788bd37b581"
+    },
+    {
+      "name": "metal_plate_02_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/metal_plate_02/metal_plate_02_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate_02/metal_plate_02_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «metal_plate_02»: https://polyhaven.com/a/metal_plate_02",
+      "size_bytes": 565185,
+      "sha256": "1da6ddb0f455d53636754b3b629942e6aec2f77fafaf6a53cee102ec107854c1"
+    },
+    {
+      "name": "mountainside",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/mountainside/mountainside.fbx",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/mountainside/mountainside_2k.fbx"
+      },
+      "description": "Poly Haven «mountainside»: https://polyhaven.com/a/mountainside",
+      "size_bytes": 13829804,
+      "sha256": "8ec6d38e6b2120f984253a12adf74896c16cc4333fa48f5d0e85c88e9a06103e"
+    },
+    {
+      "name": "mountainside_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/mountainside/mountainside_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/mountainside/mountainside_arm_2k.jpg"
+      },
+      "description": "Poly Haven «mountainside»: https://polyhaven.com/a/mountainside",
+      "size_bytes": 2829509,
+      "sha256": "a494e404df96eb43df11ae7b4c14901461d129af0ae6b3ecc8f75390c3b41c35"
+    },
+    {
+      "name": "mountainside_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/mountainside/mountainside_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/mountainside/mountainside_diff_2k.jpg"
+      },
+      "description": "Poly Haven «mountainside»: https://polyhaven.com/a/mountainside",
+      "size_bytes": 3557566,
+      "sha256": "3fe1a61dc38423b07a757fc74e1dce5d02a5ea0b4fbab52b5bcddece052df811"
+    },
+    {
+      "name": "mountainside_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/mountainside/mountainside_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/mountainside/mountainside_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «mountainside»: https://polyhaven.com/a/mountainside",
+      "size_bytes": 4568125,
+      "sha256": "dbfd022b4dad44a2d6fb30b7bd68d44a7349a22c06a9701bcfbedc8e73400a87"
+    },
+    {
+      "name": "namaqualand_boulders_01",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_boulders_01/namaqualand_boulders_01.fbx",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/namaqualand_boulders_01/namaqualand_boulders_01_2k.fbx"
+      },
+      "description": "Poly Haven «namaqualand_boulders_01»: https://polyhaven.com/a/namaqualand_boulders_01",
+      "size_bytes": 1324140,
+      "sha256": "f1f3b39594b4a20b5ea768706d4031c5b7febc0214d19eb3e8d04e287139e9cf"
+    },
+    {
+      "name": "namaqualand_boulders_01_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_boulders_01/namaqualand_boulders_01_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/namaqualand_boulders_01/namaqualand_boulders_01_arm_2k.jpg"
+      },
+      "description": "Poly Haven «namaqualand_boulders_01»: https://polyhaven.com/a/namaqualand_boulders_01",
+      "size_bytes": 2568715,
+      "sha256": "681fe95cb8c454230c72fecc204f43e08ae3b6f37499faa67ad1b5540f6810b3"
+    },
+    {
+      "name": "namaqualand_boulders_01_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_boulders_01/namaqualand_boulders_01_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/namaqualand_boulders_01/namaqualand_boulders_01_diff_2k.jpg"
+      },
+      "description": "Poly Haven «namaqualand_boulders_01»: https://polyhaven.com/a/namaqualand_boulders_01",
+      "size_bytes": 2855649,
+      "sha256": "50b0df89cd96e47f22c7723ef822f712c2cb3071ec114bd4fb7981c0be0b74be"
+    },
+    {
+      "name": "namaqualand_boulders_01_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_boulders_01/namaqualand_boulders_01_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/namaqualand_boulders_01/namaqualand_boulders_01_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «namaqualand_boulders_01»: https://polyhaven.com/a/namaqualand_boulders_01",
+      "size_bytes": 4153995,
+      "sha256": "5e242a15447bb350ef1bb6ca7f62270078ba8ef3ad1b440432c9013dbc5a520d"
+    },
+    {
+      "name": "namaqualand_cliff_01",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_cliff_01/namaqualand_cliff_01.fbx",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/namaqualand_cliff_01/namaqualand_cliff_01_2k.fbx"
+      },
+      "description": "Poly Haven «namaqualand_cliff_01»: https://polyhaven.com/a/namaqualand_cliff_01",
+      "size_bytes": 2939052,
+      "sha256": "ee5bb2ab237f3fe8d03330324cee735c3fd07c8ff2c2c5f32e5a00868aceee9b"
+    },
+    {
+      "name": "namaqualand_cliff_01_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_cliff_01/namaqualand_cliff_01_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/namaqualand_cliff_01/namaqualand_cliff_01_arm_2k.jpg"
+      },
+      "description": "Poly Haven «namaqualand_cliff_01»: https://polyhaven.com/a/namaqualand_cliff_01",
+      "size_bytes": 2497804,
+      "sha256": "0269b15353fefca82f19e642618b91d9943f371373c5ccc9ddaf219a96a64a31"
+    },
+    {
+      "name": "namaqualand_cliff_01_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_cliff_01/namaqualand_cliff_01_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/namaqualand_cliff_01/namaqualand_cliff_01_diff_2k.jpg"
+      },
+      "description": "Poly Haven «namaqualand_cliff_01»: https://polyhaven.com/a/namaqualand_cliff_01",
+      "size_bytes": 2651260,
+      "sha256": "72501708e40c12e315b24e606555193af0f89bc189d26072bc0021a1ca362ed0"
+    },
+    {
+      "name": "namaqualand_cliff_01_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_cliff_01/namaqualand_cliff_01_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/namaqualand_cliff_01/namaqualand_cliff_01_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «namaqualand_cliff_01»: https://polyhaven.com/a/namaqualand_cliff_01",
+      "size_bytes": 3865130,
+      "sha256": "d5d98996e8a1e7e901ccafc98c3c773b3cf628a8686b1bafc13e2b64de5f36c6"
+    },
+    {
+      "name": "namaqualand_cliff_02",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_cliff_02/namaqualand_cliff_02.fbx",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/namaqualand_cliff_02/namaqualand_cliff_02_2k.fbx"
+      },
+      "description": "Poly Haven «namaqualand_cliff_02»: https://polyhaven.com/a/namaqualand_cliff_02",
+      "size_bytes": 6028748,
+      "sha256": "465bf72788387b5ef4306bd3858610c942a7cf127b8a84a555e6aa5cd39b209d"
+    },
+    {
+      "name": "namaqualand_cliff_02_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_cliff_02/namaqualand_cliff_02_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/namaqualand_cliff_02/namaqualand_cliff_02_arm_2k.jpg"
+      },
+      "description": "Poly Haven «namaqualand_cliff_02»: https://polyhaven.com/a/namaqualand_cliff_02",
+      "size_bytes": 2846951,
+      "sha256": "3b4d733be37186ab6b62b8ddde90f9dc439f5b42a17293f1b65844a0f0d9e02f"
+    },
+    {
+      "name": "namaqualand_cliff_02_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_cliff_02/namaqualand_cliff_02_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/namaqualand_cliff_02/namaqualand_cliff_02_diff_2k.jpg"
+      },
+      "description": "Poly Haven «namaqualand_cliff_02»: https://polyhaven.com/a/namaqualand_cliff_02",
+      "size_bytes": 2845716,
+      "sha256": "9618e2a42155b93189e0bac9edebcc46a6af1357f4f6ed56f79ca1714690d4f0"
+    },
+    {
+      "name": "namaqualand_cliff_02_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/namaqualand_cliff_02/namaqualand_cliff_02_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/namaqualand_cliff_02/namaqualand_cliff_02_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «namaqualand_cliff_02»: https://polyhaven.com/a/namaqualand_cliff_02",
+      "size_bytes": 4125317,
+      "sha256": "634bc52174130d6992a7539d1f7bb923c4a103f117ab09966782c0e89eb571f6"
+    },
+    {
+      "name": "wooden_crate_02",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/wooden_crate_02/wooden_crate_02.fbx",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/2k/wooden_crate_02/wooden_crate_02_2k.fbx"
+      },
+      "description": "Poly Haven «wooden_crate_02»: https://polyhaven.com/a/wooden_crate_02",
+      "size_bytes": 176524,
+      "sha256": "fc9389068ec8cfe60cc4d0ed0d81d67ac76c8974780ad6114942944d78ac9014"
+    },
+    {
+      "name": "wooden_crate_02_arm_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/wooden_crate_02/wooden_crate_02_arm_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_crate_02/wooden_crate_02_arm_2k.jpg"
+      },
+      "description": "Poly Haven «wooden_crate_02»: https://polyhaven.com/a/wooden_crate_02",
+      "size_bytes": 2983795,
+      "sha256": "c426597684b4e86bc2189bfaaf9d162118b54a01523ed4eec625cdbe2f1e52c8"
+    },
+    {
+      "name": "wooden_crate_02_diff_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/wooden_crate_02/wooden_crate_02_diff_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_crate_02/wooden_crate_02_diff_2k.jpg"
+      },
+      "description": "Poly Haven «wooden_crate_02»: https://polyhaven.com/a/wooden_crate_02",
+      "size_bytes": 2739157,
+      "sha256": "e39ab2f122698069f4ee7d56f22624349eaf587dc9af51109d450f632d25f7ae"
+    },
+    {
+      "name": "wooden_crate_02_nor_gl_2k",
+      "path": "src/UnityProject/Assets/Art/CC0/PolyHaven/wooden_crate_02/wooden_crate_02_nor_gl_2k.jpg",
+      "category": "Arte_CC0_PolyHaven",
+      "storage": "git",
+      "license": "CC0 1.0 (Poly Haven)",
+      "source": {
+        "type": "http",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/wooden_crate_02/wooden_crate_02_nor_gl_2k.jpg"
+      },
+      "description": "Poly Haven «wooden_crate_02»: https://polyhaven.com/a/wooden_crate_02",
+      "size_bytes": 2280942,
+      "sha256": "04274163275dc16b9dbd829aa45145796bd129cf980c916280fcad352cf5542e"
     }
   ]
 }

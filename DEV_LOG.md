@@ -737,3 +737,26 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Hallazgo principal:** el Abraham Quiroz real sobrevivió a Miraflores. Su epistolario llega hasta 1884 y hay una carta suya desde Lima del 6 de abril de 1881. El epílogo presenta su muerte y su «carta auténtica» como hechos. Queda pendiente de decisión del equipo narrativo; no se ha tocado el guion.
 * **Corregido en el código (capítulo 2):** la narración de Angamos llamaba «teniente» a Enrique Palacios (era teniente primero) y atribuía a «un marinero» el izado de la bandera, en el que participó Palacios. Ahora no afirma un orden de relevo que las fuentes discuten.
 * **Verificación:** `tools/verify/verify.sh`.
+
+---
+
+### [2026-10-22] - Tarea 7.1: Capítulo 1 con modelos y texturas libres (CC0) — [X]
+* **Petición del usuario:** cambiar las primitivas del capítulo 1 por modelos gratuitos, con la mejor calidad posible aunque pese más el ZIP.
+* **Red:** el entorno bloqueaba Poly Haven, Kenney, Sketchfab, OpenGameArt y ambientCG; el usuario los habilitó.
+* **Recursos (Poly Haven, CC0, texturas a 2K; 11 recursos, unos 120 MB en `Assets/Art/CC0/PolyHaven`, registrados en `assets_manifest.json` con su URL):**
+  * Rocas escaneadas de Namaqualand (costa desértica, como Tarapacá): dos acantilados, una ladera y peñascos. Pared de roca `cliff_side` y arena con grava.
+  * Cañón de avancarga sobre cureña; caja de madera; tablas pintadas de negro, tablas marrones y planchas remachadas.
+  * Descartados: los barcos holandeses del siglo XVII y la pinaza (anacrónicos), y las rocas de costa verde europea.
+* **Código:**
+  * `Core/Art/ModelFitting.cs`: escala, giro hacia una dirección y proyección de texturas en caja, con 8 pruebas.
+  * `Editor/ArtLibrary.cs`: materiales URP Lit con color, normales y máscara (convierte el ARM de Poly Haven al formato de URP: metal en R, oclusión en G, lisura en A; la máscara se genera al construir y está en `.gitignore`); `Dress` viste una primitiva con proyección en caja (una costa de 5 km sin texturas estiradas); `Model` instancia un FBX con su material; orientación por la normal media (la cara de una roca escaneada) o por el ánima del cañón.
+  * `Capitulo1IquiqueBuilder`: `DressCoast` (acantilados a lo largo de 2,6 km de costa, peñascos en la orilla, pared de roca y arena), cañones en las baterías, caja junto a los náufragos y cascos con textura. `IquiquePrototypeBuilder.Plated/Planked`: el Huáscar y la Esmeralda también se ven así en el capítulo 2 y en el prototipo.
+  * Si falta un archivo, todo vuelve a la primitiva de antes.
+* **Previsualización en el navegador** (three.js con los mismos FBX y las mismas reglas de colocación). Encontró tres errores antes de llegar a Unity:
+  * Los acantilados a la altura de la costa dejaban ver el bloque: la silueta de un escaneo queda muy por debajo de su caja. Ahora miden 28–44 m más que la costa.
+  * Así de altos tapaban las baterías. Las baterías pasan a lo alto de la costa (8 m tierra adentro) y, delante de ellas, las rocas quedan por debajo del borde; detrás se ve la pared de roca.
+  * La caja de los náufragos salía gigante (el FBX está en centímetros): ahora se ajusta a 0,45 m.
+  * Además, el glTF del cañón en Poly Haven no coincide con su `.bin` (el FBX sí está bien: MD5 comprobado).
+* **Rendimiento (a medir en 0.3):** unos 30 acantilados escaneados suman del orden de 4–5 millones de triángulos. Si en Unity no se llega a 60 FPS, reducir el tramo vestido (`CoastDressHalfLengthM`) o usar la versión de menos detalle.
+* **Pendiente (7.2):** los buques siguen siendo bloques. Hay candidatos CC-BY en Sketchfab (Rolf Krake de 1863, primo del Huáscar; una fragata de tres palos; el cañón Armstrong de 40 libras de la Esmeralda), pero su descarga exige una cuenta y un token de la API.
+* **Verificación:** `tools/verify/verify.sh` → 424 pruebas en verde.
