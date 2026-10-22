@@ -76,6 +76,7 @@ namespace Pacifico.EditorTools
             Capitulo4TarapacaBuilder.BuildScene();
             Capitulo5AltoDeLaAlianzaBuilder.BuildScene();
             Capitulo6MorroDeAricaBuilder.BuildScene();
+            Capitulo7CaneteBuilder.BuildScene();
             Capitulo8MirafloresBuilder.BuildScene();
             BuildMenuScene();
             SetCampaignBuildSettings();

@@ -19,9 +19,9 @@ Consulta y sigue estrictamente las directivas maestras de desarrollo autónomo d
 
 **Última actualización:** 2026-10-22.
 
-* **Completado y verificado fuera del motor:** todas las tareas del roadmap (fases 0 a 6: datos, módulo naval, FPS, RTS, sistema narrativo, capítulos jugables 1, 4, 5, 6 y 8 con epílogo, rendimiento y empaquetado) salvo la **0.3**, y las ampliaciones 6.7 (capítulo 2, Angamos) y 6.8 (capítulo 3, Pisagua). Detalle por tarea en `DEV_LOG.md`.
+* **Completado y verificado fuera del motor:** todas las tareas del roadmap (fases 0 a 6: datos, módulo naval, FPS, RTS, sistema narrativo, capítulos jugables 1, 4, 5, 6 y 8 con epílogo, rendimiento y empaquetado) salvo la **0.3**, y las ampliaciones 6.7 (capítulo 2, Angamos), 6.8 (capítulo 3, Pisagua) y 6.9 (capítulo 7, Cañete): la campaña tiene sus ocho capítulos jugables. Detalle por tarea en `DEV_LOG.md`.
 * **Pendiente (requiere Unity):** tarea 0.3. Abrir el proyecto, dejar que `FirstRunSetup` construya la campaña, jugarla, pasar el Test Runner y medir con `-pacifico-perf`. Grabar voces y música. Si el usuario reporta errores de consola, corregirlos antes que nada.
-* **Siguiente:** 6.9, capítulo 7 (Cañete, FPS). Aún no tiene escena: está en `CampaignCatalog` como no implementado.
+* **Siguiente:** no queda ninguna tarea del roadmap que se pueda hacer sin Unity. Lo pendiente es la 0.3 y, si el usuario lo pide, pulir o ampliar capítulos.
 
 ### Sobre el usuario
 * Habla español y **no es técnico**: explicar en lenguaje llano, sin jerga, con pasos cortos. Tiene lesionadas las manos: acompañar el trabajo con páginas HTML de verificación visual en lugar de pedirle pruebas.

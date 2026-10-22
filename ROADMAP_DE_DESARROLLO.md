@@ -113,4 +113,6 @@ Los capítulos 2, 3 y 7 del guion y del GDD no estaban en el roadmap original. S
 - [X] **6.8 Escenario Capítulo 3: Desembarco de Pisagua, «Sangre en el salitre» (RTS)** *(verificado fuera del motor; ver 0.3)*
   * *Criterio:* desembarco en dos olas de botes bajo el fuego de los fuertes y de los fusileros; artillería de la flota a demanda para callar los fuertes de Punta Pichalo y Punta Guacas; supresión para tomar el terraplén del ferrocarril; salvar los estanques de agua y las locomotoras de la dinamita y rechazar el contraataque.
   * *Verificación:* guion de misión válido con el prólogo literal del guion; modelos de los botes, la flota y las cargas probados; relieve transitable comprobado; simulaciones de 400 travesías y 300 asaltos al risco.
-- [ ] **6.9 Escenario Capítulo 7: Cañete, «Cadenas rotas» (FPS, infiltración y asalto)**
+- [X] **6.9 Escenario Capítulo 7: Cañete, «Cadenas rotas» (FPS, infiltración y asalto)** *(verificado fuera del motor; ver 0.3)*
+  * *Criterio:* acto I, cortar de noche los alambres de los torpedos de tierra; acto II, abatir con el machete a los tiradores que van a rematar al soldado chileno herido y llevarlo a cubierto; acto III, la Winchester y la dinamita contra el portón de la hacienda, con culíes y soldados chilenos.
+  * *Verificación:* guion de misión válido con el prólogo literal del guion; modelos del alambre trampa y del herido probados; machete en el catálogo de armas; distancia de visión nocturna justificada con el modelo de puntería.

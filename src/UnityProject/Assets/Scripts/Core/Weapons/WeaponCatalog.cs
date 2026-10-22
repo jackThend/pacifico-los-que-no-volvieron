@@ -17,6 +17,7 @@ namespace Pacifico.Core.Weapons
         public const string RemingtonId = "remington_rolling_block";
         public const string WinchesterId = "winchester_1873_carbine";
         public const string CorvoId = "corvo";
+        public const string MacheteId = "machete_canero";
         public const string TriangularBayonetId = "bayoneta_triangular";
 
         // Bayoneta calada: alcance del fusil más la hoja. Común a los fusiles de infantería.
@@ -28,7 +29,7 @@ namespace Pacifico.Core.Weapons
         {
             return new[]
             {
-                Comblain(), Chassepot(), Gras(), Remington(), Winchester(), Corvo(), TriangularBayonet(),
+                Comblain(), Chassepot(), Gras(), Remington(), Winchester(), Corvo(), Machete(), TriangularBayonet(),
             };
         }
 
@@ -256,6 +257,36 @@ namespace Pacifico.Core.Weapons
                 MeleeReachM = 1.1f,
                 MeleeDamage = 85f,
                 MeleeCycleSeconds = 0.55f,
+            };
+        }
+
+        /// <summary>
+        /// Machete cañero: la herramienta de corte de las haciendas azucareras, el arma de Quintín Quintana en el
+        /// capítulo 7 («desenvaina su machete, abate a dos tiradores enemigos»). Más largo y pesado que el corvo.
+        /// </summary>
+        public static WeaponSpec Machete()
+        {
+            return new WeaponSpec
+            {
+                Id = MacheteId,
+                DisplayName = "Machete cañero",
+                Kind = WeaponKind.Blade,
+                UsedBy = { Faction.Chile },
+                YearAdopted = 1880,
+                MassKg = 0.7f,
+                Source = new HistoricalSource
+                {
+                    References = { "Guion, Cap. 7: «Quintín rompe el sigilo: desenvaina su machete, abate a dos tiradores enemigos»." },
+                    EstimatedFields =
+                    {
+                        nameof(WeaponSpec.MassKg), nameof(WeaponSpec.YearAdopted), nameof(WeaponSpec.MeleeReachM),
+                        nameof(WeaponSpec.MeleeDamage), nameof(WeaponSpec.MeleeCycleSeconds),
+                    },
+                    Notes = "Herramienta de corte de caña, no de dotación militar; lo llevan los culíes liberados que se suman a la columna.",
+                },
+                MeleeReachM = 1.25f,
+                MeleeDamage = 95f,
+                MeleeCycleSeconds = 0.7f,
             };
         }
 

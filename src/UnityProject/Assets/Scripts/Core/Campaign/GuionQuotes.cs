@@ -40,6 +40,12 @@ namespace Pacifico.Core.Campaign
         }
 
         /// <summary>
+        /// Como <see cref="Field"/>, sin las comillas que envuelven la cita (los prólogos del corresponsal de los
+        /// capítulos 3 y 7 van entre comillas inglesas dentro de la viñeta).
+        /// </summary>
+        public string QuotedField(string label) => Field(label).Trim().Trim('"', '“', '”', '«', '»').Trim();
+
+        /// <summary>
         /// Bloques citados («&gt; …») de varias líneas: el prólogo del corresponsal, una carta, la cita final. Cada
         /// bloque es la lista de sus líneas no vacías, sin marcas Markdown ni las comillas de apertura y cierre.
         /// </summary>

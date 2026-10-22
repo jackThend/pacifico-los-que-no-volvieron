@@ -75,6 +75,18 @@ namespace Pacifico.Core.Infantry
         public float Height { get; private set; }
         public float EyeHeight => Height * _s.EyeHeightRatio;
 
+        /// <summary>
+        /// Factor de velocidad por la carga (1 = libre). Por debajo de 1 no se puede correr: cargando a un herido a la
+        /// espalda (capítulo 7) se avanza a <see cref="WoundedComrade.CarrySpeedFactor"/>.
+        /// </summary>
+        public float LoadSpeedFactor
+        {
+            get => _loadSpeedFactor;
+            set => _loadSpeedFactor = MathUtil.Clamp(value, 0.1f, 1f);
+        }
+
+        private float _loadSpeedFactor = 1f;
+
         public Vec3 Velocity => new Vec3(_horizontalVelocity.X, _verticalVelocity, _horizontalVelocity.Z);
         public float HorizontalSpeed => _horizontalVelocity.HorizontalMagnitude;
 
@@ -115,7 +127,7 @@ namespace Pacifico.Core.Infantry
 
             UpdateStance(input, crouchPressed, jumpPressed, canStand);
             IsAiming = input.Aim && Stance != Stance.Sliding;
-            IsSprinting = Stance == Stance.Standing && IsGrounded && input.Sprint && input.MoveZ > 0.5f && !IsAiming && !IsExhausted;
+            IsSprinting = Stance == Stance.Standing && IsGrounded && input.Sprint && input.MoveZ > 0.5f && !IsAiming && !IsExhausted && _loadSpeedFactor >= 1f;
 
             if (Stance == Stance.Sliding) UpdateSlide(input, dt);
             else UpdateWalk(input, dt);
@@ -232,6 +244,7 @@ namespace Pacifico.Core.Infantry
 
             float baseSpeed = Stance == Stance.Crouching ? _s.CrouchSpeed : IsSprinting ? _s.SprintSpeed : _s.WalkSpeed;
             if (IsAiming) baseSpeed *= _s.AimSpeedMultiplier;
+            baseSpeed *= _loadSpeedFactor;
 
             // Retroceder y desplazarse de lado es más lento que avanzar.
             float directional = z < 0f ? _s.BackwardMultiplier : 1f;
