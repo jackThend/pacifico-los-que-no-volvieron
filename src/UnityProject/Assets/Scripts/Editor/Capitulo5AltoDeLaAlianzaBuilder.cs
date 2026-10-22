@@ -146,7 +146,7 @@ namespace Pacifico.EditorTools
 
         private static float Ground(Terrain terrain, Vector3 p) => terrain.SampleHeight(p) + terrain.transform.position.y;
 
-        private static Transform Marker(Terrain terrain, string name, Vector3 position, float heading)
+        internal static Transform Marker(Terrain terrain, string name, Vector3 position, float heading)
         {
             var t = new GameObject("Puesto_" + name).transform;
             position.y = Ground(terrain, position);
@@ -155,7 +155,7 @@ namespace Pacifico.EditorTools
         }
 
         /// <summary>Cañón de montaña: cureña, ruedas y tubo de bronce.</summary>
-        private static SquadArtillery Gun(Terrain terrain, string name, Faction owner, Vector3 position, float heading, Material dust)
+        internal static SquadArtillery Gun(Terrain terrain, string name, Faction owner, Vector3 position, float heading, Material dust)
         {
             var root = new GameObject(name).transform;
             position.y = Ground(terrain, position);
@@ -176,7 +176,7 @@ namespace Pacifico.EditorTools
             return gun;
         }
 
-        private static void CreateSmoke()
+        internal static void CreateSmoke()
         {
             var smoke = new GameObject("Humo_Polvora_Negra");
             smoke.AddComponent<ParticleSystem>();

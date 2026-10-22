@@ -110,5 +110,7 @@ Los capítulos 2, 3 y 7 del guion y del GDD no estaban en el roadmap original. S
 - [X] **6.7 Escenario Capítulo 2: Punta Angamos, «Caza en alta mar» (Naval 3D)** *(verificado fuera del motor; ver 0.3)*
   * *Criterio:* el jugador manda el Cochrane, corta la retirada del Huáscar, abre fuego a la distancia en que sus piezas perforan la coraza enemiga y presenta la suya en ángulo. Le siguen el intercalado de la torre de mando y el relevo de los comandantes peruanos, y el abordaje que cierra las válvulas antes de que el Huáscar se hunda.
   * *Verificación:* guion de misión válido leído del guion; distancia de apertura de fuego calculada por el modelo de blindaje (2.200 m); partidas completas, fracasos y caminos por tiempo probados; simulación de maniobra y artillería con 300 partidas.
-- [ ] **6.8 Escenario Capítulo 3: Desembarco de Pisagua, «Sangre en el salitre» (RTS)**
+- [X] **6.8 Escenario Capítulo 3: Desembarco de Pisagua, «Sangre en el salitre» (RTS)** *(verificado fuera del motor; ver 0.3)*
+  * *Criterio:* desembarco en dos olas de botes bajo el fuego de los fuertes y de los fusileros; artillería de la flota a demanda para callar los fuertes de Punta Pichalo y Punta Guacas; supresión para tomar el terraplén del ferrocarril; salvar los estanques de agua y las locomotoras de la dinamita y rechazar el contraataque.
+  * *Verificación:* guion de misión válido con el prólogo literal del guion; modelos de los botes, la flota y las cargas probados; relieve transitable comprobado; simulaciones de 400 travesías y 300 asaltos al risco.
 - [ ] **6.9 Escenario Capítulo 7: Cañete, «Cadenas rotas» (FPS, infiltración y asalto)**

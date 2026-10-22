@@ -650,3 +650,45 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Notas para el equipo narrativo:**
   * El guion pasa el mando de Grau «a Aguirre, Rodríguez y Gárezon». Se añadió al teniente **Enrique Palacios**, herido entre Rodríguez y Gárezon según las crónicas; también se nombra a **Diego Ferré**, muerto junto a Grau. Conviene confirmarlo en el guion.
   * El coleccionable del guion («el libro de guardia del Huáscar») no está en el Archivo Histórico. No se ha inventado: el capítulo no da coleccionable y se cierra con la acuarela de la captura (Lisle) y el grabado de los daños, ambos de época y ya en el Archivo.
+
+---
+
+### [2026-10-22] - Tarea 6.8: Escenario Capítulo 3, Desembarco de Pisagua, «Sangre en el salitre» (RTS) — [X] (verificado fuera del motor; ver 0.3)
+* **Integración previa:** el capítulo 2 se fusionó en `main` (PR #3) y esta rama se restableció desde ahí.
+* **Núcleo:**
+  * `PisaguaChapter`: el guion de la misión en seis etapas.
+    1. **Prólogo:** lámina del Archivo y prólogo del corresponsal, literal del guion con `GuionQuotes.Field`.
+    2. **La cabeza de playa:** dos olas de botes; callar los fuertes de Punta Pichalo y Punta Guacas.
+    3. **El asalto al risco:** tomar el terraplén del ferrocarril.
+    4. **Los pozos de agua:** salvar los estanques; las locomotoras son opcionales.
+    5. **La defensa:** rechazar el contraataque.
+    6. **El despacho del coronel Wood:** el coleccionable, que ya estaba asignado al capítulo 3.
+  * Fracasos: vuelan los estanques, o no queda nadie en tierra. Si la flota no acalla los fuertes en 7 minutos, los blindados los baten por su cuenta.
+  * `AmphibiousAssault` (Core/Tactics):
+    * `LandingBoat`: la travesía sin cobertura; bajas por hombre y segundo proporcionales al fuego que recibe.
+    * `CoastalFort`: calla con 3 impactos a menos de 15 m.
+    * `NavalBombardment`: salvas de la flota cada 15 s contra el punto marcado, con 18 m de dispersión.
+    * `DemolitionCharge`: la mecha que se apaga si se llega a tiempo.
+  * `PisaguaTerrain`: el relieve de la bahía (playa, ladera, terraplén llano, segunda ladera, pampa y las dos puntas). Los «acantilados de 300 metros» del guion se comprimen a 44 m para que las escuadras puedan subir; una prueba comprueba que ninguna pendiente del campo pasa de 38°.
+* **Unity:**
+  * `LandingCraft`, `CoastalFortBattery`, `NavalGunfireSupport` y `DemolitionObjective`.
+  * `PisaguaMissionDirector`:
+    * Calcula el fuego sobre cada bote a partir de los fuertes activos y de los nidos, según su fuerza y su supresión.
+    * Crea en la playa las escuadras que llegan.
+    * `B` y clic marcan el blanco de la flota; mientras se marca, el clic no selecciona escuadras.
+    * Repliega los nidos a la estación y lanza el contraataque.
+  * Escena `Capitulo3_Bahia_de_Pisagua`, con la lámina «Desembarco y toma de Pisagua, 1879» del Archivo.
+  * `GameInput` gana la tecla `B`.
+  * El catálogo y `GameBuilder` quedan actualizados: tras Angamos, Pisagua; tras Pisagua, Tarapacá.
+* **Equilibrio con simulaciones de los modelos del juego:**
+  * **Travesía (400 partidas por escenario):** sin marcar blancos, cada ola llega con 14,7 de 24. Callando los fuertes (unos 148 s) y fijando los nidos con la primera ola, la segunda llega con 21,3.
+  * **Asalto al risco (300 partidas):** la primera versión, con dos nidos de 10 hombres y cobertura 0,65, se tomaba en el 9 % de las partidas aun haciéndolo bien. Se ajustó a nidos de 8 hombres tras parapetos de piedra (0,5) que se repliegan con 4 hombres, o suprimidos con chilenos a 50 m. Fijando con dos escuadras y subiendo con dos, se toma en el 73–86 %; subiendo las cuatro sin tirar, en el 0 %, que es la lección del guion.
+  * El fuego naval contra los nidos apenas ayuda (dispersión de 18 m contra un radio letal de 12 m): sirve sobre todo contra los fuertes.
+  * **Mechas:** con 150 s no daba tiempo a subir los 150 m de ladera desde el terraplén hasta los estanques. Se alargaron a 210 s (agua) y 270 s (locomotoras).
+* **Errores corregidos:**
+  * **`SquadAI.StartDelaySeconds` no reiniciaba la espera.** `AddComponent` ya ha ejecutado `Awake`, así que las escuadras creadas por código arrancaban a los 20 s por defecto. En el capítulo 5, la guardia de los cañones (espera infinita) abandonaba las piezas a los 20 s y la primera oleada tardaba 20 s más de lo previsto. Ahora asignar la espera la reinicia.
+  * El cálculo del fuego sobre los botes creaba una lista en cada fotograma; ahora usa una caché.
+* **Verificación:** 10 pruebas nuevas en `PisaguaChapterTests` y la campaña actualizada (407 en total), todas en verde. Página de verificación visual con la travesía, el asalto, el corte del terreno y el guion etapa por etapa.
+* **Notas para el equipo narrativo:**
+  * El coleccionable del guion (la fotografía de una mujer y dos niños en Oruro, «Vuelve pronto, Pedro…») no está en el Archivo. Se usa el despacho del coronel Wood.
+  * El grabado `03_Bombardeo_de_Pisagua_1879.jpg` del Archivo es el bombardeo del 18 de abril, no el desembarco de noviembre: no se usa para este capítulo.

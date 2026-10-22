@@ -17,10 +17,18 @@ namespace Pacifico.Tactics
         private SquadController _squad;
         private float _timer;
 
+        /// <summary>
+        /// Espera antes de romper el avance. Asignarla reinicia la cuenta: AddComponent ya ha ejecutado Awake, y sin esto
+        /// las escuadras creadas por código (la guardia de los cañones del capítulo 5) arrancaban a los 20 s por defecto.
+        /// </summary>
         public float StartDelaySeconds
         {
             get => startDelaySeconds;
-            set => startDelaySeconds = value;
+            set
+            {
+                startDelaySeconds = value;
+                _timer = value;
+            }
         }
 
         /// <summary>Si es mayor que cero, carga a la bayoneta (o al sable) al enemigo que tenga a esta distancia (m).</summary>

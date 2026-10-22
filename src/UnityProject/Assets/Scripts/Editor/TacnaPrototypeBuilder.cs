@@ -184,8 +184,9 @@ namespace Pacifico.EditorTools
             return 1.3f * across * along;
         }
 
-        private static TerrainLayer SandLayer()
+        internal static TerrainLayer SandLayer()
         {
+            HistoricalDataAssetGenerator.EnsureFolder(TerrainFolder);
             string texturePath = TerrainFolder + "/Arena_Tacna.asset";
             var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
             if (texture == null)
