@@ -72,6 +72,7 @@ namespace Pacifico.EditorTools
             PrologoPrototypeBuilder.BuildScene();
             Capitulo1IquiqueBuilder.BuildScene();
             Capitulo2AngamosBuilder.BuildScene();
+            Capitulo3PisaguaBuilder.BuildScene();
             Capitulo4TarapacaBuilder.BuildScene();
             Capitulo5AltoDeLaAlianzaBuilder.BuildScene();
             Capitulo6MorroDeAricaBuilder.BuildScene();
