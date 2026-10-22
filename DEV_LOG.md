@@ -784,3 +784,14 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Error grave encontrado: URP nunca estuvo activo.** `GraphicsSettings` no tenía asset de pipeline, así que Unity usaba el integrado y todos los materiales URP Lit (mar, costa, primitivas) se veían magenta. Nuevo `Editor/RenderPipelineSetup.cs`: crea `Assets/Settings/Pacifico_URP.asset` y su renderer, lo asigna y reimporta los GLB. Se llama desde `FirstRunSetup`, `GameBuilder.BuildAllScenes` y la previsualización. El asmdef del Editor referencia URP con la definición `PACIFICO_URP` (versionDefines), de modo que `tools/verify` sigue compilando sin el paquete.
 * **Comprobación visual:** `Editor/ShipModelPreview.cs` (`RunBatch -pacifico-preview <carpeta>`, sin `-nographics`) renderiza seis fotos de los dos buques con los constructores reales. Test Runner 430/430; los 8 capítulos se reconstruyen sin errores.
 * **Pendiente de 7.2:** el cañón Armstrong está importado pero sin colocar; la Covadonga y la Independencia siguen siendo primitivas; la torre del Huáscar es la de primitivas y convive con las dos torres del modelo (el Rolf Krake tenía dos).
+
+---
+
+### [2026-10-22] - Tarea 7.2/7.x: descarga de 15 modelos más de Sketchfab — [EN PROCESO]
+* **Descargados (GLB, CC BY 4.0, unos 102 MB)** a `Assets/Art/CCBY/Sketchfab/`, con autor y ficha en `Assets/Art/CCBY/CREDITOS.md`:
+  * Buques: HDMS Danmark (Independencia), HDMS Odin (Cochrane y Blanco Encalada), bote victoriano (botes de desembarco).
+  * Armas: Remington Rolling Block, Chassepot 1866 (también para el Gras), Winchester 1873, Martini-Henry (para el Comblain, mismo bloque basculante), cañón de campaña (Krupp).
+  * Caballo animado; olivo, sauce, sacos de arena, locomotora de 1840, cajas y barriles, tienda de lona.
+* Unity 6.6 los importa con `GltfImporter` (glTFast).
+* **Sin modelo adecuado:** Covadonga, ametralladora Gatling, soldados (los de 1870 pesan 34 MB y no están rigueados), casas de adobe e iglesias.
+* **Falta:** colocarlos en los constructores de cada capítulo y comprobarlos con `ShipModelPreview` o fotos equivalentes.
