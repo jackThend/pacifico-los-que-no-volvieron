@@ -729,3 +729,11 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Notas para el equipo narrativo:**
   * El coleccionable del guion (el contrato de servidumbre de Quintín con «LIBRE» estampado en sangre) no está en el Archivo Histórico y no se ha inventado: el capítulo no da coleccionable.
   * Si se escribe ese documento, debería marcarse como recreación y no como documento de época.
+
+---
+
+### [2026-10-22] - Revisión de las notas pendientes del equipo narrativo
+* **Documento nuevo:** `NOTAS_EQUIPO_NARRATIVO.md` reúne todas las notas para el equipo narrativo de esta bitácora, contrastadas con fuentes externas y ordenadas por urgencia.
+* **Hallazgo principal:** el Abraham Quiroz real sobrevivió a Miraflores. Su epistolario llega hasta 1884 y hay una carta suya desde Lima del 6 de abril de 1881. El epílogo presenta su muerte y su «carta auténtica» como hechos. Queda pendiente de decisión del equipo narrativo; no se ha tocado el guion.
+* **Corregido en el código (capítulo 2):** la narración de Angamos llamaba «teniente» a Enrique Palacios (era teniente primero) y atribuía a «un marinero» el izado de la bandera, en el que participó Palacios. Ahora no afirma un orden de relevo que las fuentes discuten.
+* **Verificación:** `tools/verify/verify.sh`.

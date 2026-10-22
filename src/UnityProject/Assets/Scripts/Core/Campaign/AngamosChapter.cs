@@ -271,10 +271,10 @@ namespace Pacifico.Core.Campaign
             aguirre.Lines.Add(Narrate("Cae Elías Aguirre. Toma el mando el teniente primero José Melitón Rodríguez."));
             relief.Triggers.Add(aguirre);
             var flag = new MissionTrigger { Id = "pabellon", When = MissionCondition.AtLeast(Facts.HitsSinceGrau, 2) };
-            flag.Lines.Add(Narrate("Un proyectil abate el pabellón del Huáscar. Un marinero vuelve a izarlo bajo el fuego."));
+            flag.Lines.Add(Narrate("Un proyectil abate el pabellón del Huáscar. Sus hombres vuelven a izarlo bajo el fuego."));
             relief.Triggers.Add(flag);
             var rodriguez = new MissionTrigger { Id = "cae_rodriguez", When = MissionCondition.AtLeast(Facts.HitsSinceGrau, 3) };
-            rodriguez.Lines.Add(Narrate("Muere Rodríguez. Lo releva el teniente Enrique Palacios, que cae herido; el mando pasa al teniente primero Pedro Gárezon."));
+            rodriguez.Lines.Add(Narrate("Muere Rodríguez. El teniente primero Enrique Palacios cae gravemente herido; el mando queda en manos del teniente primero Pedro Gárezon."));
             relief.Triggers.Add(rodriguez);
             relief.Transitions.Add(new MissionTransition(
                 MissionCondition.All(idle, MissionCondition.Any(
