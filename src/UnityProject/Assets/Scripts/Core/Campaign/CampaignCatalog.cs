@@ -27,9 +27,9 @@ namespace Pacifico.Core.Campaign
     }
 
     /// <summary>
-    /// La campaña en el orden del GDD (§5): el prólogo y los ocho capítulos, con la escena de cada uno. Los capítulos 2
-    /// (Angamos), 3 (Pisagua, RTS) y 7 (Cañete) no están en el roadmap de esta versión: figuran en el menú como «en
-    /// desarrollo» y la campaña salta de uno implementado al siguiente. El orden de las escenas de la build sale de aquí.
+    /// La campaña en el orden del GDD (§5): el prólogo y los ocho capítulos, con la escena de cada uno. Los capítulos 3
+    /// (Pisagua, RTS) y 7 (Cañete) aún no tienen escena: figuran en el menú como «en desarrollo» y la campaña salta de
+    /// uno implementado al siguiente. El orden de las escenas de la build sale de aquí.
     /// </summary>
     public static class CampaignCatalog
     {
@@ -40,7 +40,7 @@ namespace Pacifico.Core.Campaign
         {
             new ChapterEntry { Id = PrologueId, Number = 0, Title = "El Ojo de Europa", Date = "Valparaíso, 1879", Mode = ChapterMode.Cinematic, Scene = "Proto_Prologo_Ojo_de_Europa" },
             new ChapterEntry { Id = IquiqueChapter.Id, Number = 1, Title = "Madera y blindaje", Date = "21 de mayo de 1879", Mode = ChapterMode.Naval, Scene = "Capitulo1_Rada_de_Iquique" },
-            new ChapterEntry { Id = "cap2_angamos", Number = 2, Title = "Caza en alta mar", Date = "8 de octubre de 1879", Mode = ChapterMode.Naval },
+            new ChapterEntry { Id = AngamosChapter.Id, Number = 2, Title = "Caza en alta mar", Date = "8 de octubre de 1879", Mode = ChapterMode.Naval, Scene = "Capitulo2_Punta_Angamos" },
             new ChapterEntry { Id = "cap3_pisagua", Number = 3, Title = "Sangre en el salitre", Date = "2 de noviembre de 1879", Mode = ChapterMode.Rts },
             new ChapterEntry { Id = TarapacaChapter.Id, Number = 4, Title = "Sed en la quebrada", Date = "27 de noviembre de 1879", Mode = ChapterMode.Fps, Scene = "Capitulo4_Quebrada_de_Tarapaca" },
             new ChapterEntry { Id = AltoDeLaAlianzaChapter.Id, Number = 5, Title = "El trueno de Intiorko", Date = "26 de mayo de 1880", Mode = ChapterMode.Rts, Scene = "Capitulo5_Alto_de_la_Alianza" },

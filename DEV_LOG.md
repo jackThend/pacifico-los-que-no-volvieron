@@ -617,3 +617,36 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
   * El hook `SessionStart` (`.claude/settings.json` y `tools/setup_cloud_env.sh`) que instala .NET 8 en la nube.
   * `src/UnityProject/.gitignore`, las carpetas vacías con `.gitkeep` y la revisión exacta del editor en `ProjectVersion.txt`.
 * **`CLAUDE.md`:** el estado del proyecto y las convenciones de la sección «Estado actual» se actualizan a esta rama (verificación con `tools/verify/verify.sh`, capítulos y el flujo de `FirstRunSetup`).
+
+---
+
+### [2026-10-22] - Tarea 6.7: Escenario Capítulo 2, Punta Angamos, «Caza en alta mar» (Naval 3D) — [X] (verificado fuera del motor; ver 0.3)
+* **Contexto:** los capítulos 2, 3 y 7 del guion y del GDD no estaban en el roadmap original. Se añaden como tareas 6.7 a 6.9 (sección «Ampliación»). `main` se restableció tras la fusión del PR #1 y esta rama arranca de ahí.
+* **Núcleo (`AngamosChapter`):** el guion de la misión en seis etapas:
+  1. **La trampa:** cortar la retirada del Huáscar a 3.000 m; la Unión escapa por orden de Grau y el Huáscar vira.
+  2. **El duelo:** tres perforaciones. Opcionales: retener el fuego, desviar sus granadas con la coraza, esquivar el espolón y alcanzar el gobierno.
+  3. **La torre de mando:** intercalado a bordo del Huáscar, sin mandos.
+  4. **El relevo:** el Blanco Encalada entra en combate; caen Aguirre, Rodríguez y Palacios.
+  5. **Las válvulas:** abordar el Huáscar antes de que se hunda.
+  6. **Las láminas del Archivo.**
+  * Fracasos: el Huáscar escapa, se hunde con las válvulas abiertas o se hunde el Cochrane.
+* **La artillería decide el diseño, no al revés:**
+  * `ArmorPenetrationModel.PenetrationRangeM`: distancia máxima a la que un cañón perfora una zona. Las piezas de 250 lb del Cochrane perforan el cinturón del Huáscar a menos de **2.200 m**; es la distancia a la que «Latorre ordena no responder», y la misión la calcula del modelo.
+  * Las granadas de 300 lb del Huáscar nunca atraviesan el cinturón central del Cochrane. Sí atraviesan sus extremos de frente hasta 1.813 m, pero a 45° solo hasta 380 m: es la orden del guion de «posicionar el blindado a 45 grados».
+  * El precio es real: a 45° la batería de costado (±40° del través) no bate al enemigo. Se gira en ángulo mientras se recarga y se vuelve al través para disparar. El HUD lo indica con `Ballistics.SideObliquityDeg`.
+  * `ShipDamageState.JamSteering()`: un impacto perforante en la popa traba el timón del Huáscar («cortar el timón enemigo»).
+  * `GuionQuotes.Field("Prólogo")` lee las viñetas etiquetadas del guion. Este capítulo no tiene frases entre comillas: el prólogo sale literal de su viñeta y el resto es narración.
+* **Unity:**
+  * `AngamosMissionDirector`: IA del Huáscar (`RammingShipAI` con el nuevo modo `Flee`, distancia de duelo configurable y una carrera de espolón); el Cochrane del jugador con `PlayerBroadsideGunner` y balanceo de 1° y 11 s; el Blanco Encalada con `BroadsideShipAI`, que se acerca al empezar el relevo; abordaje con `SurvivorRescue`; cuenta atrás de las válvulas; láminas a pantalla completa.
+  * `EscapingShip`: la Unión, decorado que huye.
+  * `Capitulo2AngamosBuilder` (escena `Capitulo2_Punta_Angamos`, mar plomizo y península de Mejillones).
+  * Catálogo de campaña y `GameBuilder` actualizados: tras Iquique se abre Angamos.
+* **Errores encontrados al simular la escena (maniobra y artillería del juego, 300 partidas) y corregidos:**
+  * **Abordaje imposible:** con 150 s el Cochrane (3.500 t, 75 s para perder la arrancada con la máquina parada) no llegaba desde 1.000 m. Ahora el plazo es de 300 s, a 200 m y 6 nudos, y la ayuda recuerda que `S` da atrás. Desde 1.500 m se llega en 4–5 min.
+  * **Espolón sin amenaza:** lanzada desde 1.300 m, la carrera del Huáscar (11 nudos) nunca alcanzaba al Cochrane carenado (12 nudos). Ahora la inicia la escena a menos de 1.800 m tras la primera perforación (o 60 s de duelo) y dura 40 s; el Huáscar cierra el duelo hasta 400–1.100 m.
+  * **Coraza en ángulo y batería de costado incompatibles a 45°:** la ayuda y el HUD lo explican como decisión táctica (ver arriba).
+  * **Resultado:** a tiro a los 48 s; duelo de unos 3 minutos (5 andanadas en la mediana); 97 % de las carreras de espolón esquivadas maniobrando, ninguna llega a embestir. Sin puntería, el duelo y el relevo terminan por tiempo.
+* **Verificación:** 9 pruebas nuevas en `AngamosChapterTests` y la campaña actualizada (397 en total), todas en verde. Página de verificación visual con las curvas de perforación, una partida simulada y el guion etapa por etapa.
+* **Notas para el equipo narrativo:**
+  * El guion pasa el mando de Grau «a Aguirre, Rodríguez y Gárezon». Se añadió al teniente **Enrique Palacios**, herido entre Rodríguez y Gárezon según las crónicas; también se nombra a **Diego Ferré**, muerto junto a Grau. Conviene confirmarlo en el guion.
+  * El coleccionable del guion («el libro de guardia del Huáscar») no está en el Archivo Histórico. No se ha inventado: el capítulo no da coleccionable y se cierra con la acuarela de la captura (Lisle) y el grabado de los daños, ambos de época y ya en el Archivo.

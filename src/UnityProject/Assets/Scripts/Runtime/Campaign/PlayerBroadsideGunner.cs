@@ -32,6 +32,17 @@ namespace Pacifico.Campaign
 
         public DeckRollModel Roll => _roll;
 
+        /// <summary>Modelo de la batería que sirve el jugador (sectores de tiro y recarga).</summary>
+        public BroadsideBatteryModel Battery => _battery != null ? _battery.Model : null;
+
+        /// <summary>Balanceo propio del buque (el Cochrane de Angamos es más estable que la Esmeralda de Iquique).</summary>
+        public void SetRoll(float amplitudeDeg, float periodSeconds)
+        {
+            rollAmplitudeDeg = amplitudeDeg;
+            rollPeriodSeconds = periodSeconds;
+            _roll = new DeckRollModel(rollAmplitudeDeg, rollPeriodSeconds, 0.3f);
+        }
+
         /// <summary>El jugador está en la batería (si no, el mar sigue balanceando el buque, pero no hay mandos).</summary>
         public bool PlayerActive { get; set; }
 
@@ -82,7 +93,7 @@ namespace Pacifico.Campaign
         {
             if (!Solve(out BroadsideSide side, out _, out float error))
             {
-                Say("El Huáscar no está por el través");
+                Say("El enemigo no está por el través");
                 return;
             }
             if (!_battery.Model.IsLoaded(side))

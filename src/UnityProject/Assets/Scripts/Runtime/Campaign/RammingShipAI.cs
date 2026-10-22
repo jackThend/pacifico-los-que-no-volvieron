@@ -12,6 +12,8 @@ namespace Pacifico.Campaign
         StandOff,
         /// <summary>Carrera de embestida; tras cada espolonazo, da atrás, abre distancia y vuelve a embestir.</summary>
         Ram,
+        /// <summary>Huye a toda máquina en el rumbo <see cref="RammingShipAI.FleeHeadingDeg"/> (Angamos, antes de virar).</summary>
+        Flee,
     }
 
     /// <summary>
@@ -70,6 +72,23 @@ namespace Pacifico.Campaign
 
         /// <summary>La torre no dispara (p. ej. para no decidir por el jugador un hundimiento que el guion no quiere aún).</summary>
         public bool HoldFire { get; set; }
+
+        /// <summary>Rumbo de huida en el modo <see cref="RammingMode.Flee"/> (°).</summary>
+        public float FleeHeadingDeg { get; set; }
+
+        /// <summary>Banda de distancias del modo <see cref="RammingMode.StandOff"/> (m).</summary>
+        public void SetStandOff(float minM, float maxM)
+        {
+            standOffMinM = Mathf.Max(0f, minM);
+            standOffMaxM = Mathf.Max(standOffMinM + 1f, maxM);
+        }
+
+        /// <summary>Intervalo mínimo entre disparos de la torre servida por la IA (s).</summary>
+        public float AiFireIntervalSeconds
+        {
+            get => aiFireIntervalSeconds;
+            set => aiFireIntervalSeconds = Mathf.Max(1f, value);
+        }
 
         public void Configure(ShipController enemy, RamBow bow, ColesTurretController coles)
         {
@@ -130,7 +149,12 @@ namespace Pacifico.Campaign
 
             float desired;
             EngineOrder order;
-            if (_mode == RammingMode.Ram)
+            if (_mode == RammingMode.Flee)
+            {
+                desired = FleeHeadingDeg;
+                order = EngineOrder.FullAhead;
+            }
+            else if (_mode == RammingMode.Ram)
             {
                 if (_runningUp && range >= runUpDistanceM) _runningUp = false;
                 if (_runningUp)

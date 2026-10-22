@@ -13,12 +13,12 @@ namespace Pacifico.Tests.Performance
         public void Campana_EnElOrdenDelGDD_YConLasMisionesQueExisten()
         {
             Assert.That(CampaignCatalog.Chapters.Select(c => c.Number), Is.EqualTo(Enumerable.Range(0, 9)));
-            Assert.That(CampaignCatalog.Playable.Select(c => c.Number), Is.EqualTo(new[] { 0, 1, 4, 5, 6, 8 }));
+            Assert.That(CampaignCatalog.Playable.Select(c => c.Number), Is.EqualTo(new[] { 0, 1, 2, 4, 5, 6, 8 }));
             // Los ids de los capítulos jugables son los de sus guiones de misión (así se anota el progreso).
             Assert.That(CampaignCatalog.Get(IquiqueChapter.Id).Scene, Is.Not.Null);
             Assert.That(CampaignCatalog.Get(MirafloresChapter.Id).Title, Is.EqualTo("Los que no volvieron"));
             Assert.That(CampaignCatalog.BuildScenes().First(), Is.EqualTo(CampaignCatalog.MenuScene));
-            Assert.That(CampaignCatalog.BuildScenes().Count(), Is.EqualTo(7));
+            Assert.That(CampaignCatalog.BuildScenes().Count(), Is.EqualTo(8));
         }
 
         [Test]
@@ -34,10 +34,16 @@ namespace Pacifico.Tests.Performance
             progress.CompleteChapter(CampaignCatalog.PrologueId);
             Assert.That(CampaignCatalog.IsUnlocked(iquique, progress), Is.True);
             progress.CompleteChapter(IquiqueChapter.Id);
-            // Angamos y Pisagua aún no existen: tras Iquique se abre Tarapacá.
-            Assert.That(CampaignCatalog.Next(IquiqueChapter.Id), Is.SameAs(tarapaca));
+            ChapterEntry angamos = CampaignCatalog.Get(AngamosChapter.Id);
+            Assert.That(CampaignCatalog.Next(IquiqueChapter.Id), Is.SameAs(angamos));
+            Assert.That(CampaignCatalog.IsUnlocked(angamos, progress), Is.True);
+            Assert.That(CampaignCatalog.IsUnlocked(tarapaca, progress), Is.False);
+            Assert.That(CampaignCatalog.Continue(progress), Is.SameAs(angamos));
+            progress.CompleteChapter(AngamosChapter.Id);
+            // Pisagua aún no existe: tras Angamos se abre Tarapacá.
+            Assert.That(CampaignCatalog.Next(AngamosChapter.Id), Is.SameAs(tarapaca));
             Assert.That(CampaignCatalog.IsUnlocked(tarapaca, progress), Is.True);
-            Assert.That(CampaignCatalog.IsUnlocked(CampaignCatalog.Get("cap2_angamos"), progress), Is.False, "en desarrollo");
+            Assert.That(CampaignCatalog.IsUnlocked(CampaignCatalog.Get("cap3_pisagua"), progress), Is.False, "en desarrollo");
             Assert.That(CampaignCatalog.Continue(progress), Is.SameAs(tarapaca));
             Assert.That(CampaignCatalog.Next(MirafloresChapter.Id), Is.Null, "Miraflores cierra la campaña");
         }
@@ -66,7 +72,7 @@ namespace Pacifico.Tests.Performance
             System.Func<string, string> read = Campaign.MissionTests.Read;
             MissionScript[] missions =
             {
-                IquiqueChapter.Build(read), TarapacaChapter.Build(read), AltoDeLaAlianzaChapter.Build(read),
+                IquiqueChapter.Build(read), AngamosChapter.Build(read), TarapacaChapter.Build(read), AltoDeLaAlianzaChapter.Build(read),
                 AricaChapter.Build(read), MirafloresChapter.Build(read),
             };
             var ids = CampaignCatalog.Playable.Where(c => c.Id != CampaignCatalog.PrologueId).Select(c => c.Id).ToList();
@@ -74,7 +80,7 @@ namespace Pacifico.Tests.Performance
             foreach (MissionScript mission in missions)
             {
                 Assert.That(mission.Validate(), Is.Empty, mission.Id);
-                if (mission.RewardCollectibleId == null) continue; // Tarapacá: el Archivo no tiene su documento
+                if (mission.RewardCollectibleId == null) continue; // Angamos y Tarapacá: el Archivo no tiene su documento
                 Assert.That(Pacifico.Core.Narrative.CollectibleCatalog.Definitions.Any(d => d.Id == mission.RewardCollectibleId), Is.True, mission.Id);
             }
             Assert.That(MemoriaRotaEpilogue.Load(read).Letter, Is.Not.Empty);
