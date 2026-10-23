@@ -92,12 +92,13 @@ namespace Pacifico.EditorTools
             Debug.Log("[Pacífico] Fotos de los buques guardadas en " + folder);
         }
 
-        private static void Shoot(string folder, string name, Vector3 from, Vector3 lookAt, float fieldOfView)
+        internal static void Shoot(string folder, string name, Vector3 from, Vector3 lookAt, float fieldOfView, float nearClip = 0.3f)
         {
             var go = new GameObject("Camara_Foto");
             var camera = go.AddComponent<Camera>();
             camera.transform.SetPositionAndRotation(from, Quaternion.LookRotation(lookAt - from));
             camera.fieldOfView = fieldOfView;
+            camera.nearClipPlane = nearClip;
             camera.farClipPlane = 6000f;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(0.72f, 0.78f, 0.82f);
@@ -119,7 +120,7 @@ namespace Pacifico.EditorTools
             Object.DestroyImmediate(go);
         }
 
-        private static string ArgumentAfter(string flag)
+        internal static string ArgumentAfter(string flag)
         {
             string[] args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)

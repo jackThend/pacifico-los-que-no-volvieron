@@ -217,8 +217,18 @@ namespace Pacifico.EditorTools
             var melee = player.AddComponent<MeleeController>();
             melee.Sidearm = sidearm;
 
-            CreateRifleViewModel(pivot, fps, rifle, melee);
+            CreateRifleViewModel(pivot, fps, rifle, melee, WeaponIdOf(fps));
             return fps;
+        }
+
+        /// <summary>
+        /// Identificador del arma del jugador. Los capítulos cargan el asset antes de NewScene, que lo descarga de memoria
+        /// y deja la variable «nula» para C#; la referencia serializada en el controlador sí lo vuelve a cargar.
+        /// </summary>
+        private static string WeaponIdOf(FirstPersonController fps)
+        {
+            var weapon = new SerializedObject(fps).FindProperty("weapon").objectReferenceValue as WeaponDataSO;
+            return weapon != null ? weapon.id : null;
         }
 
         /// <summary>
@@ -228,7 +238,7 @@ namespace Pacifico.EditorTools
         /// (<see cref="MeleeViewModelAnimator"/>: guardia y estocada) → «Mecanica» (<see cref="RifleViewModelAnimator"/>:
         /// retroceso y recarga) → piezas. El corvo cuelga del pivote de cámara.
         /// </summary>
-        private static void CreateRifleViewModel(Transform pivot, FirstPersonController owner, RifleController rifle, MeleeController melee)
+        private static void CreateRifleViewModel(Transform pivot, FirstPersonController owner, RifleController rifle, MeleeController melee, string weaponId)
         {
             var root = new GameObject("Fusil_Comblain_Vista").transform;
             root.SetParent(pivot, false);
@@ -286,6 +296,15 @@ namespace Pacifico.EditorTools
             leafPivot.SetParent(body, false);
             leafPivot.localPosition = new Vector3(0f, 0.045f, 0.06f);
             PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Alza_Lamina", leafPivot, new Vector3(0f, 0.015f, 0f), new Vector3(0.02f, 0.03f, 0.003f), steel, keepCollider: false);
+
+            // Modelo CC-BY (tarea 7.x): sustituye a las piezas fijas; las que se mueven o sirven para apuntar se quedan.
+            if (RifleModelLibrary.Dress(body, weaponId, muzzle.localPosition) != null)
+            {
+                ShipModelLibrary.HideStandIns(body, "Culata", "Cajon_de_Mecanismos", "Guardamano", "Canon");
+                // El modelo trae su propia palanca; la de primitivas quedaría flotando bajo el cajón. Su pivote sigue
+                // ahí para la animación de recarga, aunque no se vea.
+                ShipModelLibrary.HideStandIns(lever, "Palanca");
+            }
 
             var viewModel = root.gameObject.AddComponent<IronSightViewModel>();
             viewModel.Configure(owner, leafPivot);
