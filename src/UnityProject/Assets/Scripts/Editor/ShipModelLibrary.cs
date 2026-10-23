@@ -29,7 +29,10 @@ namespace Pacifico.EditorTools
             public bool BowTowardsMinusZ;
             /// <summary>Calado (m): la quilla queda a esta profundidad bajo la flotación (y = 0).</summary>
             public float DraftM;
-            /// <summary>Nodos del modelo que no corresponden al buque histórico (p. ej. una bandera ajena) y se ocultan.</summary>
+            /// <summary>
+            /// Nodos del modelo que no corresponden al buque histórico (p. ej. una bandera ajena) y se ocultan. También
+            /// valen para las copias que glTFast renombra con sufijo cuando un nombre se repite (<c>lamp_low_0</c>).
+            /// </summary>
             public string[] HiddenParts;
         }
 
@@ -52,7 +55,7 @@ namespace Pacifico.EditorTools
             {
                 foreach (Transform part in model.GetComponentsInChildren<Transform>())
                 {
-                    if (System.Array.IndexOf(fit.HiddenParts, part.name) < 0) continue;
+                    if (!IsHidden(part.name, fit.HiddenParts)) continue;
                     foreach (Renderer renderer in part.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
                 }
             }
@@ -72,15 +75,60 @@ namespace Pacifico.EditorTools
             return model;
         }
 
-        /// <summary>Oculta las primitivas que el modelo sustituye (sin borrarlas: algunas llevan componentes de juego).</summary>
+        private static bool IsHidden(string name, string[] parts)
+        {
+            foreach (string part in parts)
+            {
+                if (name == part) return true;
+                if (name.StartsWith(part + "_") && int.TryParse(name.Substring(part.Length + 1), out _)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Oculta las primitivas hijas de <paramref name="hull"/> que el modelo sustituye, aunque varias compartan nombre
+        /// (sin borrarlas: algunas llevan componentes de juego).
+        /// </summary>
         public static void HideStandIns(Transform hull, params string[] names)
         {
-            foreach (string name in names)
+            foreach (Transform part in hull)
             {
-                Transform part = hull.Find(name);
-                if (part != null && part.TryGetComponent(out Renderer renderer)) renderer.enabled = false;
+                if (System.Array.IndexOf(names, part.name) >= 0 && part.TryGetComponent(out Renderer renderer)) renderer.enabled = false;
             }
         }
+
+        // Encajes de los modelos de martyn169 y del bote (valores de ajuste a ojo, comprobados con ShipModelPreview).
+        // DraftM es lo que se hunde cada modelo para que su obra viva roja quede bajo el agua.
+
+        /// <summary>HDMS Danmark (1864) como Independencia: el 87 % de su longitud es casco; el resto, bauprés a proa.</summary>
+        public static readonly Fit DanmarkAsIndependencia = new Fit
+        {
+            HullFraction = 0.87f, HullOffset = 0.046f, BowTowardsMinusZ = false, DraftM = 4.7f,
+        };
+
+        /// <summary>
+        /// HDMS Odin (1872), de reducto central, como Cochrane y Blanco Encalada; sin las banderas danesas de proa y popa
+        /// (group_247 y group_248).
+        /// </summary>
+        public static readonly Fit OdinAsCochrane = new Fit
+        {
+            HullFraction = 0.955f, HullOffset = 0f, BowTowardsMinusZ = false, DraftM = 4.3f,
+            HiddenParts = new[] { "group_247", "group_248" },
+        };
+
+        /// <summary>
+        /// Bote de remos victoriano: sin el farol con su poste; la regala queda a 0,55 m sobre la raíz del bote y las
+        /// cabezas de la tropa (a 0,75 m) asoman como de hombres sentados.
+        /// </summary>
+        public static readonly Fit RowBoat = new Fit
+        {
+            HullFraction = 0.93f, HullOffset = 0f, BowTowardsMinusZ = false, DraftM = 1.19f,
+            HiddenParts = new[] { "lamp_low", "lamppost_low", "lamppostdowel_low", "lampbracket_low" },
+        };
+
+        public const string Danmark = "hdms_danmark_1864";
+        public const string Odin = "hdms_odin_1872";
+        public const string Boat = "bote_victoriano";
 
         /// <summary>Caja de todas las mallas del modelo en el espacio local de <paramref name="space"/>.</summary>
         public static Bounds LocalBounds(GameObject model, Transform space)

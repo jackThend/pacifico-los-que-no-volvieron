@@ -335,7 +335,7 @@ namespace Pacifico.EditorTools
             return fort;
         }
 
-        private static Transform Ship(string name, Vector3 position, float heading, float length, Material hull, Material masts)
+        internal static Transform Ship(string name, Vector3 position, float heading, float length, Material hull, Material masts)
         {
             var root = new GameObject(name).transform;
             root.SetPositionAndRotation(position, Quaternion.Euler(0f, heading, 0f));
@@ -344,14 +344,27 @@ namespace Pacifico.EditorTools
             {
                 PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Palo", root, new Vector3(0f, 15f, i * length * 0.3f), new Vector3(0.6f, 13f, 0.6f), masts, keepCollider: false);
             }
+
+            // Modelos CC-BY (tarea 7.2): el Cochrane como el Odin de reducto central y la corbeta O'Higgins con la
+            // fragata de la Esmeralda. Los transportes siguen siendo de primitivas.
+            bool dressed = name == "Cochrane"
+                ? ShipModelLibrary.Place(ShipModelLibrary.Odin, "Modelo_Odin", root, length, ShipModelLibrary.OdinAsCochrane) != null
+                : name == "OHiggins" &&
+                  ShipModelLibrary.Place(ShipModelLibrary.Constitution, "Modelo_Fragata", root, length, IquiquePrototypeBuilder.EsmeraldaModelFit) != null;
+            if (dressed) ShipModelLibrary.HideStandIns(root, "Casco", "Palo");
             return root;
         }
 
-        private static LandingCraft Boat(string squadName, Vector3 start, Material wood)
+        internal static LandingCraft Boat(string squadName, Vector3 start, Material wood)
         {
             var root = new GameObject("Bote_" + squadName.Replace(' ', '_').Replace("·", string.Empty)).transform;
             root.position = new Vector3(start.x, 0.3f, start.z);
             PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Casco", root, Vector3.zero, new Vector3(2.6f, 0.8f, 9f), wood, keepCollider: false);
+            // Modelo CC-BY (tarea 7.2): bote de remos de 7,5 m; las cabezas de la tropa asoman sobre la regala.
+            if (ShipModelLibrary.Place(ShipModelLibrary.Boat, "Modelo_Bote", root, 7.5f, ShipModelLibrary.RowBoat) != null)
+            {
+                ShipModelLibrary.HideStandIns(root, "Casco");
+            }
             Material blue = PrototypeSceneKit.Material("Uniforme_Chile", T.ChileBlue);
             var heads = new Transform[PisaguaChapter.MenPerBoat];
             for (int i = 0; i < heads.Length; i++)

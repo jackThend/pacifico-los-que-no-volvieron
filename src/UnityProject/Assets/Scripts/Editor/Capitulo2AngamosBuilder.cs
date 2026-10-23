@@ -161,8 +161,8 @@ namespace Pacifico.EditorTools
         /// Fragata blindada de reducto central (Cochrane, Blanco Encalada): casco de hierro, el reducto con las piezas de
         /// 250 lb en el centro, una chimenea y tres palos. Lleva su batería de costado y una IA de costado.
         /// </summary>
-        private static ShipController CreateIronclad(string name, ShipDataSO data, NavalShell shellPrefab, ShipController enemy,
-                                                     Vector3 position, float heading, bool player)
+        internal static ShipController CreateIronclad(string name, ShipDataSO data, NavalShell shellPrefab, ShipController enemy,
+                                                      Vector3 position, float heading, bool player)
         {
             ShipSpec spec = data.ToSpec();
             GameObject root = B.ShipRoot(name, data, position, heading, player, EngineOrder.FullAhead, 0.8f);
@@ -177,6 +177,12 @@ namespace Pacifico.EditorTools
             }
             B.AddArmorZones(hull, spec);
             B.Zone(hull, "Reducto_Central", ArmorZone.MainBattery, new Vector3(0f, 3.6f, 2f), new Vector3(spec.BeamM * 0.8f, 2.4f, spec.LengthM * 0.3f), false);
+
+            // Modelo CC-BY (tarea 7.2): el Odin danés de 1872, también de reducto central.
+            if (ShipModelLibrary.Place(ShipModelLibrary.Odin, "Modelo_Odin", hull, spec.LengthM, ShipModelLibrary.OdinAsCochrane) != null)
+            {
+                ShipModelLibrary.HideStandIns(hull, "Casco_Visual", "Reducto_Central_Visual", "Chimenea", "Palo_1", "Palo_2", "Palo_3");
+            }
 
             var battery = root.AddComponent<BroadsideBatteryController>();
             battery.ShellPrefab = shellPrefab;

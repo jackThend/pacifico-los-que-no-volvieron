@@ -240,7 +240,7 @@ namespace Pacifico.EditorTools
             if (independenciaData != null) DistantShip("Independencia", independenciaData, new Vector3(-1000f, 0f, -1300f), 190f, B.IronColor, 3);
         }
 
-        private static void DistantShip(string name, ShipDataSO data, Vector3 position, float heading, Color color, int masts)
+        internal static void DistantShip(string name, ShipDataSO data, Vector3 position, float heading, Color color, int masts)
         {
             ShipSpec spec = data.ToSpec();
             GameObject root = B.ShipRoot(name, data, position, heading, player: false, EngineOrder.FullAhead, 0.8f);
@@ -253,6 +253,14 @@ namespace Pacifico.EditorTools
             {
                 float z = (i - (masts - 1) * 0.5f) * spec.LengthM * 0.28f;
                 B.Primitive(PrimitiveType.Cylinder, "Palo_" + (i + 1), hull, new Vector3(0f, 14f, z), new Vector3(0.5f, 12f, 0.5f), B.WoodColor, keepCollider: false);
+            }
+
+            // Modelo CC-BY (tarea 7.2): la Independencia como la fragata blindada danesa Danmark, también construida en
+            // astilleros británicos en los años sesenta. La Covadonga no tiene modelo y sigue siendo de primitivas.
+            if (name == "Independencia" &&
+                ShipModelLibrary.Place(ShipModelLibrary.Danmark, "Modelo_Danmark", hull, spec.LengthM, ShipModelLibrary.DanmarkAsIndependencia) != null)
+            {
+                ShipModelLibrary.HideStandIns(hull, "Casco_Visual", "Palo_1", "Palo_2", "Palo_3");
             }
         }
 

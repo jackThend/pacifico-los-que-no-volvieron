@@ -69,6 +69,26 @@ namespace Pacifico.EditorTools
             Shoot(folder, "4_esmeralda_costado", e + new Vector3(110f, 18f, 0f), e + new Vector3(0f, 14f, 0f), 50f);
             Shoot(folder, "5_esmeralda_tres_cuartos", e + new Vector3(80f, 30f, 80f), e + new Vector3(0f, 10f, 0f), 50f);
             Shoot(folder, "6_los_dos", (h + e) * 0.5f + new Vector3(0f, 45f, -170f), (h + e) * 0.5f + new Vector3(0f, 5f, 0f), 55f);
+
+            // Los demás buques, con los mismos constructores de sus capítulos.
+            var independenciaData = AssetDatabase.LoadAssetAtPath<ShipDataSO>(ProjectPaths.ShipData + "/Ship_" + ShipCatalog.IndependenciaId + ".asset");
+            var cochraneData = AssetDatabase.LoadAssetAtPath<ShipDataSO>(ProjectPaths.ShipData + "/Ship_" + ShipCatalog.CochraneId + ".asset");
+            Vector3 i = new Vector3(400f, 0f, 0f);
+            Vector3 c = new Vector3(650f, 0f, 0f);
+            Vector3 o = new Vector3(900f, 0f, 0f);
+            Vector3 b = new Vector3(1100f, 0f, 0f);
+            Capitulo1IquiqueBuilder.DistantShip("Independencia", independenciaData, i, 0f, IquiquePrototypeBuilder.IronColor, 3);
+            Capitulo2AngamosBuilder.CreateIronclad("Cochrane", cochraneData, shellPrefab, huascar, c, 0f, player: false);
+            Material wood = PrototypeSceneKit.Material("Madera", IquiquePrototypeBuilder.WoodColor);
+            Capitulo3PisaguaBuilder.Ship("OHiggins", o, 0f, 60f, wood, wood);
+            Capitulo3PisaguaBuilder.Boat("Atacama · 1.ª Compañía", b, wood);
+
+            Shoot(folder, "7_independencia_costado", i + new Vector3(-120f, 14f, 0f), i + new Vector3(0f, 10f, 0f), 50f);
+            Shoot(folder, "8_independencia_tres_cuartos", i + new Vector3(-80f, 30f, 90f), i + new Vector3(0f, 6f, 0f), 50f);
+            Shoot(folder, "9_cochrane_costado", c + new Vector3(-100f, 10f, 0f), c + new Vector3(0f, 7f, 0f), 50f);
+            Shoot(folder, "10_cochrane_tres_cuartos", c + new Vector3(-70f, 25f, 75f), c + new Vector3(0f, 4f, 0f), 50f);
+            Shoot(folder, "11_ohiggins_pisagua", o + new Vector3(-110f, 16f, 0f), o + new Vector3(0f, 12f, 0f), 50f);
+            Shoot(folder, "12_bote_de_desembarco", b + new Vector3(-9f, 5f, 8f), b + new Vector3(0f, 0.3f, 0f), 50f);
             Debug.Log("[Pacífico] Fotos de los buques guardadas en " + folder);
         }
 
