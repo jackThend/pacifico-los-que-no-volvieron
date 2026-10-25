@@ -81,6 +81,7 @@ namespace Pacifico.EditorTools
             Capitulo7CaneteBuilder.BuildScene();
             Capitulo8MirafloresBuilder.BuildScene();
             SceneAtmosphere.ApplyAll();
+            GroundDressing.ApplyAll();
             BuildMenuScene();
             SetCampaignBuildSettings();
         }

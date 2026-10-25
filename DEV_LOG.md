@@ -833,3 +833,12 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Verificación:** Test Runner EditMode 430/430, `BuildAllScenesBatch` sin errores (8 escenas con ambiente), `tools/verify/verify.sh` 424/424.
 * **Visto en las fotos, para las partes siguientes:** el mar es un plano azul claro sin reflejos ni olas, los suelos son de color liso y las velas de la Esmeralda salen amarillas.
 
+### 2026-10-25 · 7.x · Arte realista, parte 2: terreno y suelos
+* **Hecho:** siete texturas CC0 de Poly Haven sacadas de fotos reales de suelo árido, sin musgo ni hierba: arena con grava, arena de playa, arena pisada, tierra seca pedregosa, roca erosionada, tierra seca de chacra y tierra de cultivo. `Editor/GroundDressing.cs` (al final de `BuildAllScenes`, o con `GroundDressing.ApplyAllBatch`) pinta los terrenos con relieve (Pisagua, Alto de la Alianza) con tres capas: llano, manchas por ruido de dos escalas y roca según la pendiente (22–38°). Viste por nombre los suelos hechos con cajas: Tarapacá (fondo, laderas, pampa, cauce), Arica (macizo, ladera, llano), Cañete (suelo y bordos) y Miraflores (suelo y reductos). Colisionadores y NavMesh no cambian. `ArtLibrary.Layer` crea capas de terreno con color, normales y máscara URP.
+* **Problemas encontrados y soluciones:**
+  * Terrenos rosados: las texturas de Namaqualand son más rojizas que Atacama y el posproceso cálido lo acentúa; se corrige el tono de cada capa (`diffuseRemapMax`, valores de ajuste).
+  * Cuadrícula o franjas de lejos: cada foto tiene zonas más claras que, al repetirse, se ven a distancia. Se generan versiones «aplanadas» del color (`*_diffplano_2k.jpg`, filtro paso alto periódico por FFT con `tools/arte/aplanar_texturas.py`), que `ArtLibrary` usa si existen; además las superficies grandes que solo se ven de lejos usan una repetición mayor (llano de Arica 10 m, pampa 7 m).
+  * Filtrado anisótropo: estaba desactivado en los niveles de calidad Very Low y Low (`QualitySettings.asset`); ahora se activa en todos y las texturas del arte CC0 lo piden a 16×. Los materiales ya creados revisan también la importación de sus texturas.
+* **Verificación:** fotos de antes y después con `AtmospherePreview` (ahora con una toma hacia el suelo), Test Runner EditMode 430/430, `BuildAllScenesBatch` sin errores, `tools/verify/verify.sh` 424/424.
+* **Pendiente visto en las fotos:** la llanura de Arica vista desde el morro conserva una cuadrícula leve; el mar sigue siendo un plano (parte 3).
+

@@ -23,6 +23,13 @@ namespace Pacifico.EditorTools
         public const string MetalPlate = "metal_plate_02";
         public const string GravellySand = "gravelly_sand";
         public const string CliffSide = "cliff_side";
+        public const string SandyGravel = "sandy_gravel_02";
+        public const string CoastSand = "coast_sand_01";
+        public const string TrampledSand = "sand_01";
+        public const string DryGroundRocks = "dry_ground_rocks";
+        public const string CrackedRock = "rock_boulder_cracked";
+        public const string DryMud = "brown_mud_dry";
+        public const string FarmSoil = "brown_mud_02";
 
         // Modelos.
         public const string Cannon = "cannon_01";
@@ -37,6 +44,16 @@ namespace Pacifico.EditorTools
 
         private static string Folder(string id) => Root + "/" + id;
         private static string TexturePath(string id, string map) => Folder(id) + "/" + id + "_" + map + "_" + Resolution + ".jpg";
+        /// <summary>
+        /// Color del recurso: su versión «aplanada» si existe (sin las variaciones grandes de brillo, que al repetirse se
+        /// ven de lejos como cuadrícula o franjas; se genera para los suelos) o la original de Poly Haven.
+        /// </summary>
+        private static string DiffusePath(string id)
+        {
+            string flat = Folder(id) + "/" + id + "_diffplano_" + Resolution + ".jpg";
+            return File.Exists(flat) ? flat : TexturePath(id, "diff");
+        }
+
         private static string MaskPath(string id) => Folder(id) + "/" + id + "_urp_mask_" + Resolution + ".png";
         private static string ModelPath(string id) => Folder(id) + "/" + id + ".fbx";
 
@@ -47,12 +64,19 @@ namespace Pacifico.EditorTools
             string key = tint == Color.white ? id : id + "_" + ColorUtility.ToHtmlStringRGB(tint);
             string path = ProjectPaths.Materials + "/CC0_" + key + ".mat";
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (material != null) return material;
+            if (material != null)
+            {
+                // Material ya creado: se revisa igualmente la importación de sus texturas (p. ej. el filtrado).
+                Texture2D current = LoadTexture(DiffusePath(id), srgb: true, normalMap: false);
+                LoadTexture(TexturePath(id, "nor_gl"), srgb: false, normalMap: true);
+                material.SetTexture(material.HasProperty("_BaseMap") ? "_BaseMap" : "_MainTex", current);
+                return material;
+            }
 
             Shader shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null) shader = Shader.Find("Standard");
             material = new Material(shader);
-            Texture2D albedo = LoadTexture(TexturePath(id, "diff"), srgb: true, normalMap: false);
+            Texture2D albedo = LoadTexture(DiffusePath(id), srgb: true, normalMap: false);
             Texture2D normal = LoadTexture(TexturePath(id, "nor_gl"), srgb: false, normalMap: true);
             Texture2D mask = Mask(id);
 
@@ -110,6 +134,34 @@ namespace Pacifico.EditorTools
             filter.sharedMesh = mesh;
             primitive.GetComponent<Renderer>().sharedMaterial = material;
             return true;
+        }
+
+        /// <summary>
+        /// Capa de terreno con las tres texturas del recurso (color, normales y máscara URP), repetida cada
+        /// <paramref name="tileMeters"/> metros y con su color multiplicado por <paramref name="tint"/>. Se guarda como asset
+        /// y se reutiliza. Null si la textura no está.
+        /// </summary>
+        public static TerrainLayer Layer(string id, float tileMeters, Color tint)
+        {
+            if (!File.Exists(TexturePath(id, "diff"))) return null;
+            string folder = ProjectPaths.Materials + "/Terreno";
+            HistoricalDataAssetGenerator.EnsureFolder(folder);
+            string path = folder + "/CC0_" + id + ".terrainlayer";
+            var layer = AssetDatabase.LoadAssetAtPath<TerrainLayer>(path);
+            if (layer == null)
+            {
+                layer = new TerrainLayer();
+                AssetDatabase.CreateAsset(layer, path);
+            }
+            layer.diffuseTexture = LoadTexture(DiffusePath(id), srgb: true, normalMap: false);
+            layer.normalMapTexture = LoadTexture(TexturePath(id, "nor_gl"), srgb: false, normalMap: true);
+            layer.maskMapTexture = Mask(id);
+            layer.tileSize = new Vector2(tileMeters, tileMeters);
+            layer.normalScale = 1f;
+            layer.diffuseRemapMin = Vector4.zero;
+            layer.diffuseRemapMax = new Vector4(tint.r, tint.g, tint.b, 1f);
+            EditorUtility.SetDirty(layer);
+            return layer;
         }
 
         /// <summary>Instancia el modelo <paramref name="id"/> con su material, sin colisionadores. Null si no está.</summary>
@@ -207,6 +259,12 @@ namespace Pacifico.EditorTools
             if (!normalMap && importer.sRGBTexture != srgb)
             {
                 importer.sRGBTexture = srgb;
+                changed = true;
+            }
+            // Suelos y laderas se ven casi de canto: sin filtrado anisótropo la textura se emborrona en franjas.
+            if (importer.anisoLevel < 16)
+            {
+                importer.anisoLevel = 16;
                 changed = true;
             }
             if (changed) importer.SaveAndReimport();

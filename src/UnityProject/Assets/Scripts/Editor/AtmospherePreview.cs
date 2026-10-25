@@ -41,6 +41,13 @@ namespace Pacifico.EditorTools
 #endif
                     if (camera == null) continue;
                     Shoot(camera, Path.Combine(folder, n + "_" + scene + "_juego.png"));
+                    // Hacia el suelo, para ver texturas de terreno.
+                    Quaternion view = camera.transform.rotation;
+                    Vector3 ahead = Vector3.ProjectOnPlane(camera.transform.forward, Vector3.up);
+                    if (ahead.sqrMagnitude < 1e-4f) ahead = Vector3.forward;
+                    camera.transform.rotation = Quaternion.LookRotation(ahead.normalized) * Quaternion.Euler(35f, 0f, 0f);
+                    Shoot(camera, Path.Combine(folder, n + "_" + scene + "_suelo.png"));
+                    camera.transform.rotation = view;
                     // Hacia el horizonte, a la altura de los ojos y mirando al sol.
                     Light sun = RenderSettings.sun;
                     if (sun != null)

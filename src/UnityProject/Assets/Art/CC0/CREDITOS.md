@@ -32,3 +32,10 @@ concreto.
 | `belfast_sunset_puresky` | Cielo HDRI 2K (solo cielo, sin edificios) | Alba rasante del Morro de Arica (cap. 6) | https://polyhaven.com/a/belfast_sunset_puresky |
 | `kloppenheim_02_puresky` | Cielo HDRI 2K (solo cielo, sin edificios) | Noche estrellada de Cañete (cap. 7) | https://polyhaven.com/a/kloppenheim_02_puresky |
 | `rustig_koppie_puresky` | Cielo HDRI 2K (solo cielo, sin edificios) | Tarde de enero en Miraflores (cap. 8) | https://polyhaven.com/a/rustig_koppie_puresky |
+| `sandy_gravel_02` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Arena con grava del desierto: pampa de Tarapacá, Alto de la Alianza, Arica | https://polyhaven.com/a/sandy_gravel_02 |
+| `coast_sand_01` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Playa de Pisagua | https://polyhaven.com/a/coast_sand_01 |
+| `sand_01` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Arena pisada: cauce seco y manchas de la meseta | https://polyhaven.com/a/sand_01 |
+| `dry_ground_rocks` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Tierra seca pedregosa: fondo de la quebrada, ladera del Morro, reductos | https://polyhaven.com/a/dry_ground_rocks |
+| `rock_boulder_cracked` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Roca erosionada: laderas, riscos y el macizo del Morro | https://polyhaven.com/a/rock_boulder_cracked |
+| `brown_mud_dry` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Tierra seca de las chacras de Miraflores | https://polyhaven.com/a/brown_mud_dry |
+| `brown_mud_02` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Tierra de cultivo del valle de Cañete | https://polyhaven.com/a/brown_mud_02 |
