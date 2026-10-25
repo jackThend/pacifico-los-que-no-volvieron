@@ -30,6 +30,8 @@ namespace Pacifico.Campaign
         {
             public Material coat;
             public Material trim;
+            /// <summary>Soldado con esqueleto; sin él, se ven las primitivas.</summary>
+            public GameObject model;
         }
 
         [SerializeField, TextArea(3, 8)] private string guionChapter = string.Empty;
@@ -178,7 +180,7 @@ namespace Pacifico.Campaign
             if (Physics.Raycast(p + Vector3.up * 100f, Vector3.down, out RaycastHit hit, 300f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) p = hit.point;
             go.transform.SetPositionAndRotation(p, Quaternion.Euler(0f, 0f, 0f)); // de cara al risco
             var squad = go.AddComponent<SquadController>();
-            squad.Configure(boat.SquadName, Faction.Chile, comblain, survivors, FormationType.Skirmish, true, chile.coat, chile.trim);
+            squad.Configure(boat.SquadName, Faction.Chile, comblain, survivors, FormationType.Skirmish, true, chile.coat, chile.trim, chile.model);
             _player.Add(squad);
         }
 
@@ -352,7 +354,8 @@ namespace Pacifico.Campaign
                     go.transform.SetPositionAndRotation(counterSpawns[i].position, counterSpawns[i].rotation);
                     var squad = go.AddComponent<SquadController>();
                     squad.Configure("Retaguardia aliada · " + (i + 1), i % 2 == 0 ? Faction.Bolivia : Faction.Peru, remington, C.MenPerNest,
-                                    FormationType.Skirmish, false, allies.coat, allies.trim);
+                                    FormationType.Skirmish, false, allies.coat, allies.trim,
+                                    allies.model);
                     var ai = go.AddComponent<SquadAI>();
                     ai.StartDelaySeconds = 2f * i;
                     _counter.Add(squad);

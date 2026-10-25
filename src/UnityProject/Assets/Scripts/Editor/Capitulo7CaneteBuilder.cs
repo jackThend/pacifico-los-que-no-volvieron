@@ -129,6 +129,7 @@ namespace Pacifico.EditorTools
                 uniform = Mat("Uniforme_Chile", new Color(0.14f, 0.17f, 0.3f)), trousers = Mat("Pantalon_Chile", new Color(0.55f, 0.18f, 0.14f)),
                 skin = skin, kepi = Mat("Quepis_Chile", new Color(0.12f, 0.14f, 0.25f)),
             };
+            chileLook.model = SoldierModelLibrary.Prefab(Faction.Chile);
             var culiLook = new SoldierLook
             {
                 uniform = Mat("Blusa_Culi", new Color(0.42f, 0.4f, 0.36f)), trousers = Mat("Pantalon_Culi", new Color(0.3f, 0.28f, 0.25f)),
@@ -139,6 +140,7 @@ namespace Pacifico.EditorTools
                 uniform = Mat("Uniforme_Peru", new Color(0.82f, 0.8f, 0.72f)), trousers = Mat("Pantalon_Peru", new Color(0.78f, 0.76f, 0.68f)),
                 skin = skin, kepi = Mat("Quepis_Peru", new Color(0.35f, 0.12f, 0.1f)),
             };
+            peruLook.model = SoldierModelLibrary.Prefab(Faction.Peru);
             Texture2D plate = HistoricalDataAssetGenerator.ImportArchiveTexture(root, PlateImage);
 
             var director = new GameObject("Director_Capitulo7").AddComponent<CaneteMissionDirector>();

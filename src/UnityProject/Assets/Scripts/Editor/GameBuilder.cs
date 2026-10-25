@@ -70,6 +70,7 @@ namespace Pacifico.EditorTools
         {
             RenderPipelineSetup.Ensure();
             HistoricalDataAssetGenerator.GenerateAll();
+            SoldierModelLibrary.RebuildAll();
             PrologoPrototypeBuilder.BuildScene();
             Capitulo1IquiqueBuilder.BuildScene();
             Capitulo2AngamosBuilder.BuildScene();

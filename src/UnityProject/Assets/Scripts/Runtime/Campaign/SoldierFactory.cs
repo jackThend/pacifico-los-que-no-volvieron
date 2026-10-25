@@ -15,6 +15,8 @@ namespace Pacifico.Campaign
         public Material trousers;
         public Material skin;
         public Material kepi;
+        /// <summary>Soldado con esqueleto (<see cref="SoldierFigure"/>); sin él, se ven las primitivas.</summary>
+        public GameObject model;
     }
 
     /// <summary>
@@ -41,6 +43,8 @@ namespace Pacifico.Campaign
             rifle.transform.localRotation = Quaternion.Euler(-20f, 0f, 0f);
             legs.name = "Piernas";
             body.name = "Cuerpo";
+
+            if (look != null && look.model != null) SoldierFigure.Attach(look.model, figure);
 
             var combatant = go.AddComponent<Combatant>();
             combatant.Configure(faction, false, head.GetComponent<Collider>(), name);

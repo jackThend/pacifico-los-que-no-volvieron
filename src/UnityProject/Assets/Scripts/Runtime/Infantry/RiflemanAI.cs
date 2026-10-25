@@ -37,6 +37,7 @@ namespace Pacifico.Infantry
         private Vector3 _lastTargetPosition;
         private bool _targetMoving;
         private Transform _figure;
+        private SoldierFigure _pose;
 
         /// <summary>Punto al que avanza cuando no tiene a quién disparar.</summary>
         public Vector3? Objective { get; set; }
@@ -62,6 +63,7 @@ namespace Pacifico.Infantry
             _brain = new RiflemanBrain(_weapon, seed);
             _bayonetDamage = _weapon.MeleeDamage > 0f ? _weapon.MeleeDamage : bayonet != null ? bayonet.MeleeDamage : 35f;
             _figure = figure;
+            _pose = figure != null ? figure.GetComponentInChildren<SoldierFigure>(true) : null;
 
             _agent = gameObject.AddComponent<NavMeshAgent>();
             _agent.agentTypeID = NavMeshRuntimeBaker.AgentTypeId;
@@ -181,6 +183,7 @@ namespace Pacifico.Infantry
                 Vector3 s = _figure.localScale;
                 _figure.localScale = new Vector3(1f, Mathf.MoveTowards(s.y, height, Time.deltaTime / 0.3f), 1f);
             }
+            if (_pose != null) _pose.AimTarget = d.State == RiflemanState.Engage || d.State == RiflemanState.Reload ? 1f : 0f;
             if (d.Fire) Fire();
             if (d.Strike && _target != null) _target.Hurt(_bayonetDamage, gameObject, transform.position);
         }

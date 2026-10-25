@@ -128,6 +128,7 @@ namespace Pacifico.EditorTools
                 uniform = Mat("Uniforme_Chile", new Color(0.14f, 0.17f, 0.3f)), trousers = Mat("Pantalon_Chile", new Color(0.55f, 0.18f, 0.14f)),
                 skin = Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), kepi = Mat("Quepis_Chile", new Color(0.12f, 0.14f, 0.25f)),
             };
+            chileLook.model = SoldierModelLibrary.Prefab(Faction.Chile);
             // Los defensores de Lima: ropa civil (levitas, chalecos), no uniformes.
             var civilLook = new SoldierLook
             {

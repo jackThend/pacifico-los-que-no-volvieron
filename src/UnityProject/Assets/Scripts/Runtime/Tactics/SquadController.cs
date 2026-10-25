@@ -5,6 +5,7 @@ using Pacifico.Core.Tactics;
 using Pacifico.Core.Weapons;
 using Pacifico.Data;
 using Pacifico.Effects;
+using Pacifico.Infantry;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -40,6 +41,8 @@ namespace Pacifico.Tactics
         [SerializeField] private bool playerControlled;
         [SerializeField] private Material uniformMaterial;
         [SerializeField] private Material trimMaterial;
+        /// <summary>Soldado con esqueleto (<see cref="SoldierFigure"/>); sin él, se ven las primitivas.</summary>
+        [SerializeField] private GameObject figureModel;
 
         private const float DestinationTolerance = 0.3f;
         private const float RetargetSeconds = 1f;
@@ -138,6 +141,8 @@ namespace Pacifico.Tactics
 
         /// <summary>Último resultado del fuego propio (para el HUD).</summary>
         public VolleyResult LastVolley { get; private set; }
+        /// <summary>Ha disparado en los últimos segundos: sus soldados tienen el fusil encarado.</summary>
+        public bool RecentlyFired => Time.time - _lastShotTime < 3f;
         public int ShotsFired { get; private set; }
         public int EnemyCasualties { get; private set; }
 
@@ -157,7 +162,7 @@ namespace Pacifico.Tactics
         public Vector3 Facing => ToVector3(Command.March.Facing);
 
         public void Configure(string name, Faction side, WeaponDataSO weaponData, int count, FormationType type, bool player,
-                              Material uniform, Material trim)
+                              Material uniform, Material trim, GameObject model = null)
         {
             displayName = name;
             faction = side;
@@ -167,6 +172,7 @@ namespace Pacifico.Tactics
             playerControlled = player;
             uniformMaterial = uniform;
             trimMaterial = trim;
+            figureModel = model;
         }
 
         /// <summary>¿Son enemigos? Chile contra la alianza de Perú y Bolivia.</summary>
@@ -725,6 +731,7 @@ namespace Pacifico.Tactics
             Part(figure, PrimitiveType.Cylinder, "Quepis", new Vector3(0f, 1.78f, 0f), new Vector3(0.24f, 0.07f, 0.24f), trimMaterial, keepCollider: false);
             Part(figure, PrimitiveType.Cube, "Fusil", new Vector3(0.22f, 1.1f, 0.25f), new Vector3(0.04f, 0.04f, 1.2f), trimMaterial, keepCollider: false)
                 .transform.localRotation = Quaternion.Euler(-60f, 0f, 0f);
+            if (figureModel != null) SoldierFigure.Attach(figureModel, figure);
 
             var agent = go.AddComponent<NavMeshAgent>();
             agent.agentTypeID = NavMeshRuntimeBaker.AgentTypeId;

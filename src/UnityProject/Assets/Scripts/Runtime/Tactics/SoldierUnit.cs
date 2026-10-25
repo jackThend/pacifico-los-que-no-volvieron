@@ -1,4 +1,5 @@
 using Pacifico.Core.Tactics;
+using Pacifico.Infantry;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -22,6 +23,7 @@ namespace Pacifico.Tactics
         public const float EyeHeightM = 1.55f;
 
         private Transform _figure;
+        private SoldierFigure _pose;
         private float _targetKneel;
         private float _targetProne;
         private float _kneel;
@@ -35,6 +37,7 @@ namespace Pacifico.Tactics
             Squad = squad;
             Agent = GetComponent<NavMeshAgent>();
             _figure = figure;
+            _pose = figure != null ? figure.GetComponentInChildren<SoldierFigure>(true) : null;
         }
 
         /// <summary>De pie, rodilla en tierra o cuerpo a tierra (ROADMAP 4.2); la figura pasa de una a otra en ~0,3 s.</summary>
@@ -48,6 +51,7 @@ namespace Pacifico.Tactics
         private void Update()
         {
             if (!Alive || _figure == null) return;
+            if (_pose != null) _pose.AimTarget = Squad != null && Squad.RecentlyFired ? 1f : 0f;
             float step = Time.deltaTime / 0.3f;
             _kneel = Mathf.MoveTowards(_kneel, _targetKneel, step);
             _prone = Mathf.MoveTowards(_prone, _targetProne, step);

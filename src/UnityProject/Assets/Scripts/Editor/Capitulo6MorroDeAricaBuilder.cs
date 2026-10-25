@@ -130,11 +130,13 @@ namespace Pacifico.EditorTools
                 uniform = Mat("Uniforme_Chile", new Color(0.14f, 0.17f, 0.3f)), trousers = Mat("Pantalon_Chile", new Color(0.55f, 0.18f, 0.14f)),
                 skin = Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), kepi = Mat("Quepis_Chile", new Color(0.12f, 0.14f, 0.25f)),
             };
+            chileLook.model = SoldierModelLibrary.Prefab(Faction.Chile);
             var peruLook = new SoldierLook
             {
                 uniform = Mat("Uniforme_Peru", new Color(0.82f, 0.8f, 0.72f)), trousers = Mat("Pantalon_Peru", new Color(0.78f, 0.76f, 0.68f)),
                 skin = Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), kepi = Mat("Quepis_Peru", new Color(0.35f, 0.12f, 0.1f)),
             };
+            peruLook.model = SoldierModelLibrary.Prefab(Faction.Peru);
 
             var director = new GameObject("Director_Capitulo6").AddComponent<AricaMissionDirector>();
             director.Configure(chapter, player, chassepot, comblain, bayonet, council, posts.ToArray(), spawns.ToArray(), parapet, summit,

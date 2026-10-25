@@ -26,6 +26,8 @@ namespace Pacifico.Campaign
         {
             public Material coat;
             public Material trim;
+            /// <summary>Soldado con esqueleto; sin él, se ven las primitivas.</summary>
+            public GameObject model;
         }
 
         [SerializeField, TextArea(3, 8)] private string guionChapter = string.Empty;
@@ -109,7 +111,7 @@ namespace Pacifico.Campaign
             if (Physics.Raycast(p + Vector3.up * 200f, Vector3.down, out RaycastHit hit, 400f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) p = hit.point;
             go.transform.SetPositionAndRotation(p, at.rotation);
             var squad = go.AddComponent<SquadController>();
-            squad.Configure(name, Faction.Chile, weapon, men, formation, false, chile.coat, chile.trim);
+            squad.Configure(name, Faction.Chile, weapon, men, formation, false, chile.coat, chile.trim, chile.model);
             squad.BasePace = pace;
             var ai = go.AddComponent<SquadAI>();
             ai.StartDelaySeconds = delay;

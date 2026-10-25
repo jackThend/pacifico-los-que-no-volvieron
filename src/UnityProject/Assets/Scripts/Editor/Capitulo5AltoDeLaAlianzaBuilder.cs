@@ -135,6 +135,7 @@ namespace Pacifico.EditorTools
                 coat = PrototypeSceneKit.Material("Uniforme_Chile", T.ChileBlue),
                 trim = PrototypeSceneKit.Material("Quepis_Chile", T.ChileTrim),
             };
+            chile.model = SoldierModelLibrary.Prefab(Faction.Chile);
             var director = new GameObject("Director_Capitulo5").AddComponent<AltoDeLaAlianzaDirector>();
             director.Configure(chapter, player, comblain, winchester, chile, chileanBattery, leftGuns, wave, guards, horse, reserve, rear);
 

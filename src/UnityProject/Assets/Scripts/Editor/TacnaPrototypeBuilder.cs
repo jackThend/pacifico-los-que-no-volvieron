@@ -320,7 +320,8 @@ namespace Pacifico.EditorTools
             var go = new GameObject("Escuadra_" + name);
             position.y = terrain.SampleHeight(position) + terrain.transform.position.y;
             go.transform.SetPositionAndRotation(position, Quaternion.Euler(0f, headingDeg, 0f));
-            go.AddComponent<SquadController>().Configure(name, faction, weapon, count, formation, player, uniform, trim);
+            go.AddComponent<SquadController>().Configure(name, faction, weapon, count, formation, player, uniform, trim,
+                                                         SoldierModelLibrary.Prefab(faction));
             // Los chilenos atacan: las primeras olas de asalto del capítulo 5 (GDD), para ver la supresión en acción.
             if (!player) go.AddComponent<SquadAI>().StartDelaySeconds = 20f;
             return go.GetComponent<SquadController>();
