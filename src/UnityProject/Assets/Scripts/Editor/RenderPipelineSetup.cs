@@ -23,7 +23,11 @@ namespace Pacifico.EditorTools
         public static bool Ensure()
         {
 #if PACIFICO_URP
-            if (GraphicsSettings.defaultRenderPipeline is UniversalRenderPipelineAsset) return false;
+            if (GraphicsSettings.defaultRenderPipeline is UniversalRenderPipelineAsset current)
+            {
+                ConfigureQuality(current);
+                return false;
+            }
 
             var asset = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(AssetPath);
             if (asset == null)
@@ -39,6 +43,7 @@ namespace Pacifico.EditorTools
                 AssetDatabase.CreateAsset(asset, AssetPath);
             }
             GraphicsSettings.defaultRenderPipeline = asset;
+            ConfigureQuality(asset);
             AssetDatabase.SaveAssets();
             ReimportModels();
             Debug.Log("[Pacífico] URP activado (" + AssetPath + ").");
@@ -47,6 +52,54 @@ namespace Pacifico.EditorTools
             return false;
 #endif
         }
+
+#if PACIFICO_URP
+        /// <summary>
+        /// Calidad de imagen para un juego de PC realista: HDR, antialiasing, sombras nítidas hasta 200 m en cuatro
+        /// cascadas y oclusión ambiental en pantalla (sombra en rincones y bajo los objetos). Se aplica siempre, también
+        /// a un asset ya creado, para que los proyectos abiertos antes reciban los cambios.
+        /// </summary>
+        private static void ConfigureQuality(UniversalRenderPipelineAsset asset)
+        {
+            var so = new SerializedObject(asset);
+            void Set(string name, System.Action<SerializedProperty> apply)
+            {
+                SerializedProperty p = so.FindProperty(name);
+                if (p != null) apply(p);
+            }
+            Set("m_SupportsHDR", p => p.boolValue = true);
+            Set("m_MSAA", p => p.intValue = 4);
+            Set("m_MainLightShadowsSupported", p => p.boolValue = true);
+            Set("m_MainLightShadowmapResolution", p => p.intValue = 4096);
+            Set("m_AdditionalLightShadowsSupported", p => p.boolValue = true);
+            Set("m_ShadowDistance", p => p.floatValue = 200f);
+            Set("m_ShadowCascadeCount", p => p.intValue = 4);
+            Set("m_SoftShadowsSupported", p => p.boolValue = true);
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            // La oclusión ambiental es una «renderer feature» de URP; su clase no es pública en todas las versiones.
+            var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);
+            System.Type ssao = typeof(UniversalRendererData).Assembly.GetType("UnityEngine.Rendering.Universal.ScreenSpaceAmbientOcclusion");
+            if (renderer != null && ssao != null && !renderer.rendererFeatures.Exists(f => f != null && f.GetType() == ssao))
+            {
+                var feature = (ScriptableRendererFeature)ScriptableObject.CreateInstance(ssao);
+                feature.name = "Oclusion_Ambiental";
+                AssetDatabase.AddObjectToAsset(feature, renderer);
+                renderer.rendererFeatures.Add(feature);
+                var rso = new SerializedObject(renderer);
+                SerializedProperty map = rso.FindProperty("m_RendererFeatureMap");
+                if (map != null)
+                {
+                    map.arraySize++;
+                    AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out string _, out long id);
+                    map.GetArrayElementAtIndex(map.arraySize - 1).longValue = id;
+                    rso.ApplyModifiedPropertiesWithoutUndo();
+                }
+                EditorUtility.SetDirty(renderer);
+            }
+            EditorUtility.SetDirty(asset);
+        }
+#endif
 
         private static void ReimportModels()
         {

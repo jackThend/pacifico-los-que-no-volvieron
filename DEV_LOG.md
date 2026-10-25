@@ -824,3 +824,12 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Error encontrado:** al preparar la malla se reiniciaba el giro de la raíz del GLB y los modelos de Sketchfab (Z arriba) quedaban tumbados; se conserva ese giro.
 * **Verificación:** fotos con `SoldierPreview` (enviadas al usuario), Test Runner EditMode 430/430, `BuildAllScenesBatch` sin errores (el chileno está en 6 escenas y el peruano en 5) y `tools/verify/verify.sh` 424/424.
 * **Pendiente:** colores de uniforme por unidad y aligerar más para escuadras grandes.
+
+### 2026-10-25 · 7.x · Arte realista, parte 1: cielo, luz y posproceso
+* **Plan del usuario:** hacer todo el apartado gráfico lo más realista posible, parte por parte, con recursos gratuitos. Orden propuesto: 1) cielo, luz y ambiente; 2) terreno y suelos; 3) agua y mar; 4) naturaleza; 5) edificios y objetos de época; 6) personajes (uniformes por unidad, oficiales, civiles); 7) buques (velas, humo).
+* **Hecho:** ocho cielos HDRI CC0 de Poly Haven (solo cielo, `*_puresky`, 2K) en `Assets/Art/CC0/PolyHaven/<id>/`. `Editor/SceneAtmosphere.cs` pone a cada capítulo su cielo (`Skybox/Panoramic`), girado para que su sol coincida con la luz del capítulo (columna del sol medida en el JPG de Poly Haven), luz ambiente y reflejos del cielo (`Runtime/Effects/EnvironmentRefresh` recalcula el ambiente al cargar), sombras suaves y un volumen de posproceso por capítulo (`Assets/Settings/Ambiente/`): tonos ACES, contraste, saturación algo baja, balance cálido o frío, bloom y viñeta. Cámaras con posproceso y SMAA. Se aplica al final de `GameBuilder.BuildAllScenes` (o con `SceneAtmosphere.ApplyAllBatch`).
+* `RenderPipelineSetup` sube la calidad también en assets ya creados: HDR, MSAA 4×, sombras 4096 a 200 m en 4 cascadas, sombras suaves y oclusión ambiental en pantalla (la clase de URP se añade por reflexión).
+* **Ajuste:** con la luz ambiente del cielo a 1 y sin compensar, la arena salía casi blanca; quedó en ambiente 0,7–0,8 y exposición −0,3 a −0,75 (en el desierto). Cañete (noche) +0,4. Valores de ajuste, comprobados con `AtmospherePreview` (fotos antes y después enviadas al usuario).
+* **Verificación:** Test Runner EditMode 430/430, `BuildAllScenesBatch` sin errores (8 escenas con ambiente), `tools/verify/verify.sh` 424/424.
+* **Visto en las fotos, para las partes siguientes:** el mar es un plano azul claro sin reflejos ni olas, los suelos son de color liso y las velas de la Esmeralda salen amarillas.
+

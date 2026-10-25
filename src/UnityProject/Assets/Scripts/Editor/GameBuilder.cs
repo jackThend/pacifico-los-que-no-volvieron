@@ -80,6 +80,7 @@ namespace Pacifico.EditorTools
             Capitulo6MorroDeAricaBuilder.BuildScene();
             Capitulo7CaneteBuilder.BuildScene();
             Capitulo8MirafloresBuilder.BuildScene();
+            SceneAtmosphere.ApplyAll();
             BuildMenuScene();
             SetCampaignBuildSettings();
         }
