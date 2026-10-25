@@ -228,7 +228,8 @@ namespace Pacifico.EditorTools
                 float x = i * 20f;
                 Vector3 p = new Vector3(x, 0f, 88.5f);
                 p.y = Ground(terrain, p) + 0.5f;
-                PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Parapeto_" + (i + 5), root, p, new Vector3(14f, 1.1f, 1.2f), sacks);
+                GameObject parapet = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Parapeto_" + (i + 5), root, p, new Vector3(14f, 1.1f, 1.2f), sacks);
+                PropModelLibrary.Wall(PropModelLibrary.SandbagWall, parapet); // modelo CC-BY de sacos de arpillera
                 for (float dx = -6.5f; dx <= 6.5f; dx += 1f) Cover(terrain, covers, new Vector3(x + dx, 0f, 89.7f), 180f, 0.65f);
             }
             for (float x = -84f; x <= 84f; x += 1.2f) Cover(terrain, covers, new Vector3(x, 0f, 92f), 180f, 0.8f);
@@ -283,7 +284,11 @@ namespace Pacifico.EditorTools
             go.AddComponent<SupplyDepot>().Faction = faction;
             // Tienda de intendencia y pila de cajones.
             PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Tienda", go.transform, new Vector3(0f, 1.3f, 0f), new Vector3(6f, 2.6f, 4f), canvas);
-            PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Cajones", go.transform, new Vector3(5f, 0.5f, 0f), new Vector3(2f, 1f, 1.5f), canvas);
+            GameObject crates = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Cajones", go.transform, new Vector3(5f, 0.5f, 0f), new Vector3(2f, 1f, 1.5f), canvas);
+            // Modelo CC-BY: pila de cajones a su tamaño real, sin los bidones metálicos. La tienda sigue siendo la
+            // primitiva: el modelo descargado (tienda_de_lona) es una tienda militar moderna con ventanas.
+            if (PropModelLibrary.Place(PropModelLibrary.CratesAndBarrels, "Modelo_Cajones", go.transform, new Vector3(5.5f, 0f, 0f), 0f, 90f,
+                    hiddenParts: PropModelLibrary.ModernDrums) != null) PropModelLibrary.Hide(crates);
         }
 
         private static void Cart(Terrain terrain, string name, Faction faction, Vector3 position, Material wood, Material barrels)

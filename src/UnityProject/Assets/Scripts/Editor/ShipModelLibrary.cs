@@ -75,7 +75,7 @@ namespace Pacifico.EditorTools
             return model;
         }
 
-        private static bool IsHidden(string name, string[] parts)
+        internal static bool IsHidden(string name, string[] parts)
         {
             foreach (string part in parts)
             {
@@ -130,16 +130,17 @@ namespace Pacifico.EditorTools
         public const string Odin = "hdms_odin_1872";
         public const string Boat = "bote_victoriano";
 
-        /// <summary>Caja de todas las mallas del modelo en el espacio local de <paramref name="space"/>.</summary>
+        /// <summary>Caja de todas las mallas del modelo en el espacio local de <paramref name="space"/> (null: el mundo).</summary>
         public static Bounds LocalBounds(GameObject model, Transform space)
         {
             bool any = false;
             var bounds = new Bounds();
+            Matrix4x4 worldToSpace = space != null ? space.worldToLocalMatrix : Matrix4x4.identity;
             foreach (MeshFilter filter in model.GetComponentsInChildren<MeshFilter>())
             {
                 if (filter.sharedMesh == null) continue;
                 Bounds mesh = filter.sharedMesh.bounds;
-                Matrix4x4 toSpace = space.worldToLocalMatrix * filter.transform.localToWorldMatrix;
+                Matrix4x4 toSpace = worldToSpace * filter.transform.localToWorldMatrix;
                 for (int i = 0; i < 8; i++)
                 {
                     var corner = new Vector3((i & 1) == 0 ? mesh.min.x : mesh.max.x,

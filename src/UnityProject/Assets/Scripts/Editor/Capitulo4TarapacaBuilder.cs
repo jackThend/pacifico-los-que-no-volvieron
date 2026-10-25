@@ -40,6 +40,8 @@ namespace Pacifico.EditorTools
         private static readonly Color Stone = new Color(0.55f, 0.52f, 0.47f);
         private static readonly Color DryWood = new Color(0.42f, 0.34f, 0.24f);
         private static readonly Color DryLeaves = new Color(0.55f, 0.53f, 0.36f);
+        /// <summary>Multiplicador del color de las hojas del sauce de Sketchfab: sube el rojo y apaga el azul (verde → pajizo).</summary>
+        private static readonly Color DryWillowTint = new Color(1.7f, 1.05f, 0.55f);
         private static readonly Color Bronze = new Color(0.35f, 0.3f, 0.22f);
 
         [MenuItem("Pacífico/Capítulos/Capítulo 4: Quebrada de Tarapacá")]
@@ -238,8 +240,18 @@ namespace Pacifico.EditorTools
             {
                 float z = -140f + i * 18f + (float)rng.NextDouble() * 6f;
                 float x = -36f + (float)rng.NextDouble() * 6f;
-                PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Sauce_Tronco_" + i, world, new Vector3(x, 2f, z), new Vector3(0.4f, 2f, 0.4f), Mat("Tronco", DryWood));
-                PrototypeSceneKit.Primitive(PrimitiveType.Sphere, "Sauce_Copa_" + i, world, new Vector3(x, 4.6f, z), new Vector3(4f, 3f, 4f), Mat("Hojas_Secas", DryLeaves), keepCollider: false);
+                GameObject trunk = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Sauce_Tronco_" + i, world, new Vector3(x, 2f, z), new Vector3(0.4f, 2f, 0.4f), Mat("Tronco", DryWood));
+                GameObject crown = PrototypeSceneKit.Primitive(PrimitiveType.Sphere, "Sauce_Copa_" + i, world, new Vector3(x, 4.6f, z), new Vector3(4f, 3f, 4f), Mat("Hojas_Secas", DryLeaves), keepCollider: false);
+                // Modelo CC-BY: sauce de 5–6 m (más alto, sus ramas invadirían los tejados), con su propio azar para no alterar el reparto de la escena.
+                var look = new System.Random(2000 + i);
+                GameObject willow = PropModelLibrary.Place(PropModelLibrary.Willow, "Sauce_" + i, world, new Vector3(x, 0f, z),
+                    5f + (float)look.NextDouble() * 1f, (float)look.NextDouble() * 360f);
+                if (willow != null)
+                {
+                    // El guion los quiere secos: las hojas verdes del modelo, tostadas hacia el pajizo (valor de ajuste).
+                    PropModelLibrary.Tint(willow, "willow_branch", DryWillowTint, "Sauce_Hojas_Secas");
+                    PropModelLibrary.Hide(trunk, crown);
+                }
             }
         }
 
@@ -265,7 +277,8 @@ namespace Pacifico.EditorTools
                 GameObject barrel = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Tubo_Krupp", barrelPivot, new Vector3(0f, 0f, 0.6f), new Vector3(0.14f, 0.6f, 0.14f), Mat("Bronce", Bronze), keepCollider: false);
                 barrel.transform.localRotation = Quaternion.Euler(84f, 0f, 0f);
                 // Parapeto de sacos por delante.
-                PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Parapeto", root, new Vector3(0f, 0.45f, 2.2f), new Vector3(4f, 0.9f, 0.8f), Mat("Sacos", Earth));
+                GameObject parapet = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Parapeto", root, new Vector3(0f, 0.45f, 2.2f), new Vector3(4f, 0.9f, 0.8f), Mat("Sacos", Earth));
+                PropModelLibrary.Wall(PropModelLibrary.SandbagWall, parapet); // modelo CC-BY de sacos de arpillera
 
                 var gun = root.gameObject.AddComponent<KruppGun>();
                 gun.Configure(barrelPivot, village, 35f, dust);

@@ -201,7 +201,8 @@ namespace Pacifico.EditorTools
                 float z = i * 9f;
                 GameObject wall = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Caliza_" + (i + 4), world, new Vector3(x + 1f, y + 0.7f, z), new Vector3(1.4f, 1.4f, 7f), Mat("Caliza", Limestone));
                 wall.transform.rotation = Quaternion.Euler(0f, 0f, -26.6f);
-                PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Sacos_" + (i + 4), world, new Vector3(x + 1.8f, y + 1.3f, z + 3.5f), new Vector3(1f, 0.6f, 2f), Mat("Sacos", Sack));
+                GameObject sacks = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Sacos_" + (i + 4), world, new Vector3(x + 1.8f, y + 1.3f, z + 3.5f), new Vector3(1f, 0.6f, 2f), Mat("Sacos", Sack));
+                PropModelLibrary.Wall(PropModelLibrary.SandbagWall, sacks); // modelo CC-BY de sacos de arpillera
             }
             posts = new List<Transform>();
             for (int i = 0; i < 6; i++)

@@ -22,10 +22,11 @@ citar al autor**. Estos créditos deben aparecer también en los créditos del j
 | `Sketchfab/caballo_animado.glb` | Horse Rigged(Game Ready) | [abhayexe](https://sketchfab.com/abhayexe) | Caballos y jinetes | https://sketchfab.com/3d-models/horse-riggedgame-ready-bc64f4ff7966474ca9bacd42fa73a754 |
 | `Sketchfab/olivo_viejo.glb` | Old olive tree | [massive-graphisme](https://sketchfab.com/greg-l) | Olivares de Miraflores | https://sketchfab.com/3d-models/old-olive-tree-6328df8a0f214143a880a72b86db2ab4 |
 | `Sketchfab/sauce.glb` | Willow | [evolveduk](https://sketchfab.com/evolveduk) | Sauces de Cañete | https://sketchfab.com/3d-models/willow-422de2372f3d46dfb314a0cd5da512fe |
-| `Sketchfab/sacos_de_arena.glb` | Sandbags | [Evan](https://sketchfab.com/Evanz) | Parapetos y reductos | https://sketchfab.com/3d-models/sandbags-8cda4370170746d393aa311a7c080c50 |
+| `Sketchfab/sacos_de_arena.glb` | Sandbags | [Evan](https://sketchfab.com/Evanz) | Sin uso: sacos sueltos en una sola malla, no sirve de parapeto | https://sketchfab.com/3d-models/sandbags-8cda4370170746d393aa311a7c080c50 |
 | `Sketchfab/locomotora_1840.glb` | Old 0-4-0 Steam Locomotive | [Steve Emfore](https://sketchfab.com/steve_Emfore) | Locomotora | https://sketchfab.com/3d-models/old-0-4-0-steam-locomotive-c42f25796d924a15a77c37f88c5a958f |
 | `Sketchfab/cajas_y_barriles.glb` | Crates And Barrels | [SpatialNeglect](https://sketchfab.com/jeandiz) | Cajas y barriles | https://sketchfab.com/3d-models/crates-and-barrels-5ae3c72285474862a89d69c2f2ad2246 |
-| `Sketchfab/tienda_de_lona.glb` | Tent | [VENIKAMEN](https://sketchfab.com/venik42) | Tiendas de campaña | https://sketchfab.com/3d-models/tent-979c0784868b4fdeb2b4563f65e0b5b4 |
+| `Sketchfab/tienda_de_lona.glb` | Tent | [VENIKAMEN](https://sketchfab.com/venik42) | Sin uso: es una tienda militar moderna, con ventanas | https://sketchfab.com/3d-models/tent-979c0784868b4fdeb2b4563f65e0b5b4 |
+| `Sketchfab/sacos_de_arena_muro.glb` | Sandbag Barrier (Ready for Unreal Engine) | [G4AGamingLabs](https://sketchfab.com/G4AGamingLabs) | Parapetos de sacos de arpillera | https://sketchfab.com/3d-models/sandbag-barrier-ready-for-unreal-engine-593800671c8e45eca93b8b7c765c0f77 |
 
 Ningún modelo reproduce exactamente el buque histórico: son sustitutos de época con silueta parecida. En el juego se
 ocultan las piezas ajenas al buque representado (la bandera de Estados Unidos de la fragata) y se añade la chimenea

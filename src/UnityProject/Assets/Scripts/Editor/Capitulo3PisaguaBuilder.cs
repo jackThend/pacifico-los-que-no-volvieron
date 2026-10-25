@@ -300,8 +300,15 @@ namespace Pacifico.EditorTools
             enginesVisual.SetParent(enginesRoot, false);
             for (int i = 0; i < 2; i++)
             {
-                PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Locomotora_" + (i + 1), enginesVisual, new Vector3(-4f + i * 8f, 2f, 0f), new Vector3(3f, 3.4f, 10f), iron);
-                PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Chimenea", enginesVisual, new Vector3(-4f + i * 8f, 4.5f, 3.5f), new Vector3(0.8f, 1.2f, 0.8f), iron, keepCollider: false);
+                GameObject body = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Locomotora_" + (i + 1), enginesVisual, new Vector3(-4f + i * 8f, 2f, 0f), new Vector3(3f, 3.4f, 10f), iron);
+                GameObject stack = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Chimenea", enginesVisual, new Vector3(-4f + i * 8f, 4.5f, 3.5f), new Vector3(0.8f, 1.2f, 0.8f), iron, keepCollider: false);
+                // Modelo CC-BY: locomotora 0-4-0 de 1840, de 10 m como el bloque. Al volarla, DemolitionObjective aplasta
+                // y ennegrece todo Locomotoras_Visual, también el modelo.
+                if (PropModelLibrary.Place(PropModelLibrary.Locomotive, "Modelo_Locomotora_" + (i + 1), enginesVisual,
+                        new Vector3(-4f + i * 8f, 0.3f, 0f), 3.4f, 0f, lengthAlongZ: true) != null)
+                {
+                    PropModelLibrary.Hide(body, stack);
+                }
             }
             engines = enginesRoot.gameObject.AddComponent<DemolitionObjective>();
             engines.Configure("Locomotoras", enginesVisual, smoke);
@@ -310,7 +317,8 @@ namespace Pacifico.EditorTools
             float[] wallX = { -60f, -30f, 30f, 60f };
             foreach (float x in wallX)
             {
-                PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Parapeto", root, OnGround(terrain, x, 186f, 0.5f), new Vector3(14f, 1.1f, 1.2f), stone);
+                GameObject parapet = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Parapeto", root, OnGround(terrain, x, 186f, 0.5f), new Vector3(14f, 1.1f, 1.2f), stone);
+                PropModelLibrary.Wall(PropModelLibrary.SandbagWall, parapet); // modelo CC-BY de sacos de arpillera
                 for (float dx = -6.5f; dx <= 6.5f; dx += 1f) Cover(terrain, covers, new Vector3(x + dx, 0f, 184.8f), 0f, 0.6f);
             }
 

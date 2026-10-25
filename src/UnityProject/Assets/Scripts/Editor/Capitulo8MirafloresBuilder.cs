@@ -197,8 +197,15 @@ namespace Pacifico.EditorTools
             for (int i = 0; i < 12; i++)
             {
                 float x = -65f + (float)rng.NextDouble() * 130f, z = -30f + (float)rng.NextDouble() * 110f;
-                PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Olivo_Tronco_" + i, world, new Vector3(x, 1.5f, z), new Vector3(0.45f, 1.5f, 0.45f), Mat("Corteza", Bark));
-                PrototypeSceneKit.Primitive(PrimitiveType.Sphere, "Olivo_Copa_" + i, world, new Vector3(x, 3.6f, z), new Vector3(4f, 2.6f, 4f), Mat("Olivo", Olive), keepCollider: false);
+                GameObject trunk = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Olivo_Tronco_" + i, world, new Vector3(x, 1.5f, z), new Vector3(0.45f, 1.5f, 0.45f), Mat("Corteza", Bark));
+                GameObject crown = PrototypeSceneKit.Primitive(PrimitiveType.Sphere, "Olivo_Copa_" + i, world, new Vector3(x, 3.6f, z), new Vector3(4f, 2.6f, 4f), Mat("Olivo", Olive), keepCollider: false);
+                // Modelo CC-BY: olivo viejo de 4,4–5,6 m, con su propio azar para no alterar el reparto de la escena.
+                var look = new System.Random(1000 + i);
+                if (PropModelLibrary.Place(PropModelLibrary.Olive, "Olivo_" + i, world, new Vector3(x, 0f, z),
+                        4.4f + (float)look.NextDouble() * 1.2f, (float)look.NextDouble() * 360f) != null)
+                {
+                    PropModelLibrary.Hide(trunk, crown);
+                }
             }
             var posts = new List<Transform>();
             for (int i = 0; i < 8; i++)
