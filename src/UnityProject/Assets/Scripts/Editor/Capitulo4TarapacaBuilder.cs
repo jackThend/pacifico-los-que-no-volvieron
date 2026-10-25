@@ -276,6 +276,7 @@ namespace Pacifico.EditorTools
                 barrelPivot.localPosition = new Vector3(0f, 0.95f, 0f);
                 GameObject barrel = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Tubo_Krupp", barrelPivot, new Vector3(0f, 0f, 0.6f), new Vector3(0.14f, 0.6f, 0.14f), Mat("Bronce", Bronze), keepCollider: false);
                 barrel.transform.localRotation = Quaternion.Euler(84f, 0f, 0f);
+                PropModelLibrary.DressFieldGun(root, barrelPivot); // modelo CC-BY de cañón de campaña
                 // Parapeto de sacos por delante.
                 GameObject parapet = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Parapeto", root, new Vector3(0f, 0.45f, 2.2f), new Vector3(4f, 0.9f, 0.8f), Mat("Sacos", Earth));
                 PropModelLibrary.Wall(PropModelLibrary.SandbagWall, parapet); // modelo CC-BY de sacos de arpillera
@@ -329,6 +330,7 @@ namespace Pacifico.EditorTools
             }
             PrototypeSceneKit.Primitive(PrimitiveType.Capsule, "Jinete", rider, new Vector3(0f, 2.25f, -0.1f), new Vector3(0.45f, 0.55f, 0.45f), Mat("Uniforme_Oficial_Peru", new Color(0.12f, 0.12f, 0.2f)), keepCollider: false);
             PrototypeSceneKit.Primitive(PrimitiveType.Sphere, "Cabeza_Jinete", rider, new Vector3(0f, 2.95f, -0.1f), Vector3.one * 0.24f, Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), keepCollider: false);
+            PropModelLibrary.DressHorse(rider); // modelo CC-BY de caballo animado
             rider.gameObject.AddComponent<ScriptedRider>().Configure(new[]
             {
                 new Vector3(-10f, 0f, 40f), plaza + new Vector3(-4f, 0f, 6f), plaza + new Vector3(6f, 0f, -4f), new Vector3(20f, 0f, -40f),

@@ -147,6 +147,69 @@ namespace Pacifico.EditorTools
             return true;
         }
 
+        /// <summary>Cañón de campaña de ruedas grandes (Field Artilery Cannon, iedalton) como Krupp de montaña.</summary>
+        public const string FieldGun = "canon_de_campana";
+        /// <summary>Caballo con esqueleto (Horse Rigged, abhayexe).</summary>
+        public const string Horse = "caballo_animado";
+
+        /// <summary>
+        /// Viste una pieza de artillería de primitivas (raíz con «Cureña» y «Rueda», y el pivote del tubo que el juego
+        /// eleva y hace retroceder) con el cañón de campaña: el tubo del modelo pasa al pivote para que se siga moviendo.
+        /// La boca mira a +Z, como la pieza. False si no hay modelo.
+        /// </summary>
+        public static bool DressFieldGun(Transform root, Transform barrelPivot)
+        {
+            // Ruedas de 1 m, como las de un Krupp de montaña de 75 mm (valor de ajuste); el modelo trae la boca hacia −Z.
+            GameObject model = Place(FieldGun, "Modelo_Canon", root, Vector3.zero, 1.05f, 180f);
+            if (model == null) return false;
+
+            // El tubo es la pieza más estrecha respecto a su largo.
+            Renderer tube = null;
+            float best = float.MaxValue;
+            foreach (Renderer renderer in model.GetComponentsInChildren<Renderer>())
+            {
+                Bounds b = ShipModelLibrary.LocalBounds(renderer.gameObject, root);
+                float slenderness = b.size.x / Mathf.Max(0.001f, b.size.z);
+                if (slenderness < best)
+                {
+                    best = slenderness;
+                    tube = renderer;
+                }
+            }
+            // Primero se oculta el tubo de primitiva y después entra el del modelo, que hereda elevación y retroceso.
+            foreach (Transform part in barrelPivot)
+            {
+                if (part.TryGetComponent(out Renderer primitive)) primitive.enabled = false;
+            }
+            if (tube != null) tube.transform.SetParent(barrelPivot, true);
+            ShipModelLibrary.HideStandIns(root, "Cureña", "Rueda");
+            return true;
+        }
+
+        /// <summary>
+        /// Pone el caballo bajo <paramref name="rider"/> (que lo mueve el juego) en lugar del de primitivas («Caballo»,
+        /// «Cuello», «Pata»), mirando a +Z, y baja al jinete para que vaya sentado en la silla. El caballo queda en su pose
+        /// de pie: su única animación es una tira de 60 s con todos los aires seguidos (parado, paso, trote, galope,
+        /// tumbado, encabritado) y aún no hay un tramo de paso recortado que se pueda repetir.
+        /// </summary>
+        public static GameObject DressHorse(Transform rider)
+        {
+            // 2,1 m hasta las orejas: unos 1,55 m a la cruz, un caballo de silla (valor de ajuste).
+            GameObject horse = Place(Horse, "Modelo_Caballo", rider, Vector3.zero, 2.1f, 0f);
+            if (horse == null) return null;
+            foreach (Animator animator in horse.GetComponentsInChildren<Animator>()) animator.enabled = false;
+
+            var standIns = new[] { "Caballo", "Cuello", "Pata" };
+            ShipModelLibrary.HideStandIns(rider, standIns);
+            // El jinete de primitivas iba sobre un lomo a 1,6 m; la silla del modelo queda unos 0,3 m más abajo.
+            foreach (Transform part in rider)
+            {
+                if (part.gameObject == horse || System.Array.IndexOf(standIns, part.name) >= 0) continue;
+                part.localPosition += Vector3.down * 0.3f;
+            }
+            return horse;
+        }
+
         /// <summary>Oculta el aspecto de las primitivas sustituidas; sus colisionadores siguen funcionando.</summary>
         public static void Hide(params GameObject[] standIns)
         {

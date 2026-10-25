@@ -248,6 +248,7 @@ namespace Pacifico.EditorTools
                 barrel.localPosition = new Vector3(0f, 0.95f, 0f);
                 GameObject tube = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Tubo_Pieza", barrel, new Vector3(0f, 0f, 0.6f), new Vector3(0.16f, 0.65f, 0.16f), Mat("Bronce", Bronze), keepCollider: false);
                 tube.transform.localRotation = Quaternion.Euler(84f, 0f, 0f);
+                PropModelLibrary.DressFieldGun(gun, barrel); // modelo CC-BY de cañón de campaña
                 KruppGun k = gun.gameObject.AddComponent<KruppGun>();
                 k.Configure(barrel, new Vector3(0f, 0f, 20f), 45f, dust, Faction.Peru);
                 guns[i] = k;

@@ -26,6 +26,11 @@ namespace Pacifico.EditorTools
             ("Capitulo3_Bahia_de_Pisagua", "Parapeto_Sacos", "8_parapeto_pisagua", 0.9f),
             ("Capitulo4_Quebrada_de_Tarapaca", "Parapeto_Sacos", "9_parapeto_krupp_tarapaca", 1.2f),
             ("Capitulo6_Morro_de_Arica", "Sacos_4_Sacos", "10_sacos_arica", 3f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "Krupp_1", "11_krupp_tarapaca", 1.4f),
+            ("Capitulo5_Alto_de_la_Alianza", "Krupp_Chileno_1", "12_krupp_alto_de_la_alianza", 1.4f),
+            ("Capitulo8_Reductos_de_Miraflores", "Pieza_del_Reducto_1", "13_pieza_miraflores", 1.4f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "Caceres_a_Caballo", "14_caceres_a_caballo", 1.2f),
+            ("Capitulo6_Morro_de_Arica", "Ugarte_a_Caballo", "15_ugarte_a_caballo", 1.2f),
         };
 
         public static void RunBatch()
@@ -39,9 +44,15 @@ namespace Pacifico.EditorTools
                     EditorSceneManager.OpenScene(GameBuilder.ScenePath(shot.scene), OpenSceneMode.Single);
                     GameObject target = GameObject.Find(shot.target);
                     if (target == null) throw new InvalidOperationException("No está " + shot.target + " en " + shot.scene);
+                    Debug.Log("[Pacífico] " + shot.target + ": Animation=" + target.GetComponentsInChildren<Animation>().Length +
+                              " Animator=" + target.GetComponentsInChildren<Animator>().Length);
                     Bounds bounds = ShipModelLibrary.LocalBounds(target, null);
                     float size = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
-                    Vector3 from = bounds.center + new Vector3(-0.8f, 0.45f, -1f).normalized * (size * shot.distance + 2f);
+                    // Los jinetes van entre casas: se les fotografía de costado y a ras de suelo.
+                    Vector3 direction = shot.target.Contains("Caballo")
+                        ? (target.transform.right + Vector3.up * 0.25f).normalized
+                        : new Vector3(-0.8f, 0.45f, -1f).normalized;
+                    Vector3 from = bounds.center + direction * (size * shot.distance + 2f);
                     ShipModelPreview.Shoot(folder, shot.photo, from, bounds.center, 50f);
                 }
                 Debug.Log("[Pacífico] Fotos del escenario guardadas en " + folder);

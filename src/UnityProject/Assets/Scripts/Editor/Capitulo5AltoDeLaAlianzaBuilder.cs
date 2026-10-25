@@ -171,6 +171,7 @@ namespace Pacifico.EditorTools
             barrelPivot.localPosition = new Vector3(0f, 0.95f, 0f);
             GameObject barrel = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Tubo_Krupp", barrelPivot, new Vector3(0f, 0f, 0.6f), new Vector3(0.14f, 0.6f, 0.14f), PrototypeSceneKit.Material("Bronce", Bronze), keepCollider: false);
             barrel.transform.localRotation = Quaternion.Euler(84f, 0f, 0f);
+            PropModelLibrary.DressFieldGun(root, barrelPivot); // modelo CC-BY de cañón de campaña
             var gun = root.gameObject.AddComponent<SquadArtillery>();
             gun.Configure(owner, barrelPivot, dust);
             return gun;

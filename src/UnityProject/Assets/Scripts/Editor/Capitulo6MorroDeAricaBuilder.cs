@@ -277,6 +277,7 @@ namespace Pacifico.EditorTools
                 PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Pata", rider, new Vector3(i % 2 == 0 ? -0.22f : 0.22f, 0.4f, i < 2 ? 0.8f : -0.8f), new Vector3(0.14f, 0.8f, 0.14f), horse, keepCollider: false);
             }
             PrototypeSceneKit.Primitive(PrimitiveType.Capsule, "Ugarte", rider, new Vector3(0f, 2.25f, -0.1f), new Vector3(0.45f, 0.55f, 0.45f), Mat("Uniforme_Oficial_Peru", new Color(0.12f, 0.12f, 0.2f)), keepCollider: false);
+            PropModelLibrary.DressHorse(rider); // modelo CC-BY de caballo animado
             // La bandera que se lleva consigo.
             PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Bandera_de_Ugarte", rider, new Vector3(0.4f, 3f, 0f), new Vector3(0.03f, 0.9f, 1.4f), Mat("Bandera_Rojo", new Color(0.78f, 0.1f, 0.12f)), keepCollider: false);
             ugarte = rider.gameObject.AddComponent<ScriptedRider>();
