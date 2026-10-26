@@ -164,6 +164,74 @@ namespace Pacifico.EditorTools
             return layer;
         }
 
+        /// <summary>
+        /// Material de hojas y ramitas: el color lleva la transparencia del mapa «alpha» de Poly Haven (se combinan una vez
+        /// en <c>&lt;id&gt;_diffalpha_2k.png</c>), recorte al 50 % y las dos caras visibles. Null si falta alguna textura.
+        /// </summary>
+        public static Material CutoutSurface(string id)
+        {
+            string alphaPath = Folder(id) + "/" + id + "_alpha_" + Resolution + ".png";
+            if (!File.Exists(alphaPath) || !File.Exists(TexturePath(id, "diff"))) return null;
+            string combinedPath = Folder(id) + "/" + id + "_diffalpha_" + Resolution + ".png";
+            if (!File.Exists(combinedPath))
+            {
+                foreach (string source in new[] { TexturePath(id, "diff"), alphaPath })
+                {
+                    if (!(AssetImporter.GetAtPath(source) is TextureImporter importer)) return null;
+                    if (importer.isReadable && importer.textureCompression == TextureImporterCompression.Uncompressed) continue;
+                    importer.isReadable = true;
+                    importer.textureCompression = TextureImporterCompression.Uncompressed;
+                    importer.SaveAndReimport();
+                }
+                var color = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath(id, "diff"));
+                var alpha = AssetDatabase.LoadAssetAtPath<Texture2D>(alphaPath);
+                if (color == null || alpha == null || color.width != alpha.width || color.height != alpha.height) return null;
+                Color32[] pixels = color.GetPixels32();
+                Color32[] mask = alpha.GetPixels32();
+                for (int i = 0; i < pixels.Length; i++) pixels[i].a = mask[i].r;
+                var combined = new Texture2D(color.width, color.height, TextureFormat.RGBA32, false);
+                combined.SetPixels32(pixels);
+                combined.Apply();
+                File.WriteAllBytes(combinedPath, combined.EncodeToPNG());
+                Object.DestroyImmediate(combined);
+                AssetDatabase.ImportAsset(combinedPath);
+                if (AssetImporter.GetAtPath(combinedPath) is TextureImporter imported)
+                {
+                    imported.alphaIsTransparency = true;
+                    imported.mipMapsPreserveCoverage = true; // las hojas no adelgazan a lo lejos
+                    imported.alphaTestReferenceValue = 0.5f;
+                    imported.SaveAndReimport();
+                }
+            }
+
+            string path = ProjectPaths.Materials + "/CC0_" + id + "_hojas.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader == null) shader = Shader.Find("Standard");
+                material = new Material(shader);
+                AssetDatabase.CreateAsset(material, path);
+            }
+            material.SetTexture(material.HasProperty("_BaseMap") ? "_BaseMap" : "_MainTex", LoadTexture(combinedPath, srgb: true, normalMap: false));
+            Texture2D normal = LoadTexture(TexturePath(id, "nor_gl"), srgb: false, normalMap: true);
+            if (normal != null && material.HasProperty("_BumpMap"))
+            {
+                material.SetTexture("_BumpMap", normal);
+                material.EnableKeyword("_NORMALMAP");
+            }
+            if (material.HasProperty("_AlphaClip")) material.SetFloat("_AlphaClip", 1f);
+            if (material.HasProperty("_Cutoff")) material.SetFloat("_Cutoff", 0.5f);
+            if (material.HasProperty("_Cull")) material.SetFloat("_Cull", 0f);
+            if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", 0.15f);
+            material.EnableKeyword("_ALPHATEST_ON");
+            material.SetOverrideTag("RenderType", "TransparentCutout");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+            material.doubleSidedGI = true;
+            EditorUtility.SetDirty(material);
+            return material;
+        }
+
         /// <summary>Instancia el modelo <paramref name="id"/> con su material, sin colisionadores. Null si no está.</summary>
         public static GameObject Model(string id, string name, Transform parent)
         {

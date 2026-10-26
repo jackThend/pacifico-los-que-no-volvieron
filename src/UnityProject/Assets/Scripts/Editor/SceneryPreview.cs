@@ -31,6 +31,12 @@ namespace Pacifico.EditorTools
             ("Capitulo8_Reductos_de_Miraflores", "Pieza_del_Reducto_1", "13_pieza_miraflores", 1.4f),
             ("Capitulo4_Quebrada_de_Tarapaca", "Caceres_a_Caballo", "14_caceres_a_caballo", 1.2f),
             ("Capitulo6_Morro_de_Arica", "Ugarte_a_Caballo", "15_ugarte_a_caballo", 1.2f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "Arbusto", "16_arbustos_tarapaca", 3f),
+            ("Capitulo5_Alto_de_la_Alianza", "Matorral", "17_matorral_alto_de_la_alianza", 3f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "Penasco_B", "18_penasco_tarapaca", 1.5f),
+            ("Capitulo3_Bahia_de_Pisagua", "Piedras", "19_piedras_pisagua", 2.5f),
+            ("Capitulo7_Canaverales_de_Canete", "Cana", "20_canaveral_canete", 2f),
+            ("Capitulo8_Reductos_de_Miraflores", "Ramas", "21_ramas_miraflores", 3f),
         };
 
         public static void RunBatch()
@@ -53,7 +59,7 @@ namespace Pacifico.EditorTools
                         ? (target.transform.right + Vector3.up * 0.25f).normalized
                         : new Vector3(-0.8f, 0.45f, -1f).normalized;
                     Vector3 from = bounds.center + direction * (size * shot.distance + 2f);
-                    ShipModelPreview.Shoot(folder, shot.photo, from, bounds.center, 50f);
+                    ShipModelPreview.Shoot(folder, shot.photo, from, bounds.center, 50f, 0.1f);
                 }
                 Debug.Log("[Pacífico] Fotos del escenario guardadas en " + folder);
                 EditorApplication.Exit(0);

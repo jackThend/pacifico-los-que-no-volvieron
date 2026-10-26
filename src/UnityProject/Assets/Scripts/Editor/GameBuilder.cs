@@ -83,6 +83,7 @@ namespace Pacifico.EditorTools
             SceneAtmosphere.ApplyAll();
             GroundDressing.ApplyAll();
             SeaDressing.ApplyAll();
+            NatureDressing.ApplyAll();
             BuildMenuScene();
             SetCampaignBuildSettings();
         }

@@ -39,3 +39,9 @@ concreto.
 | `rock_boulder_cracked` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Roca erosionada: laderas, riscos y el macizo del Morro | https://polyhaven.com/a/rock_boulder_cracked |
 | `brown_mud_dry` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Tierra seca de las chacras de Miraflores | https://polyhaven.com/a/brown_mud_dry |
 | `brown_mud_02` | Textura de suelo (más su color «aplanado», `_diffplano`, hecho con `tools/arte/aplanar_texturas.py`) | Tierra de cultivo del valle de Cañete | https://polyhaven.com/a/brown_mud_02 |
+| `wild_rooibos_bush` | Modelo | Matorral seco del desierto (como la tola y la brea de Atacama) | https://polyhaven.com/a/wild_rooibos_bush |
+| `dry_branches_medium_01` | Modelo | Ramas secas en el suelo | https://polyhaven.com/a/dry_branches_medium_01 |
+| `namaqualand_stones_01` | Modelo | Piedras sueltas | https://polyhaven.com/a/namaqualand_stones_01 |
+| `namaqualand_boulder_02` | Modelo | Peñascos | https://polyhaven.com/a/namaqualand_boulder_02 |
+| `namaqualand_boulder_04` | Modelo | Peñascos de las laderas | https://polyhaven.com/a/namaqualand_boulder_04 |
+| `shrub_04` | Modelo | Arbustos de los valles (Tarapacá, Cañete, Miraflores) | https://polyhaven.com/a/shrub_04 |
