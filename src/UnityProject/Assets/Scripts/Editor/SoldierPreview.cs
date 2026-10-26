@@ -61,6 +61,21 @@ namespace Pacifico.EditorTools
                     ShipModelPreview.Shoot(folder, "soldado_" + label + "_4_encarando", new Vector3(1.8f, 1.5f, z + 3.2f), new Vector3(1.8f, 1f, z), 45f, 0.1f);
                     ShipModelPreview.Shoot(folder, "soldado_" + label + "_5_espalda", new Vector3(-4.2f, 1.7f, z - 2.6f), new Vector3(-4.5f, 1.05f, z), 40f, 0.1f);
                 }
+                // Uniformes de cada unidad y civiles, con los colores de los capítulos.
+                var units = new (Faction faction, Color coat, Color trousers, Color cap, bool civilian, string label)[]
+                {
+                    (Faction.Chile, new Color(0.14f, 0.17f, 0.3f), new Color(0.55f, 0.18f, 0.14f), new Color(0.12f, 0.14f, 0.25f), false, "chileno"),
+                    (Faction.Peru, new Color(0.82f, 0.8f, 0.72f), new Color(0.78f, 0.76f, 0.68f), new Color(0.35f, 0.12f, 0.1f), false, "peruano de blanco"),
+                    (Faction.Bolivia, TacnaPrototypeBuilder.ColoradoRed, TacnaPrototypeBuilder.ColoradoTrim, TacnaPrototypeBuilder.ColoradoRed, false, "colorado"),
+                    (Faction.Peru, new Color(0.18f, 0.17f, 0.16f), new Color(0.35f, 0.33f, 0.3f), new Color(0.12f, 0.11f, 0.1f), true, "civil"),
+                    (Faction.Peru, new Color(0.42f, 0.4f, 0.36f), new Color(0.3f, 0.28f, 0.25f), new Color(0.72f, 0.62f, 0.4f), true, "culi"),
+                };
+                for (int i = 0; i < units.Length; i++)
+                {
+                    GameObject variant = SoldierModelLibrary.Prefab(units[i].faction, units[i].coat, units[i].trousers, units[i].cap, units[i].civilian);
+                    Pose(variant, new Vector3(-4f + i * 2f, 0f, 14f), units[i].civilian ? 0.9f : 0f, units[i].civilian ? 1f : 0f, 0f, 0f, 0f);
+                }
+                ShipModelPreview.Shoot(folder, "soldado_unidades", new Vector3(0f, 1.4f, 20.5f), new Vector3(0f, 0.95f, 14f), 45f, 0.1f);
                 Debug.Log("[Pacífico] Fotos de los soldados guardadas en " + folder);
                 EditorApplication.Exit(0);
             }

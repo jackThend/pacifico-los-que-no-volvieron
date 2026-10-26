@@ -137,13 +137,13 @@ namespace Pacifico.EditorTools
                 uniform = Mat("Uniforme_Chile", new Color(0.14f, 0.17f, 0.3f)), trousers = Mat("Pantalon_Chile", new Color(0.55f, 0.18f, 0.14f)),
                 skin = Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), kepi = Mat("Quepis_Chile", new Color(0.12f, 0.14f, 0.25f)),
             };
-            chileLook.model = SoldierModelLibrary.Prefab(Faction.Chile);
+            SoldierModelLibrary.Dress(chileLook, Faction.Chile);
             var peruLook = new SoldierLook
             {
                 uniform = Mat("Uniforme_Peru", new Color(0.82f, 0.8f, 0.72f)), trousers = Mat("Pantalon_Peru", new Color(0.78f, 0.76f, 0.68f)),
                 skin = Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), kepi = Mat("Quepis_Peru", new Color(0.35f, 0.12f, 0.1f)),
             };
-            peruLook.model = SoldierModelLibrary.Prefab(Faction.Peru);
+            SoldierModelLibrary.Dress(peruLook, Faction.Peru);
 
             var director = new GameObject("Director_Capitulo4").AddComponent<TarapacaMissionDirector>();
             director.Configure(chapter, player, chassepot, comblain, bayonet, plaza, allies.ToArray(), chile.ToArray(), escort.ToArray(),
@@ -306,15 +306,32 @@ namespace Pacifico.EditorTools
             GameObject drum = PrototypeSceneKit.Primitive(PrimitiveType.Cylinder, "Tambor", root, new Vector3(0.55f, 0.2f, 0.2f), new Vector3(0.4f, 0.18f, 0.4f), Mat("Tambor", new Color(0.7f, 0.15f, 0.12f)), keepCollider: false);
             drum.transform.localRotation = Quaternion.Euler(0f, 0f, 80f);
             var drummer = root.gameObject.AddComponent<WoundedDrummer>();
+            // Con modelo: el tamborcillo chileno sentado con la espalda contra la tapia (que está a 0,8 m delante de la
+            // figura) y las piernas hacia el camino, sin fusil; las primitivas quedan ocultas.
+            SoldierModelLibrary.Attach(figure, SoldierModelLibrary.Prefab(Faction.Chile, new Color(0.14f, 0.17f, 0.3f), new Color(0.55f, 0.18f, 0.14f),
+                                                                          new Color(0.12f, 0.14f, 0.25f), civilian: true),
+                                       SoldierFigure.Rest.Seated, new[] { "Torso", "Cabeza", "Piernas" }, 0.9f, offset: new Vector3(0f, 0f, 0.5f), yaw: 180f);
 
             column = new GameObject("Columna_hacia_Arica").transform;
             column.SetParent(world, false);
             column.position = new Vector3(-5f, 0f, -135f);
             // La columna: soldados en fila en el camino (decorado, esperan).
             Material uniform = Mat("Uniforme_Peru", new Color(0.82f, 0.8f, 0.72f));
+            // Con modelo: infantes peruanos de blanco, en fila hacia Arica (de espaldas al pueblo).
+            GameObject marching = SoldierModelLibrary.Prefab(Faction.Peru, new Color(0.82f, 0.8f, 0.72f), new Color(0.78f, 0.76f, 0.68f), new Color(0.35f, 0.12f, 0.1f));
             for (int i = 0; i < 12; i++)
             {
-                PrototypeSceneKit.Primitive(PrimitiveType.Capsule, "Columna_" + (i + 1), column, new Vector3((i % 2) * 1.2f - 0.6f, 0.9f, -i * 1.4f), new Vector3(0.46f, 0.85f, 0.46f), uniform, keepCollider: false);
+                var at = new Vector3((i % 2) * 1.2f - 0.6f, 0f, -i * 1.4f);
+                if (marching != null)
+                {
+                    var soldier = (GameObject)PrefabUtility.InstantiatePrefab(marching);
+                    soldier.name = "Columna_" + (i + 1);
+                    soldier.transform.SetParent(column, false);
+                    soldier.transform.localPosition = at;
+                    soldier.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                    continue;
+                }
+                PrototypeSceneKit.Primitive(PrimitiveType.Capsule, "Columna_" + (i + 1), column, at + Vector3.up * 0.9f, new Vector3(0.46f, 0.85f, 0.46f), uniform, keepCollider: false);
             }
             return drummer;
         }
@@ -333,6 +350,10 @@ namespace Pacifico.EditorTools
             PrototypeSceneKit.Primitive(PrimitiveType.Capsule, "Jinete", rider, new Vector3(0f, 2.25f, -0.1f), new Vector3(0.45f, 0.55f, 0.45f), Mat("Uniforme_Oficial_Peru", new Color(0.12f, 0.12f, 0.2f)), keepCollider: false);
             PrototypeSceneKit.Primitive(PrimitiveType.Sphere, "Cabeza_Jinete", rider, new Vector3(0f, 2.95f, -0.1f), Vector3.one * 0.24f, Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), keepCollider: false);
             PropModelLibrary.DressHorse(rider); // modelo CC-BY de caballo animado
+            // Cáceres con modelo: oficial peruano de azul oscuro, a caballo y sin fusil.
+            Color officer = new Color(0.12f, 0.12f, 0.2f);
+            SoldierModelLibrary.Attach(rider, SoldierModelLibrary.Prefab(Faction.Peru, officer, officer, officer, civilian: true),
+                                       SoldierFigure.Rest.Mounted, new[] { "Jinete", "Cabeza_Jinete" }, seatHeight: 1.42f, offset: new Vector3(0f, 0f, -0.15f));
             rider.gameObject.AddComponent<ScriptedRider>().Configure(new[]
             {
                 new Vector3(-10f, 0f, 40f), plaza + new Vector3(-4f, 0f, 6f), plaza + new Vector3(6f, 0f, -4f), new Vector3(20f, 0f, -40f),

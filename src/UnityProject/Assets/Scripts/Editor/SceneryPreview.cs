@@ -44,6 +44,9 @@ namespace Pacifico.EditorTools
             ("Capitulo8_Reductos_de_Miraflores", "Tapia_1", "26_tapia_miraflores", 1f),
             ("Capitulo4_Quebrada_de_Tarapaca", "wine_barrel_01", "27_barril_tarapaca", 4f),
             ("Capitulo4_Quebrada_de_Tarapaca", "painted_wooden_bench", "28_banco_tarapaca", 3f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "Tambor_Herido", "29_tamborcillo_tarapaca", 1.2f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "Columna_hacia_Arica", "30_columna_peruana", 0.5f),
+            ("Capitulo6_Morro_de_Arica", "Bolognesi", "31_bolognesi_arica", 1.5f),
         };
 
         public static void RunBatch()
@@ -64,7 +67,9 @@ namespace Pacifico.EditorTools
                     // Los jinetes van entre casas: se les fotografía de costado y a ras de suelo.
                     Vector3 direction = shot.target.Contains("Caballo")
                         ? (target.transform.right + Vector3.up * 0.25f).normalized
-                        : new Vector3(-0.8f, 0.45f, -1f).normalized;
+                        : shot.target.Contains("Tambor")
+                            ? (-target.transform.forward + Vector3.up * 0.5f).normalized // de frente: está de espaldas a una tapia
+                            : new Vector3(-0.8f, 0.45f, -1f).normalized;
                     Vector3 from = bounds.center + direction * (size * shot.distance + 2f);
                     ShipModelPreview.Shoot(folder, shot.photo, from, bounds.center, 50f, 0.1f);
                 }

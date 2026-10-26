@@ -128,13 +128,14 @@ namespace Pacifico.EditorTools
                 uniform = Mat("Uniforme_Chile", new Color(0.14f, 0.17f, 0.3f)), trousers = Mat("Pantalon_Chile", new Color(0.55f, 0.18f, 0.14f)),
                 skin = Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), kepi = Mat("Quepis_Chile", new Color(0.12f, 0.14f, 0.25f)),
             };
-            chileLook.model = SoldierModelLibrary.Prefab(Faction.Chile);
+            SoldierModelLibrary.Dress(chileLook, Faction.Chile);
             // Los defensores de Lima: ropa civil (levitas, chalecos), no uniformes.
             var civilLook = new SoldierLook
             {
                 uniform = Mat("Levita", new Color(0.18f, 0.17f, 0.16f)), trousers = Mat("Pantalon_Civil", new Color(0.35f, 0.33f, 0.3f)),
                 skin = Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), kepi = Mat("Sombrero", new Color(0.25f, 0.22f, 0.18f)),
             };
+            SoldierModelLibrary.Dress(civilLook, Faction.Peru, civilian: true);
 
             var director = new GameObject("Director_Capitulo8").AddComponent<MirafloresMissionDirector>();
             director.Configure(chapter, epilogue, player, comblain, remington, bayonet, prologue, squad.ToArray(), gardenPosts.ToArray(),
@@ -284,6 +285,10 @@ namespace Pacifico.EditorTools
             PrototypeSceneKit.Primitive(PrimitiveType.Sphere, "Cabeza", boy.transform, new Vector3(0f, 0.85f, 0f), Vector3.one * 0.2f, Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), keepCollider: false);
             GameObject rifle = PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Fusil_Descargado", boy.transform, new Vector3(0.1f, 0.5f, 0.15f), new Vector3(0.05f, 0.05f, 1.2f), Mat("Corteza", Bark), keepCollider: false);
             rifle.transform.localRotation = Quaternion.Euler(-70f, 0f, 0f);
+            // Con modelo: un muchacho de levita, sentado con el fusil descargado a su lado.
+            SoldierModelLibrary.Attach(boy.transform, SoldierModelLibrary.Prefab(Faction.Peru, new Color(0.18f, 0.17f, 0.16f), new Color(0.35f, 0.33f, 0.3f),
+                                                                                 new Color(0.12f, 0.11f, 0.1f), civilian: true),
+                                       SoldierFigure.Rest.Seated, new[] { "Cuerpo", "Cabeza" }, 0.82f);
             boy.SetActive(false);
             return boy;
         }

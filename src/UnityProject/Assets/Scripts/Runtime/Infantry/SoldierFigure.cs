@@ -40,6 +40,22 @@ namespace Pacifico.Infantry
         [SerializeField] private Transform[] bones = new Transform[BoneCount];
         [SerializeField] private Transform rifle;
         [SerializeField] private Renderer body;
+        /// <summary>
+        /// Prenda de cada submalla del cuerpo (0 resto, 1 casaca, 2 pantalón, 3 quepis, 4 vivos del uniforme): para teñir
+        /// uniformes y vestir civiles.
+        /// </summary>
+        [SerializeField] private int[] uniformParts = new int[0];
+
+        public const int PartCoat = 1, PartTrousers = 2, PartCap = 3, PartFacings = 4;
+
+        /// <summary>Postura de fondo de los personajes de escena: de pie (soldados), a caballo o sentado en el suelo.</summary>
+        public enum Rest { Standing, Mounted, Seated }
+
+        [SerializeField] private Rest rest = Rest.Standing;
+
+        /// <summary>Lo llama el editor al colocar un personaje a caballo o sentado.</summary>
+        public void SetRest(Rest value) => rest = value;
+        public int[] UniformParts => uniformParts;
 
         /// <summary>1 para encarar el fusil, 0 para llevarlo terciado al pecho; la figura pasa de uno a otro en ~0,35 s.</summary>
         public float AimTarget { get; set; }
@@ -55,11 +71,12 @@ namespace Pacifico.Infantry
         private Transform _mover;
 
         /// <summary>Lo llama el editor al crear el modelo con esqueleto.</summary>
-        public void Setup(Transform[] skeleton, Transform rifleModel, Renderer skin)
+        public void Setup(Transform[] skeleton, Transform rifleModel, Renderer skin, int[] parts)
         {
             bones = skeleton;
             rifle = rifleModel;
             body = skin;
+            uniformParts = parts ?? new int[0];
         }
 
         /// <summary>
@@ -131,7 +148,8 @@ namespace Pacifico.Infantry
             Bind();
             if (!_ready) return;
             float stand = (1f - kneel) * (1f - prone);
-            float swing = Mathf.Clamp(gait, 0f, 1.8f) * stand;
+            // A caballo o sentado no se dan pasos (el caballo lleva al jinete).
+            float swing = rest == Rest.Standing ? Mathf.Clamp(gait, 0f, 1.8f) * stand : 0f;
             float s = Mathf.Sin(phase), c = Mathf.Cos(phase);
 
             foreach (Transform b in bones) b.localRotation = Quaternion.identity;
@@ -158,6 +176,28 @@ namespace Pacifico.Infantry
             Get(Bone.RightLowerLeg).localRotation = Quaternion.Euler(rightKnee, 0f, 0f);
             Get(Bone.LeftFoot).localRotation = Quaternion.Euler(-0.5f * leftKnee * (1f - kneel), 0f, 0f);
             Get(Bone.RightFoot).localRotation = Quaternion.Euler(Mathf.Lerp(-0.5f * rightKnee, -60f, kneel), 0f, 0f);
+            if (rest == Rest.Mounted)
+            {
+                // A caballo: muslos abiertos sobre el lomo y rodillas dobladas hacia los estribos.
+                Get(Bone.LeftUpperLeg).localRotation = Quaternion.Euler(-45f, 0f, -24f);
+                Get(Bone.RightUpperLeg).localRotation = Quaternion.Euler(-45f, 0f, 24f);
+                Get(Bone.LeftLowerLeg).localRotation = Quaternion.Euler(65f, 0f, 0f);
+                Get(Bone.RightLowerLeg).localRotation = Quaternion.Euler(65f, 0f, 0f);
+                Get(Bone.LeftFoot).localRotation = Quaternion.Euler(-20f, 0f, 0f);
+                Get(Bone.RightFoot).localRotation = Quaternion.Euler(-20f, 0f, 0f);
+            }
+            else if (rest == Rest.Seated)
+            {
+                // Sentado en el suelo con la espalda apoyada: la cadera a ras de suelo y las piernas estiradas.
+                hipsOffset = new Vector3(0f, 0.16f - _hipsRest.y, 0.05f);
+                Get(Bone.Hips).localPosition = _hipsRest + hipsOffset;
+                Get(Bone.LeftUpperLeg).localRotation = Quaternion.Euler(-86f, 0f, -6f);
+                Get(Bone.RightUpperLeg).localRotation = Quaternion.Euler(-86f, 0f, 6f);
+                Get(Bone.LeftLowerLeg).localRotation = Quaternion.Euler(8f, 0f, 0f);
+                Get(Bone.RightLowerLeg).localRotation = Quaternion.Euler(8f, 0f, 0f);
+                Get(Bone.LeftFoot).localRotation = Quaternion.Euler(-30f, 0f, 0f);
+                Get(Bone.RightFoot).localRotation = Quaternion.Euler(-30f, 0f, 0f);
+            }
 
             // Torso: se inclina al avanzar; al encarar gira el hombro izquierdo hacia delante. Cuerpo a tierra se
             // alza un poco el pecho y la cabeza para ver por encima del arma.
@@ -167,6 +207,13 @@ namespace Pacifico.Infantry
             Get(Bone.Chest).localRotation = Quaternion.Euler(lean * 0.5f - 8f * prone, twist * 0.5f, 0f);
             Get(Bone.Neck).localRotation = Quaternion.Euler(-lean * 0.5f - 25f * prone, -twist * 0.6f, 0f);
             Get(Bone.Head).localRotation = Quaternion.Euler(8f * aim * (1f - prone) - 20f * prone, -twist * 0.3f, 0f);
+            if (rest == Rest.Seated) Get(Bone.Spine).localRotation = Quaternion.Euler(-14f, 0f, 0f) * Get(Bone.Spine).localRotation;
+
+            if (rifle == null || !rifle.gameObject.activeSelf)
+            {
+                HangArms(hipsOffset, Mathf.Min(swing, 1.5f) * s);
+                return;
+            }
 
             // Fusil: terciado al pecho, encarado al hombro o, cuerpo a tierra, junto a la cara.
             Vector3 grip = Vector3.Lerp(Vector3.Lerp(CarryGrip, AimGrip, aim), ProneGrip, prone);
@@ -192,6 +239,21 @@ namespace Pacifico.Infantry
                 Wrap(Get(Bone.RightHand), Get(Bone.RightLowerArm), -rifle.up);
                 Wrap(Get(Bone.LeftHand), Get(Bone.LeftLowerArm), -rifle.up);
             }
+        }
+
+        /// <summary>
+        /// Sin fusil (civiles): brazos colgando junto al cuerpo que se balancean al andar, cada uno al revés que su
+        /// pierna (<paramref name="swing"/> va de −1,5 a 1,5 con el paso).
+        /// </summary>
+        private void HangArms(Vector3 hipsOffset, float swing)
+        {
+            float palm = PalmM * transform.lossyScale.y;
+            Vector3 right = _chestRest + hipsOffset + new Vector3(0.22f, -0.5f, 0.05f + 0.16f * swing);
+            Vector3 left = _chestRest + hipsOffset + new Vector3(-0.22f, -0.5f, 0.05f - 0.16f * swing);
+            Reach(Get(Bone.RightUpperArm), Get(Bone.RightLowerArm), Get(Bone.RightHand), transform.TransformPoint(right),
+                  transform.TransformDirection(new Vector3(0.2f, -0.2f, -1f)), palm);
+            Reach(Get(Bone.LeftUpperArm), Get(Bone.LeftLowerArm), Get(Bone.LeftHand), transform.TransformPoint(left),
+                  transform.TransformDirection(new Vector3(-0.2f, -0.2f, -1f)), palm);
         }
 
         private static void Wrap(Transform hand, Transform forearm, Vector3 under)

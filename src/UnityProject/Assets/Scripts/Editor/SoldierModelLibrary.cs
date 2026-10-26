@@ -42,6 +42,10 @@ namespace Pacifico.EditorTools
             public float HipY, HipX, KneeY, AnkleY, ToeY, ToeZ;
             public float SpineY, ChestY, NeckY, HeadY;
             public float ShoulderX, ShoulderY, ElbowX, ElbowY, WristX, WristY, HandX, HandY;
+            /// <summary>Prenda de un triángulo (material, altura en fracción, hueso dominante): ver <see cref="SoldierFigure.PartCoat"/>.</summary>
+            public Func<string, float, SoldierFigure.Bone, int> Part = (material, y, bone) => 0;
+            /// <summary>Materiales del equipo militar que se quitan para vestir civiles (mochila, correaje, charreteras…).</summary>
+            public string[] Gear = new string[0];
         }
 
         // Puntos medidos sobre los GLB (vistas de frente y de perfil); valores de ajuste.
@@ -52,6 +56,12 @@ namespace Pacifico.EditorTools
             // El lote «Kit1» trae la mochila (detrás) y un fusil cogido por la derecha: el fusil se quita.
             Drop = (part, p) => part == "Kit1" && (p.z > 0.12f || p.z < -0.18f || Mathf.Abs(p.x) > 0.27f),
             Rifle = "fusil_martini_henry", RifleLengthM = 1.18f,
+            // Casaca y pantalón comparten material: se separan por hueso; el quepis, por altura en la cabeza.
+            Part = (material, y, bone) =>
+                material.StartsWith("Union_fig", StringComparison.Ordinal)
+                    ? (IsLeg(bone) && !bone.ToString().EndsWith("Foot", StringComparison.Ordinal) && y > 0.07f ? SoldierFigure.PartTrousers
+                       : !IsLeg(bone) && !bone.ToString().EndsWith("Hand", StringComparison.Ordinal) ? SoldierFigure.PartCoat : 0)
+                    : material.StartsWith("Head_hands", StringComparison.Ordinal) && y > 0.925f ? SoldierFigure.PartCap : 0,
             HipY = 0.52f, HipX = 0.06f, KneeY = 0.275f, AnkleY = 0.054f, ToeY = 0.02f, ToeZ = 0.07f,
             SpineY = 0.61f, ChestY = 0.72f, NeckY = 0.83f, HeadY = 0.88f,
             ShoulderX = 0.097f, ShoulderY = 0.8f, ElbowX = 0.216f, ElbowY = 0.692f, WristX = 0.324f, WristY = 0.592f, HandX = 0.39f, HandY = 0.514f,
@@ -63,6 +73,13 @@ namespace Pacifico.EditorTools
             Model = "soldado_frances_1870", Prefab = "Soldado_Peruano", HeightM = 1.8f, ForwardPart = "Eyeball1_1_Eyeball1_10_0",
             Drop = null,
             Rifle = "fusil_remington_rolling_block", RifleLengthM = 1.25f,
+            // Cada prenda es su propio material.
+            Part = (material, y, bone) =>
+                material.StartsWith("Jacket0", StringComparison.Ordinal) ? SoldierFigure.PartCoat
+                : material.StartsWith("Trousers", StringComparison.Ordinal) ? SoldierFigure.PartTrousers
+                : material.StartsWith("Cap0", StringComparison.Ordinal) ? SoldierFigure.PartCap
+                : material.StartsWith("Jacket1", StringComparison.Ordinal) ? SoldierFigure.PartFacings : 0,
+            Gear = new[] { "Cap1", "Epps", "Belt", "Blanket", "Knapsack", "Pouches", "Cross_strap" },
             HipY = 0.475f, HipX = 0.07f, KneeY = 0.225f, AnkleY = 0.05f, ToeY = 0.012f, ToeZ = 0.07f,
             SpineY = 0.57f, ChestY = 0.687f, NeckY = 0.838f, HeadY = 0.9f,
             ShoulderX = 0.113f, ShoulderY = 0.814f, ElbowX = 0.217f, ElbowY = 0.715f, WristX = 0.311f, WristY = 0.611f, HandX = 0.377f, HandY = 0.536f,
@@ -83,6 +100,8 @@ namespace Pacifico.EditorTools
         /// <summary>Rehace los prefabs de todos los bandos (al reconstruir la campaña, para recoger cambios de ajuste).</summary>
         public static void RebuildAll()
         {
+            Variants.Clear();
+            AssetDatabase.DeleteAsset(Folder + "/Variantes");
             Build(Chilean);
             Build(Peruvian);
         }
@@ -121,6 +140,7 @@ namespace Pacifico.EditorTools
                 Transform[] bones = CreateSkeleton(root.transform, fit);
                 BoneWeight[] weights = Weigh(mesh.vertices, fit, bones, root.transform);
                 mesh.boneWeights = weights;
+                int[] parts = SplitParts(mesh, merged.Materials, weights, fit, out List<Material> partMaterials);
                 var bindposes = new Matrix4x4[bones.Length];
                 for (int i = 0; i < bones.Length; i++) bindposes[i] = bones[i].worldToLocalMatrix * root.transform.localToWorldMatrix;
                 mesh.bindposes = bindposes;
@@ -133,7 +153,7 @@ namespace Pacifico.EditorTools
                 var skin = new GameObject("Cuerpo").AddComponent<SkinnedMeshRenderer>();
                 skin.transform.SetParent(root.transform, false);
                 skin.sharedMesh = mesh;
-                skin.sharedMaterials = merged.Materials.ToArray();
+                skin.sharedMaterials = partMaterials.ToArray();
                 skin.bones = bones;
                 skin.rootBone = bones[(int)SoldierFigure.Bone.Hips];
                 skin.updateWhenOffscreen = false;
@@ -144,7 +164,7 @@ namespace Pacifico.EditorTools
                 skin.localBounds = local;
 
                 Transform rifle = CreateRifle(root.transform, fit);
-                root.AddComponent<SoldierFigure>().Setup(bones, rifle, skin);
+                root.AddComponent<SoldierFigure>().Setup(bones, rifle, skin, parts);
                 var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath(fit));
                 Debug.Log("[Pacífico] Soldado con esqueleto: " + PrefabPath(fit) + " (" + mesh.vertexCount + " vértices, " + TriangleCount(mesh) + " triángulos)");
                 return prefab;
@@ -153,6 +173,218 @@ namespace Pacifico.EditorTools
             {
                 Object.DestroyImmediate(root);
             }
+        }
+
+        /// <summary>
+        /// Separa cada submalla en prendas (casaca, pantalón, quepis y resto) para poder teñir el uniforme de cada
+        /// unidad sin tocar la cara, las manos, las botas ni el equipo. Devuelve la prenda de cada submalla nueva.
+        /// </summary>
+        private static int[] SplitParts(Mesh mesh, List<Material> materials, BoneWeight[] weights, Fit fit, out List<Material> partMaterials)
+        {
+            Vector3[] vertices = mesh.vertices;
+            var groups = new List<(int sub, int part, List<int> triangles)>();
+            for (int s = 0; s < mesh.subMeshCount; s++)
+            {
+                string name = materials[s] != null ? materials[s].name : "";
+                int[] triangles = mesh.GetTriangles(s);
+                var byPart = new Dictionary<int, List<int>>();
+                for (int t = 0; t < triangles.Length; t += 3)
+                {
+                    int a = triangles[t], b = triangles[t + 1], c = triangles[t + 2];
+                    float y = (vertices[a].y + vertices[b].y + vertices[c].y) / 3f / fit.HeightM;
+                    int part = fit.Part(name, y, (SoldierFigure.Bone)weights[a].boneIndex0);
+                    if (!byPart.TryGetValue(part, out List<int> list)) byPart[part] = list = new List<int>();
+                    list.Add(a);
+                    list.Add(b);
+                    list.Add(c);
+                }
+                foreach (KeyValuePair<int, List<int>> entry in byPart) groups.Add((s, entry.Key, entry.Value));
+            }
+            mesh.subMeshCount = groups.Count;
+            partMaterials = new List<Material>();
+            var parts = new int[groups.Count];
+            for (int i = 0; i < groups.Count; i++)
+            {
+                mesh.SetTriangles(groups[i].triangles, i, false);
+                partMaterials.Add(materials[groups[i].sub]);
+                parts[i] = groups[i].part;
+            }
+            return parts;
+        }
+
+        // --------------------------------------------------------------------------------------------------------
+        // Uniformes de cada unidad y civiles
+        // --------------------------------------------------------------------------------------------------------
+
+        private static readonly Dictionary<string, GameObject> Variants = new Dictionary<string, GameObject>();
+
+        /// <summary>
+        /// Pone en <paramref name="look"/> el soldado de ese bando con el uniforme teñido de sus colores (casaca, pantalón
+        /// y quepis). Con <paramref name="civilian"/>, el modelo peruano sin equipo militar ni fusil, con la ropa y la gorra de
+        /// esos colores (civiles de Miraflores, culíes de Cañete).
+        /// </summary>
+        public static void Dress(Pacifico.Campaign.SoldierLook look, Faction faction, bool civilian = false)
+        {
+            if (look == null) return;
+            look.model = Prefab(civilian ? Faction.Peru : faction, ColorOf(look.uniform), ColorOf(look.trousers), ColorOf(look.kepi), civilian);
+        }
+
+        /// <summary>Variante del soldado del bando con esos colores de uniforme (la crea si falta en esta construcción).</summary>
+        public static GameObject Prefab(Faction faction, Color coat, Color trousers, Color cap, bool civilian = false)
+        {
+            Fit fit = FitFor(faction);
+            GameObject basePrefab = Prefab(faction);
+            if (fit == null || basePrefab == null) return basePrefab;
+            string key = fit.Prefab + (civilian ? "_Civil_" : "_") + ColorUtility.ToHtmlStringRGB(coat) + ColorUtility.ToHtmlStringRGB(trousers) + ColorUtility.ToHtmlStringRGB(cap);
+            if (Variants.TryGetValue(key, out GameObject cached) && cached != null) return cached;
+
+            HistoricalDataAssetGenerator.EnsureFolder(Folder + "/Variantes");
+            string path = Folder + "/Variantes/" + key + ".prefab";
+            GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath(fit));
+            try
+            {
+                var figure = root.GetComponent<SoldierFigure>();
+                var skin = root.GetComponentInChildren<SkinnedMeshRenderer>();
+                int[] parts = figure.UniformParts;
+                Material[] original = skin.sharedMaterials;
+                var materials = (Material[])original.Clone();
+                for (int i = 0; i < materials.Length && i < parts.Length; i++)
+                {
+                    if (parts[i] == SoldierFigure.PartCoat) materials[i] = Recolor(original[i], coat);
+                    else if (parts[i] == SoldierFigure.PartTrousers) materials[i] = Recolor(original[i], trousers);
+                    else if (parts[i] == SoldierFigure.PartCap) materials[i] = Recolor(original[i], cap);
+                    // Los civiles no llevan los vivos de color del uniforme: van del color de la chaqueta.
+                    else if (parts[i] == SoldierFigure.PartFacings && civilian) materials[i] = Recolor(original[i], coat);
+                }
+                skin.sharedMaterials = materials;
+                if (civilian)
+                {
+                    // Sin equipo militar (la gorra se queda, teñida del color del sombrero): esas submallas quedan vacías.
+                    Mesh mesh = Object.Instantiate(skin.sharedMesh);
+                    mesh.name = key + "_Malla";
+                    for (int i = 0; i < mesh.subMeshCount && i < original.Length; i++)
+                    {
+                        string source = original[i] != null ? original[i].name : "";
+                        bool gear = false;
+                        foreach (string prefix in fit.Gear) gear |= source.StartsWith(prefix, StringComparison.Ordinal);
+                        if (gear) mesh.SetTriangles(new int[0], i, false);
+                    }
+                    string meshPath = Folder + "/Variantes/" + key + "_Malla.asset";
+                    AssetDatabase.DeleteAsset(meshPath);
+                    AssetDatabase.CreateAsset(mesh, meshPath);
+                    skin.sharedMesh = mesh;
+                    Transform rifle = root.transform.Find("Fusil");
+                    if (rifle != null) rifle.gameObject.SetActive(false);
+                }
+                GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
+                Variants[key] = prefab;
+                return prefab;
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        /// <summary>
+        /// Coloca en la escena un personaje con modelo bajo <paramref name="parent"/> (el tamborcillo, los oficiales, los
+        /// jinetes): oculta las primitivas que lo representaban (<paramref name="standIns"/>, por nombre) y fija su postura.
+        /// A caballo, la cadera queda a <paramref name="seatHeight"/> metros. Null si no hay modelo (se quedan las primitivas).
+        /// </summary>
+        public static GameObject Attach(Transform parent, GameObject prefab, SoldierFigure.Rest rest, string[] standIns,
+                                        float scale = 1f, float seatHeight = 0f, Vector3 offset = default, float yaw = 0f)
+        {
+            if (parent == null || prefab == null) return null;
+            foreach (Renderer renderer in parent.GetComponentsInChildren<Renderer>())
+            {
+                if (Array.IndexOf(standIns, renderer.gameObject.name) >= 0) renderer.enabled = false;
+            }
+            var model = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            model.name = "Modelo_Personaje";
+            model.transform.SetParent(parent, false);
+            model.transform.localScale = Vector3.one * scale;
+            Vector3 position = offset;
+            if (rest == SoldierFigure.Rest.Mounted)
+            {
+                Transform hips = model.transform.Find("Hips");
+                float hipsHeight = hips != null ? hips.localPosition.y * scale : 0.9f * scale;
+                position.y += seatHeight - hipsHeight;
+            }
+            model.transform.localPosition = position;
+            model.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            var figure = model.GetComponent<SoldierFigure>();
+            figure.SetRest(rest);
+            // La postura queda puesta en la escena (y en el primer fotograma); al jugar la recalcula cada fotograma.
+            figure.ApplyPose(0f, 0f, 0f, 0f, 0f);
+            return model;
+        }
+
+        private static Color ColorOf(Material material) => material != null ? material.color : Color.gray;
+
+        /// <summary>
+        /// Material de la prenda teñida: la tela original pasada a escala de grises (conserva pliegues, costuras y
+        /// desgaste) multiplicada por el color del uniforme.
+        /// </summary>
+        private static Material Recolor(Material source, Color color)
+        {
+            if (source == null) return null;
+            string path = Folder + "/Variantes/Tela_" + source.name + "_" + ColorUtility.ToHtmlStringRGB(color) + ".mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material != null) return material;
+            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) return source;
+            Texture texture = source.HasProperty("baseColorTexture") ? source.GetTexture("baseColorTexture") : source.mainTexture;
+            Texture2D gray = Gray(texture, source.name);
+            material = new Material(shader) { name = "Tela_" + source.name };
+            if (gray != null) material.SetTexture("_BaseMap", gray);
+            // La tela gris tiene el brillo medio en 0,5: el color se dobla para que el tono medio sea el del uniforme.
+            material.SetColor("_BaseColor", gray != null ? new Color(color.r * 2f, color.g * 2f, color.b * 2f, 1f) : color);
+            material.SetFloat("_Smoothness", 0.12f);
+            Texture normal = source.HasProperty("normalTexture") ? source.GetTexture("normalTexture") : null;
+            if (normal != null)
+            {
+                material.SetTexture("_BumpMap", normal);
+                material.EnableKeyword("_NORMALMAP");
+            }
+            AssetDatabase.CreateAsset(material, path);
+            return material;
+        }
+
+        /// <summary>Versión en escala de grises de la tela, con el brillo medio en 0,5 (se guarda como PNG).</summary>
+        private static Texture2D Gray(Texture source, string name)
+        {
+            if (source == null) return null;
+            string path = Folder + "/Variantes/Gris_" + name + ".png";
+            var existing = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            if (existing != null) return existing;
+            var target = RenderTexture.GetTemporary(source.width, source.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+            Graphics.Blit(source, target);
+            RenderTexture previous = RenderTexture.active;
+            RenderTexture.active = target;
+            var read = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
+            read.ReadPixels(new Rect(0, 0, source.width, source.height), 0, 0);
+            read.Apply();
+            RenderTexture.active = previous;
+            RenderTexture.ReleaseTemporary(target);
+            Color32[] pixels = read.GetPixels32();
+            double sum = 0;
+            var lum = new float[pixels.Length];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                lum[i] = (0.299f * pixels[i].r + 0.587f * pixels[i].g + 0.114f * pixels[i].b) / 255f;
+                sum += lum[i];
+            }
+            float mean = Mathf.Max(0.02f, (float)(sum / pixels.Length));
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                byte g = (byte)Mathf.Clamp(Mathf.RoundToInt(lum[i] / mean * 0.5f * 255f), 0, 255);
+                pixels[i] = new Color32(g, g, g, 255);
+            }
+            read.SetPixels32(pixels);
+            File.WriteAllBytes(path, read.EncodeToPNG());
+            Object.DestroyImmediate(read);
+            AssetDatabase.ImportAsset(path);
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
 
         /// <summary>Une las piezas del modelo, de pie en el origen, mirando a +Z y a su altura real; quita lo que sobra.</summary>

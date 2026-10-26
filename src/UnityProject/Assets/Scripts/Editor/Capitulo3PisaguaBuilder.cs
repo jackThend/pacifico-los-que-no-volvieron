@@ -157,8 +157,8 @@ namespace Pacifico.EditorTools
                 coat = PrototypeSceneKit.Material("Uniforme_Chile", T.ChileBlue),
                 trim = PrototypeSceneKit.Material("Quepis_Chile", T.ChileTrim),
             };
-            chile.model = SoldierModelLibrary.Prefab(Faction.Chile);
-            var alliedUniform = new PisaguaMissionDirector.Uniform { coat = allied, trim = trim, model = SoldierModelLibrary.Prefab(Faction.Peru) };
+            chile.model = SoldierModelLibrary.Prefab(Faction.Chile, chile.coat.color, chile.trim.color, chile.coat.color);
+            var alliedUniform = new PisaguaMissionDirector.Uniform { coat = allied, trim = trim, model = SoldierModelLibrary.Prefab(Faction.Peru, allied.color, trim.color, allied.color) };
             var director = new GameObject("Director_Capitulo3").AddComponent<PisaguaMissionDirector>();
             director.Configure(chapter, boats, forts, support, comblain, chile, nests, embankment, rally, counter, remington, alliedUniform,
                                tanks, engines, commander, plate, PlateCaption, viewer, dispatch);

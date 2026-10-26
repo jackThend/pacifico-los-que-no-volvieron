@@ -130,13 +130,13 @@ namespace Pacifico.EditorTools
                 uniform = Mat("Uniforme_Chile", new Color(0.14f, 0.17f, 0.3f)), trousers = Mat("Pantalon_Chile", new Color(0.55f, 0.18f, 0.14f)),
                 skin = Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), kepi = Mat("Quepis_Chile", new Color(0.12f, 0.14f, 0.25f)),
             };
-            chileLook.model = SoldierModelLibrary.Prefab(Faction.Chile);
+            SoldierModelLibrary.Dress(chileLook, Faction.Chile);
             var peruLook = new SoldierLook
             {
                 uniform = Mat("Uniforme_Peru", new Color(0.82f, 0.8f, 0.72f)), trousers = Mat("Pantalon_Peru", new Color(0.78f, 0.76f, 0.68f)),
                 skin = Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), kepi = Mat("Quepis_Peru", new Color(0.35f, 0.12f, 0.1f)),
             };
-            peruLook.model = SoldierModelLibrary.Prefab(Faction.Peru);
+            SoldierModelLibrary.Dress(peruLook, Faction.Peru);
 
             var director = new GameObject("Director_Capitulo6").AddComponent<AricaMissionDirector>();
             director.Configure(chapter, player, chassepot, comblain, bayonet, council, posts.ToArray(), spawns.ToArray(), parapet, summit,
@@ -258,6 +258,8 @@ namespace Pacifico.EditorTools
                 cannon.transform.rotation = Quaternion.Euler(0f, 0f, 80f);
             }
             var staff = new List<Transform>();
+            Color officerBlue = new Color(0.12f, 0.12f, 0.2f);
+            GameObject officerModel = SoldierModelLibrary.Prefab(Faction.Peru, officerBlue, officerBlue, officerBlue, civilian: true);
             for (int i = 0; i < 3; i++)
             {
                 var officer = new GameObject(i == 0 ? "Bolognesi" : "Oficial_" + i).transform;
@@ -265,6 +267,8 @@ namespace Pacifico.EditorTools
                 officer.SetPositionAndRotation(new Vector3(-54f + i * 1.6f, SummitY, 4f + i), Quaternion.Euler(0f, 90f, 0f));
                 PrototypeSceneKit.Primitive(PrimitiveType.Capsule, "Cuerpo", officer, new Vector3(0f, 0.9f, 0f), new Vector3(0.46f, 0.85f, 0.46f), Mat("Uniforme_Oficial_Peru", new Color(0.12f, 0.12f, 0.2f)), keepCollider: false);
                 PrototypeSceneKit.Primitive(PrimitiveType.Sphere, "Cabeza", officer, new Vector3(0f, 1.6f, 0f), Vector3.one * 0.24f, Mat("Piel", new Color(0.62f, 0.47f, 0.36f)), keepCollider: false);
+                // Con modelo: Bolognesi y sus oficiales, de azul oscuro y sin fusil.
+                SoldierModelLibrary.Attach(officer, officerModel, SoldierFigure.Rest.Standing, new[] { "Cuerpo", "Cabeza" });
                 staff.Add(officer);
             }
             officers = staff.ToArray();
@@ -280,6 +284,7 @@ namespace Pacifico.EditorTools
             }
             PrototypeSceneKit.Primitive(PrimitiveType.Capsule, "Ugarte", rider, new Vector3(0f, 2.25f, -0.1f), new Vector3(0.45f, 0.55f, 0.45f), Mat("Uniforme_Oficial_Peru", new Color(0.12f, 0.12f, 0.2f)), keepCollider: false);
             PropModelLibrary.DressHorse(rider); // modelo CC-BY de caballo animado
+            SoldierModelLibrary.Attach(rider, officerModel, SoldierFigure.Rest.Mounted, new[] { "Ugarte" }, seatHeight: 1.42f, offset: new Vector3(0f, 0f, -0.15f));
             // La bandera que se lleva consigo.
             PrototypeSceneKit.Primitive(PrimitiveType.Cube, "Bandera_de_Ugarte", rider, new Vector3(0.4f, 3f, 0f), new Vector3(0.03f, 0.9f, 1.4f), Mat("Bandera_Rojo", new Color(0.78f, 0.1f, 0.12f)), keepCollider: false);
             ugarte = rider.gameObject.AddComponent<ScriptedRider>();
