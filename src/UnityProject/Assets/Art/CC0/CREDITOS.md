@@ -45,3 +45,16 @@ concreto.
 | `namaqualand_boulder_02` | Modelo | Peñascos | https://polyhaven.com/a/namaqualand_boulder_02 |
 | `namaqualand_boulder_04` | Modelo | Peñascos de las laderas | https://polyhaven.com/a/namaqualand_boulder_04 |
 | `shrub_04` | Modelo | Arbustos de los valles (Tarapacá, Cañete, Miraflores) | https://polyhaven.com/a/shrub_04 |
+| `rough_plaster_broken` | Textura | Muros de adobe con revoque de barro (casas de Tarapacá, tapias de Cañete y Miraflores) | https://polyhaven.com/a/rough_plaster_broken |
+| `painted_plaster_wall` | Textura | Iglesia encalada de Tarapacá | https://polyhaven.com/a/painted_plaster_wall |
+| `stone_wall` | Textura | Pircas de piedra seca | https://polyhaven.com/a/stone_wall |
+| `coral_fort_wall_01` | Textura | Fuertes y parapetos de caliza de Arica | https://polyhaven.com/a/coral_fort_wall_01 |
+| `clay_roof_tiles_02` | Textura | Tejado del campanario | https://polyhaven.com/a/clay_roof_tiles_02 |
+| `weathered_brown_planks` | Textura | Tablones: portones, cajones, carros, cubiertas | https://polyhaven.com/a/weathered_brown_planks |
+| `rough_wood` | Textura | Madera basta: cureñas, ruedas, estacas | https://polyhaven.com/a/rough_wood |
+| `wine_barrel_01` | Modelo | Barriles junto a las casas | https://polyhaven.com/a/wine_barrel_01 |
+| `wooden_bucket_01` | Modelo | Cubos de madera | https://polyhaven.com/a/wooden_bucket_01 |
+| `ceramic_pot` | Modelo | Tinajas de barro | https://polyhaven.com/a/ceramic_pot |
+| `painted_wooden_bench` | Modelo | Bancos junto a las paredes | https://polyhaven.com/a/painted_wooden_bench |
+| `wooden_table_02` | Modelo | Mesas rústicas | https://polyhaven.com/a/wooden_table_02 |
+| `wicker_basket_01` | Modelo | Cestos | https://polyhaven.com/a/wicker_basket_01 |

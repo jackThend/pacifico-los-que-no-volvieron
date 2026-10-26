@@ -84,6 +84,7 @@ namespace Pacifico.EditorTools
             GroundDressing.ApplyAll();
             SeaDressing.ApplyAll();
             NatureDressing.ApplyAll();
+            BuildingDressing.ApplyAll();
             BuildMenuScene();
             SetCampaignBuildSettings();
         }

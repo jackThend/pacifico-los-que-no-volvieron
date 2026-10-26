@@ -37,6 +37,13 @@ namespace Pacifico.EditorTools
             ("Capitulo3_Bahia_de_Pisagua", "Piedras", "19_piedras_pisagua", 2.5f),
             ("Capitulo7_Canaverales_de_Canete", "Cana", "20_canaveral_canete", 2f),
             ("Capitulo8_Reductos_de_Miraflores", "Ramas", "21_ramas_miraflores", 3f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "Iglesia_Campanario", "22_iglesia_tarapaca", 1.3f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "Casa_-1_-2", "23_casa_tarapaca", 1.2f),
+            ("Capitulo7_Canaverales_de_Canete", "Casa_Hacienda", "24_hacienda_canete", 1f),
+            ("Capitulo6_Morro_de_Arica", "Fuerte_San_Jose", "25_fuerte_arica", 1f),
+            ("Capitulo8_Reductos_de_Miraflores", "Tapia_1", "26_tapia_miraflores", 1f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "wine_barrel_01", "27_barril_tarapaca", 4f),
+            ("Capitulo4_Quebrada_de_Tarapaca", "painted_wooden_bench", "28_banco_tarapaca", 3f),
         };
 
         public static void RunBatch()
