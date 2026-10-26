@@ -75,7 +75,19 @@ namespace Pacifico.EditorTools
             Set("m_ShadowDistance", p => p.floatValue = 200f);
             Set("m_ShadowCascadeCount", p => p.intValue = 4);
             Set("m_SoftShadowsSupported", p => p.boolValue = true);
+            // El mar lee la hondura de lo que hay bajo él (espuma de orilla, transparencia).
+            Set("m_RequireDepthTexture", p => p.boolValue = true);
             so.ApplyModifiedPropertiesWithoutUndo();
+
+            // Filtrado anisótropo en todos los niveles de calidad (los suelos se ven casi de canto). ProjectSettings no
+            // va en el repositorio, así que se fija aquí.
+            int level = QualitySettings.GetQualityLevel();
+            for (int i = 0; i < QualitySettings.names.Length; i++)
+            {
+                QualitySettings.SetQualityLevel(i, false);
+                if (QualitySettings.anisotropicFiltering == AnisotropicFiltering.Disable) QualitySettings.anisotropicFiltering = AnisotropicFiltering.Enable;
+            }
+            QualitySettings.SetQualityLevel(level, false);
 
             // La oclusión ambiental es una «renderer feature» de URP; su clase no es pública en todas las versiones.
             var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);

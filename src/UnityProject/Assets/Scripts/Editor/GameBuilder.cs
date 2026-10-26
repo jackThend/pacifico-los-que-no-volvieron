@@ -82,6 +82,7 @@ namespace Pacifico.EditorTools
             Capitulo8MirafloresBuilder.BuildScene();
             SceneAtmosphere.ApplyAll();
             GroundDressing.ApplyAll();
+            SeaDressing.ApplyAll();
             BuildMenuScene();
             SetCampaignBuildSettings();
         }
