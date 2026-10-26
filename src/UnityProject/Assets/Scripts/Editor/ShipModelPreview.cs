@@ -105,6 +105,8 @@ namespace Pacifico.EditorTools
 
             var target = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32);
             camera.targetTexture = target;
+            // Un primer dibujado para que Unity prepare los materiales nuevos (sin él, el primero puede salir blanco).
+            camera.Render();
             camera.Render();
             RenderTexture previous = RenderTexture.active;
             RenderTexture.active = target;

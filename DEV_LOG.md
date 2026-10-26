@@ -870,3 +870,10 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Verificación:** fotos con `SoldierPreview` (fila de unidades) y `SceneryPreview` (29–31, 14–15), Test Runner EditMode 430/430, `BuildAllScenesBatch` sin errores, `tools/verify/verify.sh` sin errores.
 * **Pendiente:** el muchacho de Miraflores no se ha fotografiado (empieza oculto); los soldados siguen sin animación de muerte propia (caen girando entera la figura).
 
+### 2026-10-25 · 7.x · Arte realista, parte 7: buques
+* **Hecho:** `Runtime/Naval/FunnelSmoke.cs` (humo de carbón oscuro que sube, se ensancha y queda en el mundo, arrastrado por la brisa a velocidad constante) y `Runtime/Naval/ShipWake.cs` (manchas de espuma planas sobre el agua en la popa y la proa, tantas como la velocidad del buque; parado no deja espuma). `Editor/ShipDressing.cs` (al final de `BuildAllScenes`, o `ShipDressing.ApplyAllBatch`) pone humo en cada «Chimenea» de los buques (no en las locomotoras), estela y ola de proa a cada `ShipController`, genera las texturas de bocanada y de espuma, y cambia en el modelo de la Esmeralda (fragata de Sketchfab) las velas blanco puro por lona cruda y las barandillas amarillas y remates naranjas por madera oscura. Iquique: 2 chimeneas, 4 estelas; Angamos: 4 chimeneas, 3 estelas.
+* **Comprobación:** `ShipDressing.PreviewBatch` hace navegar cada buque 25 s (simulando las partículas) y lo fotografía de costado y desde atrás. La primera foto de una tanda podía salir quemada en blanco (el primer fotograma con materiales nuevos): `ShipModelPreview.Shoot` dibuja ahora dos veces, como `AtmospherePreview`.
+* **Problema y solución:** con una fuerza de viento el humo se aceleraba sin fin y se tumbaba de lado → arrastre a velocidad constante.
+* **Verificación:** Test Runner EditMode 430/430, `BuildAllScenesBatch` sin errores, `tools/verify/verify.sh` sin errores.
+* **Con esto queda hecho el plan de arte realista por partes (1 a 7).** Pendiente: puertas y ventanas en los edificios, modelo de la Covadonga y de la Unión, y medir el rendimiento con todo el arte (`-pacifico-perf`, tarea 0.3).
+
