@@ -877,3 +877,17 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Verificación:** Test Runner EditMode 430/430, `BuildAllScenesBatch` sin errores, `tools/verify/verify.sh` sin errores.
 * **Con esto queda hecho el plan de arte realista por partes (1 a 7).** Pendiente: puertas y ventanas en los edificios, modelo de la Covadonga y de la Unión, y medir el rendimiento con todo el arte (`-pacifico-perf`, tarea 0.3).
 
+
+### 2026-10-28 · 0.3 · Rendimiento con todo el arte
+* **Medida:** juego compilado, 1920×1080, Intel Iris Xe (gráfica integrada), `-pacifico-perf -pacifico-perf-seconds 20`. Imágenes por segundo, antes → después: Prólogo 60 → 60; Iquique 34,3 → 59,7; Angamos 16,2 → 59,9; Pisagua 59,9 → 59,8; Tarapacá 28,6 → 52,2; Alto de la Alianza 26,1 → 54,1; Arica 56,9 → 59,1; Cañete 35 → 59,9; Miraflores 47,2 → 57,9. Build de 1288 MB.
+* **Arreglos:**
+  * `ShipDressing.CombineShipModels`: los modelos de buque de Sketchfab traían cientos o miles de piezas (2399 el Odin); se unen en una malla por modelo con una submalla por material (`Assets/Materials/Buques/Unido_*.asset`). En Angamos, sombras y buques costaban ~10 ms cada uno.
+  * `Runtime/Effects/AdaptiveQuality.cs`: en gráficas integradas empieza con resolución interna al 75 % y sin oclusión ambiental (SSAO); en cualquier equipo baja la resolución (mín. 60 %) si va por debajo de 52 imágenes/s y la sube (máx. 100 %) por encima de 58,5. Restaura el asset de URP al destruirse (valores de ajuste). `Pacifico.Runtime.asmdef` referencia URP tras `PACIFICO_URP`.
+  * Soldados: `SoldierModelLibrary.TriangleBudget = 16000` (quedan ~28 000 y ~29 000 triángulos, antes ~55 000); naturaleza simplificada una vez con `Simplify` y `LODGroup` de un nivel que la oculta de lejos; SSAO a media resolución; humo de chimenea a 3,5 bocanadas/s.
+  * `RenderPipelineSetup`: sin MSAA, sombras 2048 a 150 m con 2 cascadas.
+* **Escenas «corrompidas» en el juego compilado** («levelN is corrupted», caps. 3, 4, 6, 7 y 8): 13 MonoBehaviours vivían en archivos con otro nombre y quedaban como «script perdido» al guardar la escena. Cada clase va ahora en su propio archivo (`LandingCraft`, `CoastalFortBattery`, `NavalGunfireSupport`, `DemolitionObjective`, `TripwireMine`, `WoundedSoldier`, `InteractionPoint`, `DustBurst`, `PrologueCampaignLink`, `PerformanceProbe`, `ScriptedRider`, `DocumentDesk`, `SupplyDepot`). **Regla:** un MonoBehaviour por archivo, con el mismo nombre.
+* **Compilar el juego:** UnityLinker falla con la coma de la ruta del proyecto. Se compila desde el enlace `C:\Users\caosd\PacificoUnity` (→ `src\UnityProject`) con `GameBuilder.BuildWindowsPlayerOnlyBatch`; las escenas se reconstruyen desde la ruta original (los constructores leen el guion por ruta relativa).
+* **Medir:** `PerformanceSuite` admite `-pacifico-perf-seconds N`, `-pacifico-perf-skip N`, `-pacifico-perf-scene Nombre` y `-pacifico-perf-sin particulas|mar|posproceso|sombras|agentes|soldados|naturaleza|ia` para ver qué cuesta; corre aunque la ventana pierda el foco.
+* **Descartado:** agrupado estático (static batching) de naturaleza y edificios: no mejoró (Tarapacá peor) y el build pasó de 1288 a 2024 MB.
+* **Verificación:** Test Runner EditMode 430/430, `BuildAllScenesBatch` sin errores, `tools/verify/verify.sh` sin errores, juego compilado sin errores.
+* **Pendiente de 0.3:** jugar la campaña completa, voces y música.

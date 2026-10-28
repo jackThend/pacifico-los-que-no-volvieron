@@ -22,7 +22,7 @@ namespace Pacifico.EditorTools
         public const string Folder = ProjectPaths.ArtCCBY + "/Soldados";
 
         /// <summary>Triángulos como mucho por soldado: hay decenas a la vez en pantalla (valor de ajuste).</summary>
-        private const int TriangleBudget = 24000;
+        private const int TriangleBudget = 16000;
 
         /// <summary>
         /// Encaje de un modelo. Las alturas (Y) y separaciones laterales (X) van en fracción de la altura total, con
@@ -520,9 +520,10 @@ namespace Pacifico.EditorTools
                     {
                         remap[v] = positions.Count;
                         positions.Add(merged.Positions[v]);
-                        normals.Add(merged.Normals[v]);
-                        tangents.Add(merged.Tangents[v]);
-                        uvs.Add(merged.Uvs[v]);
+                        // Las mallas unidas de otros modelos pueden venir sin tangentes o sin coordenadas de textura.
+                        normals.Add(v < merged.Normals.Count ? merged.Normals[v] : Vector3.up);
+                        tangents.Add(v < merged.Tangents.Count ? merged.Tangents[v] : new Vector4(1f, 0f, 0f, 1f));
+                        uvs.Add(v < merged.Uvs.Count ? merged.Uvs[v] : Vector2.zero);
                     }
                     indices[i] = remap[v];
                 }
@@ -536,6 +537,7 @@ namespace Pacifico.EditorTools
             mesh.subMeshCount = submeshes.Count;
             for (int s = 0; s < submeshes.Count; s++) mesh.SetTriangles(submeshes[s], s, false);
             mesh.RecalculateBounds();
+            if (merged.Tangents.Count < merged.Positions.Count) mesh.RecalculateTangents();
             return mesh;
         }
 
@@ -551,7 +553,7 @@ namespace Pacifico.EditorTools
         /// (6.2 o posterior): se queda con el nivel adecuado de cada submalla y descarta los vértices sin usar. En
         /// versiones anteriores la malla queda entera.
         /// </summary>
-        private static Mesh Simplify(Mesh mesh, int budget)
+        internal static Mesh Simplify(Mesh mesh, int budget)
         {
             int total = TriangleCount(mesh);
             if (total <= budget) return mesh;
@@ -581,10 +583,12 @@ namespace Pacifico.EditorTools
                         // Los rangos de nivel pueden ir referidos al búfer entero o a la submalla: el nivel 0 lo aclara.
                         int offset = lods[0].indexStart == sub.indexStart ? 0 : sub.indexStart;
                         int target = Mathf.CeilToInt(sub.indexCount / 3f * share);
+                        // El nivel más cercano al objetivo (los niveles van a saltos grandes: quedarse siempre por encima
+                        // dejaba los soldados en ~55 000 triángulos con un objetivo de 24 000).
                         MeshLodRange chosen = lods[0];
                         foreach (MeshLodRange lod in lods)
                         {
-                            if (lod.indexCount / 3 >= target * 0.8f) chosen = lod;
+                            if (Mathf.Abs(lod.indexCount / 3f - target) < Mathf.Abs(chosen.indexCount / 3f - target)) chosen = lod;
                         }
                         for (int i = 0; i < chosen.indexCount; i++)
                         {

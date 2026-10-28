@@ -12,7 +12,7 @@ namespace Pacifico.EditorTools
     /// Naturaleza de cada capítulo: matorral seco, ramas, piedras sueltas y peñascos (CC0 de Poly Haven, de la
     /// colección de Namaqualand, un desierto parecido al de Atacama), arbustos verdes en los valles y matas de caña en
     /// Cañete (planta de maíz CC-BY de Sketchfab, de la misma familia y silueta). Cada modelo se une en una sola malla
-    /// con niveles de detalle (Unity 6.2+) y se reparte sobre el suelo, lejos de edificios y parapetos. Solo es decorado:
+    /// aligerada (deja de dibujarse cuando se ve diminuto) y se reparte sobre el suelo, lejos de edificios y parapetos. Solo es decorado:
     /// sin colisionadores, así que no cambia el NavMesh ni los disparos. Se aplica al final de
     /// <see cref="GameBuilder.BuildAllScenes"/>.
     /// </summary>
@@ -32,18 +32,22 @@ namespace Pacifico.EditorTools
             public string[] Hidden = new string[0];
             /// <summary>Escala base: el matorral de Namaqualand es más bajo que la tola y la brea de Atacama.</summary>
             public float Scale = 1f;
+            /// <summary>Triángulos como mucho (los escaneos traen decenas de miles; hay cientos a la vez).</summary>
+            public int Triangles = 5000;
+            /// <summary>Alto en pantalla (fracción) por debajo del cual deja de dibujarse.</summary>
+            public float CullHeight = 0.012f;
         }
 
         private static readonly Dictionary<string, Plant> Plants = new Dictionary<string, Plant>
         {
-            ["Matorral"] = new Plant { Name = "Matorral", Source = "wild_rooibos_bush", Cutout = true, Scale = 2.4f },
-            ["Ramas"] = new Plant { Name = "Ramas", Source = "dry_branches_medium_01", Scale = 2.0f },
-            ["Piedras"] = new Plant { Name = "Piedras", Source = "namaqualand_stones_01", Scale = 4f },
-            ["Penasco_A"] = new Plant { Name = "Penasco_A", Source = "namaqualand_boulder_02" },
-            ["Penasco_B"] = new Plant { Name = "Penasco_B", Source = "namaqualand_boulder_04" },
-            ["Arbusto"] = new Plant { Name = "Arbusto", Source = "shrub_04", Cutout = true, Scale = 4.5f },
+            ["Matorral"] = new Plant { Name = "Matorral", Source = "wild_rooibos_bush", Cutout = true, Scale = 2.4f, Triangles = 6000, CullHeight = 0.012f },
+            ["Ramas"] = new Plant { Name = "Ramas", Source = "dry_branches_medium_01", Scale = 2.0f, Triangles = 3000, CullHeight = 0.02f },
+            ["Piedras"] = new Plant { Name = "Piedras", Source = "namaqualand_stones_01", Scale = 4f, Triangles = 4000, CullHeight = 0.02f },
+            ["Penasco_A"] = new Plant { Name = "Penasco_A", Source = "namaqualand_boulder_02", Triangles = 6000, CullHeight = 0.006f },
+            ["Penasco_B"] = new Plant { Name = "Penasco_B", Source = "namaqualand_boulder_04", Triangles = 6000, CullHeight = 0.006f },
+            ["Arbusto"] = new Plant { Name = "Arbusto", Source = "shrub_04", Cutout = true, Scale = 4.5f, Triangles = 5000, CullHeight = 0.012f },
             // Caña de azúcar: la planta de maíz sin mazorcas, a 3,2 m (la caña del valle llega a 3–4 m).
-            ["Cana"] = new Plant { Name = "Cana", Source = "glb:cana_maiz", Height = 3.2f, Hidden = new[] { "Cylinder.001", "Cylinder.002", "Torus", "Torus.001" } },
+            ["Cana"] = new Plant { Name = "Cana", Source = "glb:cana_maiz", Height = 3.2f, Hidden = new[] { "Cylinder.001", "Cylinder.002", "Torus", "Torus.001" }, Triangles = 4000, CullHeight = 0.015f },
         };
 
         private sealed class Scatter
@@ -349,10 +353,10 @@ namespace Pacifico.EditorTools
                 for (int i = 0; i < vertices.Length; i++) vertices[i] = (vertices[i] + offset) * scale;
                 mesh.vertices = vertices;
                 mesh.RecalculateBounds();
-#if UNITY_6000_2_OR_NEWER
-                // Niveles de detalle: de lejos Unity dibuja versiones con menos triángulos.
-                MeshLodUtility.GenerateMeshLods(mesh, 8);
-#endif
+                // Se aligera una vez, guardando una malla nueva sin niveles de detalle de Unity 6.2: la build no sabía leer
+                // las mallas que los llevaban («level corrupted» al cargar Pisagua).
+                mesh = SoldierModelLibrary.Simplify(mesh, plant.Triangles);
+                mesh.name = plant.Name + "_Malla";
                 HistoricalDataAssetGenerator.EnsureFolder(PrefabFolder);
                 string meshPath = PrefabFolder + "/" + plant.Name + "_Malla.asset";
                 AssetDatabase.DeleteAsset(meshPath);
@@ -362,6 +366,10 @@ namespace Pacifico.EditorTools
                 go.AddComponent<MeshFilter>().sharedMesh = mesh;
                 var meshRenderer = go.AddComponent<MeshRenderer>();
                 meshRenderer.sharedMaterials = order.ToArray();
+                // De lejos, cuando ocupa muy poco en pantalla, deja de dibujarse.
+                var lod = go.AddComponent<LODGroup>();
+                lod.SetLODs(new[] { new LOD(plant.CullHeight, new Renderer[] { meshRenderer }) });
+                lod.RecalculateBounds();
                 GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, PrefabFolder + "/" + plant.Name + ".prefab");
                 Object.DestroyImmediate(go);
                 Debug.Log("[Pacífico] Modelo de naturaleza " + plant.Name + ": " + mesh.vertexCount + " vértices, alto " + mesh.bounds.size.y.ToString("0.00") + " m");

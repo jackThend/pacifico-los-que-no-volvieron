@@ -48,6 +48,12 @@ namespace Pacifico.EditorTools
 
         public static void BuildAllScenesBatch() => Batch(BuildAllScenes);
         public static void BuildWindowsBatch() => Batch(() => { BuildAllScenes(); BuildPlayer(BuildTarget.StandaloneWindows64); });
+        /// <summary>
+        /// Solo el ejecutable de Windows, con las escenas ya construidas (para medir el rendimiento). Ojo: el recortador
+        /// de código de Unity (UnityLinker) falla si la ruta del proyecto tiene comas; en ese caso, abrir el proyecto
+        /// desde un enlace de carpeta sin comas (<c>mklink /J</c>).
+        /// </summary>
+        public static void BuildWindowsPlayerOnlyBatch() => Batch(() => BuildPlayer(BuildTarget.StandaloneWindows64));
         public static void BuildLinuxBatch() => Batch(() => { BuildAllScenes(); BuildPlayer(BuildTarget.StandaloneLinux64); });
         public static void BuildMacBatch() => Batch(() => { BuildAllScenes(); BuildPlayer(BuildTarget.StandaloneOSX); });
 

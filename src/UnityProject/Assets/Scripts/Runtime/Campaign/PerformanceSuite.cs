@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -11,60 +12,6 @@ using UnityEngine.SceneManagement;
 
 namespace Pacifico.Campaign
 {
-    /// <summary>
-    /// Medidor de rendimiento en cualquier escena (F3): FPS, media, percentil 95 y 99, tirones y recolecciones del GC
-    /// de los últimos 10 s (<see cref="FrameStats"/>). Se instala solo al cargar el juego.
-    /// </summary>
-    public sealed class PerformanceProbe : MonoBehaviour
-    {
-        private readonly FrameStats _stats = new FrameStats(600);
-        private bool _visible;
-        private float _nextText;
-        private string _text = string.Empty;
-        private int _gcStart;
-        private GUIStyle _style;
-
-        public FrameStats Stats => _stats;
-
-        private static bool s_installed;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void Install()
-        {
-            // Sin FindObjectOfType (obsoleto en Unity 6): una marca estática basta, el objeto sobrevive a las escenas.
-            if (s_installed) return;
-            s_installed = true;
-            var go = new GameObject("Medidor_de_Rendimiento");
-            DontDestroyOnLoad(go);
-            go.AddComponent<PerformanceProbe>();
-        }
-
-        private void Start() => _gcStart = GC.CollectionCount(0);
-
-        private void Update()
-        {
-            _stats.Add(Time.unscaledDeltaTime);
-            if (GameInput.Pressed(GameKey.F3)) _visible = !_visible;
-            if (!_visible || Time.unscaledTime < _nextText) return;
-            _nextText = Time.unscaledTime + 0.5f;
-            var c = CultureInfo.InvariantCulture;
-            _text = _stats.MeanFps.ToString("0", c) + " FPS · media " + _stats.MeanMs.ToString("0.0", c) + " ms · p95 " + _stats.PercentileMs(95f).ToString("0.0", c) +
-                    " · p99 " + _stats.PercentileMs(99f).ToString("0.0", c) + " · tirones " + _stats.Hitches + " · GC " + (GC.CollectionCount(0) - _gcStart) +
-                    (_stats.MeetsTarget ? " · cumple 60 FPS" : " · NO cumple 60 FPS");
-        }
-
-        private void OnGUI()
-        {
-            if (!_visible) return;
-            if (_style == null)
-            {
-                _style = new GUIStyle(GUI.skin.box) { fontSize = 13, alignment = TextAnchor.MiddleLeft };
-                _style.normal.textColor = Color.white;
-            }
-            GUI.depth = -1000;
-            GUI.Box(new Rect(Screen.width * 0.5f - 300f, 6f, 600f, 26f), _text, _style);
-        }
-    }
 
     /// <summary>
     /// Batería de rendimiento de la build (ROADMAP 6.6): con <c>-pacifico-perf</c> en la línea de órdenes, carga cada
@@ -75,6 +22,12 @@ namespace Pacifico.Campaign
     {
         public const string Argument = "-pacifico-perf";
         public const string SecondsArgument = "-pacifico-perf-seconds";
+        /// <summary>Capítulos que se saltan al principio (para medir o diagnosticar uno concreto).</summary>
+        public const string SkipArgument = "-pacifico-perf-skip";
+        /// <summary>Medir solo esta escena (por nombre), esté o no en la campaña.</summary>
+        public const string SceneArgument = "-pacifico-perf-scene";
+        /// <summary>Apaga algo antes de medir, para saber cuánto cuesta: particulas, mar, posproceso, sombras o agentes.</summary>
+        public const string WithoutArgument = "-pacifico-perf-sin";
         private const float SettleSeconds = 4f;
 
         public static bool RequestedFromCommandLine() => Array.IndexOf(Environment.GetCommandLineArgs(), Argument) >= 0;
@@ -85,16 +38,82 @@ namespace Pacifico.Campaign
         {
             if (s_launched) return;
             s_launched = true;
+            // Que siga midiendo aunque la ventana pierda el foco (si no, el juego se pausa y la medida sale falseada).
+            Application.runInBackground = true;
             var go = new GameObject("Bateria_de_Rendimiento");
             DontDestroyOnLoad(go);
             go.AddComponent<PerformanceSuite>();
         }
 
-        private static float Seconds()
+        private static float Seconds() => Number(SecondsArgument, 60f);
+
+        private static string Text(string argument)
         {
             string[] args = Environment.GetCommandLineArgs();
-            int i = Array.IndexOf(args, SecondsArgument);
-            return i >= 0 && i + 1 < args.Length && float.TryParse(args[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out float s) ? s : 60f;
+            int i = Array.IndexOf(args, argument);
+            return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
+        }
+
+        private static T[] All<T>() where T : UnityEngine.Object
+        {
+#if UNITY_2023_1_OR_NEWER
+            return FindObjectsByType<T>();
+#else
+            return FindObjectsOfType<T>();
+#endif
+        }
+
+        /// <summary>Diagnóstico de rendimiento: apaga una familia de cosas de la escena recién cargada.</summary>
+        private static void Disable(string what)
+        {
+            if (string.IsNullOrEmpty(what)) return;
+            Debug.Log("[Pacífico][Rendimiento] Sin " + what);
+            switch (what)
+            {
+                case "particulas":
+                    foreach (ParticleSystem p in All<ParticleSystem>()) p.gameObject.SetActive(false);
+                    break;
+                case "mar":
+                    GameObject sea = GameObject.Find("Mar");
+                    if (sea != null) sea.GetComponent<Renderer>().enabled = false;
+                    break;
+                case "posproceso":
+                    foreach (Camera c in All<Camera>()) c.allowHDR = false;
+                    GameObject volume = GameObject.Find("Ambiente_Posproceso");
+                    if (volume != null) volume.SetActive(false);
+                    break;
+                case "sombras":
+                    QualitySettings.shadows = ShadowQuality.Disable;
+                    foreach (Light l in All<Light>()) l.shadows = LightShadows.None;
+                    break;
+                case "soldados":
+                    foreach (SkinnedMeshRenderer r in All<SkinnedMeshRenderer>()) r.enabled = false;
+                    break;
+                case "naturaleza":
+                    GameObject nature = GameObject.Find("Naturaleza");
+                    if (nature != null) nature.SetActive(false);
+                    break;
+                case "ia":
+                    foreach (MonoBehaviour b in All<MonoBehaviour>())
+                    {
+                        string ns = b.GetType().Namespace ?? "";
+                        if (ns == "Pacifico.Tactics" || ns == "Pacifico.Infantry") b.enabled = false;
+                    }
+                    break;
+                case "agentes":
+                    foreach (MonoBehaviour b in All<MonoBehaviour>())
+                    {
+                        if (b.GetType().Namespace == "Pacifico.Naval") b.enabled = false;
+                    }
+                    break;
+            }
+        }
+
+        private static float Number(string argument, float fallback)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            int i = Array.IndexOf(args, argument);
+            return i >= 0 && i + 1 < args.Length && float.TryParse(args[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out float s) ? s : fallback;
         }
 
         private IEnumerator Start()
@@ -102,12 +121,23 @@ namespace Pacifico.Campaign
             float seconds = Seconds();
             var report = new StringBuilder(FrameStats.CsvHeader).Append('\n');
             var stats = new FrameStats(Mathf.CeilToInt(seconds * 240f));
-            foreach (ChapterEntry chapter in CampaignCatalog.Playable)
+            int skip = Mathf.RoundToInt(Number(SkipArgument, 0f));
+            string[] args = Environment.GetCommandLineArgs();
+            int only = Array.IndexOf(args, SceneArgument);
+            string[] scenes = only >= 0 && only + 1 < args.Length
+                ? new[] { args[only + 1] }
+                : CampaignCatalog.Playable.Select(c => c.Scene).ToArray();
+            foreach (string scene in scenes)
             {
-                if (!Application.CanStreamedLevelBeLoaded(chapter.Scene)) continue;
-                yield return SceneManager.LoadSceneAsync(chapter.Scene);
+                if (skip-- > 0) continue;
+                if (!Application.CanStreamedLevelBeLoaded(scene)) continue;
+                Debug.Log("[Pacífico][Rendimiento] Cargando " + scene);
+                yield return SceneManager.LoadSceneAsync(scene);
+                string without = Text(WithoutArgument);
+                Disable(without);
                 float settle = Time.realtimeSinceStartup + SettleSeconds;
                 while (Time.realtimeSinceStartup < settle) yield return null;
+                Disable(without); // otra vez: lo que aparece después de cargar (soldados de las escuadras)
                 stats.Clear();
                 int gc = GC.CollectionCount(0);
                 float end = Time.realtimeSinceStartup + seconds;
@@ -116,7 +146,7 @@ namespace Pacifico.Campaign
                     yield return null;
                     stats.Add(Time.unscaledDeltaTime);
                 }
-                string row = stats.CsvRow(chapter.Scene, GC.CollectionCount(0) - gc);
+                string row = stats.CsvRow(scene, GC.CollectionCount(0) - gc);
                 report.Append(row).Append('\n');
                 Debug.Log("[Pacífico][Rendimiento] " + row);
             }

@@ -18,6 +18,15 @@ namespace Pacifico.EditorTools
     {
         private const string Folder = "Assets/Materials/Buques";
 
+        /// <summary>Modelos de buque de Sketchfab que se unen en una malla (ver <see cref="CombineShipModels"/>).</summary>
+        private static readonly string[] ShipModels =
+        {
+            ShipModelLibrary.RolfKrake, ShipModelLibrary.Constitution, ShipModelLibrary.Danmark, ShipModelLibrary.Odin, ShipModelLibrary.Boat,
+        };
+
+        /// <summary>Mallas unidas ya hechas en esta construcción (las de antes se rehacen por si cambió el modelo).</summary>
+        private static readonly HashSet<string> Built = new HashSet<string>();
+
         private static readonly string[] Scenes =
         {
             "Capitulo1_Rada_de_Iquique", "Capitulo2_Punta_Angamos", "Capitulo3_Bahia_de_Pisagua", "Capitulo6_Morro_de_Arica",
@@ -53,6 +62,7 @@ namespace Pacifico.EditorTools
 
         public static void ApplyAll()
         {
+            Built.Clear();
             HistoricalDataAssetGenerator.EnsureFolder(Folder);
             Material smoke = ParticleMaterial("Humo_Chimenea", PuffTexture());
             Material foam = ParticleMaterial("Espuma_Estela", FoamTexture());
@@ -75,7 +85,7 @@ namespace Pacifico.EditorTools
                     go.transform.SetParent(t.parent, true);
                     go.transform.SetPositionAndRotation(top + Vector3.up * 0.3f, Quaternion.Euler(-90f, 0f, 0f));
                     var funnel = go.AddComponent<FunnelSmoke>();
-                    funnel.Setup(smoke, 5f);
+                    funnel.Setup(smoke, 3.5f); // valor de ajuste: con 4 chimeneas a la vez, más humo pesaba en gráficas integradas
                     stacks++;
                 }
 
@@ -110,7 +120,9 @@ namespace Pacifico.EditorTools
                     recolored++;
                 }
 
-                Debug.Log("[Pacífico] Buques de " + sceneName + ": " + stacks + " chimeneas con humo, " + wakes + " estelas, " + recolored + " piezas recoloreadas");
+                int united = CombineShipModels();
+                Debug.Log("[Pacífico] Buques de " + sceneName + ": " + stacks + " chimeneas con humo, " + wakes + " estelas, " + recolored +
+                          " piezas recoloreadas, " + united + " modelos unidos");
                 EditorSceneManager.MarkSceneDirty(scene);
                 EditorSceneManager.SaveScene(scene);
             }
@@ -170,6 +182,87 @@ namespace Pacifico.EditorTools
                 Debug.LogException(exception);
                 EditorApplication.Exit(1);
             }
+        }
+
+        /// <summary>
+        /// Une las piezas de cada modelo de buque de Sketchfab (cientos o miles de mallas sueltas: 2399 el Odin) en una
+        /// malla por modelo con una submalla por material, y apaga las piezas sueltas. Se ve igual, pero en vez de una
+        /// llamada de dibujo por pieza (y otra por cada cascada de sombras) hay una por material: en una gráfica integrada
+        /// Angamos pasaba de 24 a ~35 imágenes por segundo solo con quitar las sombras. Las piezas ocultas (banderas
+        /// ajenas, etc.) no se incluyen. La malla unida se guarda como asset y se reutiliza para el mismo modelo.
+        /// </summary>
+        private static int CombineShipModels()
+        {
+            int combined = 0;
+            var roots = new HashSet<GameObject>();
+            foreach (MeshRenderer renderer in All<MeshRenderer>())
+            {
+                GameObject root = PrefabUtility.GetNearestPrefabInstanceRoot(renderer.gameObject);
+                if (root == null) continue;
+                string source = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(root);
+                if (string.IsNullOrEmpty(source) || !source.StartsWith(ShipModelLibrary.Root, System.StringComparison.Ordinal)) continue;
+                if (System.Array.IndexOf(ShipModels, Path.GetFileNameWithoutExtension(source)) < 0) continue;
+                roots.Add(root);
+            }
+            foreach (GameObject root in roots)
+            {
+                if (root.transform.Find("Modelo_Unido") != null) continue;
+                var groups = new Dictionary<Material, List<CombineInstance>>();
+                var order = new List<Material>();
+                var parts = new List<MeshRenderer>();
+                Matrix4x4 toRoot = root.transform.worldToLocalMatrix;
+                var signature = new System.Text.StringBuilder(Path.GetFileNameWithoutExtension(PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(root)));
+                foreach (MeshRenderer renderer in root.GetComponentsInChildren<MeshRenderer>())
+                {
+                    if (!renderer.enabled || !renderer.TryGetComponent(out MeshFilter filter) || filter.sharedMesh == null) continue;
+                    Material[] materials = renderer.sharedMaterials;
+                    for (int s = 0; s < filter.sharedMesh.subMeshCount; s++)
+                    {
+                        Material material = materials[Mathf.Min(s, materials.Length - 1)];
+                        if (material == null) continue;
+                        if (!groups.TryGetValue(material, out List<CombineInstance> list))
+                        {
+                            groups[material] = list = new List<CombineInstance>();
+                            order.Add(material);
+                        }
+                        list.Add(new CombineInstance { mesh = filter.sharedMesh, subMeshIndex = s, transform = toRoot * renderer.transform.localToWorldMatrix });
+                    }
+                    parts.Add(renderer);
+                    signature.Append('|').Append(renderer.name).Append(':').Append(materials.Length > 0 && materials[0] != null ? materials[0].name : "");
+                }
+                if (parts.Count < 2) continue;
+
+                string key = Path.GetFileNameWithoutExtension(PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(root)) + "_" +
+                             Hash128.Compute(signature.ToString()).ToString().Substring(0, 8);
+                string meshPath = Folder + "/Unido_" + key + ".asset";
+                var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+                if (mesh == null || !Built.Contains(meshPath))
+                {
+                    var pieces = new CombineInstance[order.Count];
+                    for (int i = 0; i < order.Count; i++)
+                    {
+                        var piece = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+                        piece.CombineMeshes(groups[order[i]].ToArray(), true, true);
+                        pieces[i] = new CombineInstance { mesh = piece, transform = Matrix4x4.identity };
+                    }
+                    var fresh = new Mesh { name = "Unido_" + key, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+                    fresh.CombineMeshes(pieces, false, false);
+                    foreach (CombineInstance piece in pieces) Object.DestroyImmediate(piece.mesh);
+                    fresh.RecalculateBounds();
+                    AssetDatabase.DeleteAsset(meshPath);
+                    AssetDatabase.CreateAsset(fresh, meshPath);
+                    Built.Add(meshPath);
+                    mesh = fresh;
+                }
+
+                var unido = new GameObject("Modelo_Unido");
+                unido.transform.SetParent(root.transform, false);
+                unido.AddComponent<MeshFilter>().sharedMesh = mesh;
+                unido.AddComponent<MeshRenderer>().sharedMaterials = order.ToArray();
+                foreach (MeshRenderer part in parts) part.enabled = false;
+                combined++;
+            }
+            return combined;
         }
 
         private static void Wake(Transform ship, string name, Vector3 local, Material foam, float beam, float seconds, float rate)

@@ -30,7 +30,7 @@ namespace Pacifico.Naval
             ParticleSystem.MainModule main = particles.main;
             main.loop = true;
             main.duration = 5f;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(10f, 16f);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(8f, 13f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(2f, 3.5f);
             main.startSize = new ParticleSystem.MinMaxCurve(1.6f, 2.6f);
             main.startRotation = new ParticleSystem.MinMaxCurve(0f, 2f * Mathf.PI);

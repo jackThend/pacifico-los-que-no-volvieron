@@ -55,8 +55,8 @@ namespace Pacifico.EditorTools
 
 #if PACIFICO_URP
         /// <summary>
-        /// Calidad de imagen para un juego de PC realista: HDR, antialiasing, sombras nítidas hasta 200 m en cuatro
-        /// cascadas y oclusión ambiental en pantalla (sombra en rincones y bajo los objetos). Se aplica siempre, también
+        /// Calidad de imagen para un juego de PC realista que también vaya fluido en gráficas integradas: HDR, sombras
+        /// hasta 150 m en dos cascadas y oclusión ambiental en pantalla (sombra en rincones y bajo los objetos). Se aplica siempre, también
         /// a un asset ya creado, para que los proyectos abiertos antes reciban los cambios.
         /// </summary>
         private static void ConfigureQuality(UniversalRenderPipelineAsset asset)
@@ -68,12 +68,14 @@ namespace Pacifico.EditorTools
                 if (p != null) apply(p);
             }
             Set("m_SupportsHDR", p => p.boolValue = true);
-            Set("m_MSAA", p => p.intValue = 4);
+            // Sin MSAA: el posproceso ya suaviza los bordes (SMAA) y el MSAA ×4 costaba mucho en gráficas integradas.
+            Set("m_MSAA", p => p.intValue = 1);
             Set("m_MainLightShadowsSupported", p => p.boolValue = true);
-            Set("m_MainLightShadowmapResolution", p => p.intValue = 4096);
+            Set("m_MainLightShadowmapResolution", p => p.intValue = 2048);
             Set("m_AdditionalLightShadowsSupported", p => p.boolValue = true);
-            Set("m_ShadowDistance", p => p.floatValue = 200f);
-            Set("m_ShadowCascadeCount", p => p.intValue = 4);
+            // Medido en una Intel Iris Xe (2026-10-27): 4 cascadas de 4096 a 200 m dejaban Angamos a 23 fps.
+            Set("m_ShadowDistance", p => p.floatValue = 150f);
+            Set("m_ShadowCascadeCount", p => p.intValue = 2);
             Set("m_SoftShadowsSupported", p => p.boolValue = true);
             // El mar lee la hondura de lo que hay bajo él (espuma de orilla, transparencia).
             Set("m_RequireDepthTexture", p => p.boolValue = true);
@@ -108,6 +110,23 @@ namespace Pacifico.EditorTools
                     rso.ApplyModifiedPropertiesWithoutUndo();
                 }
                 EditorUtility.SetDirty(renderer);
+            }
+            // Oclusión ambiental a media resolución y con menos muestras (lo más caro del posproceso en gráficas integradas).
+            if (renderer != null && ssao != null)
+            {
+                foreach (ScriptableRendererFeature feature in renderer.rendererFeatures)
+                {
+                    if (feature == null || feature.GetType() != ssao) continue;
+                    var settings = new SerializedObject(feature);
+                    SerializedProperty downsample = settings.FindProperty("m_Settings.Downsample");
+                    if (downsample != null) downsample.boolValue = true;
+                    SerializedProperty samples = settings.FindProperty("m_Settings.Samples");
+                    if (samples != null) samples.enumValueIndex = Mathf.Min(2, samples.enumNames.Length - 1); // baja
+                    SerializedProperty blur = settings.FindProperty("m_Settings.BlurQuality");
+                    if (blur != null) blur.enumValueIndex = Mathf.Min(1, blur.enumNames.Length - 1); // media
+                    settings.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(feature);
+                }
             }
             EditorUtility.SetDirty(asset);
         }
