@@ -20,6 +20,7 @@ namespace Pacifico.Campaign
             go.transform.position = position;
             go.transform.localScale = Vector3.one * 0.1f;
             go.AddComponent<DustBurst>()._size = size;
+            Audio.GameAudio.Play(Audio.Sfx.Explosion, position, Mathf.Clamp(size / 12f, 0.3f, 1f));
         }
 
         private void Update()

@@ -172,8 +172,28 @@ namespace Pacifico.Infantry
             // Deslizándose no hay pasos: el cabeceo se apaga (solo queda el alabeo por desplazamiento lateral).
             float stepSpeed = Motor.Stance == Stance.Sliding ? 0f : Motor.HorizontalSpeed;
             HeadBob.Step(stepSpeed, Motor.IsGrounded, aim01, input.MoveX, dt);
+            Footsteps(stepSpeed, dt);
             Recoil.Step(dt);
             ApplyCamera(aim01, dt);
+        }
+
+        private float _stride;
+
+        /// <summary>Un paso cada zancada (más larga al correr) mientras pisa suelo; de vez en cuando, el correaje.</summary>
+        private void Footsteps(float speed, float dt)
+        {
+            if (!Motor.IsGrounded || speed < 0.4f)
+            {
+                _stride = 0.6f;
+                return;
+            }
+            _stride += speed * dt;
+            float length = Motor.IsSprinting ? 1.9f : 1.35f;
+            if (_stride < length) return;
+            _stride -= length;
+            float loud = Motor.Stance == Stance.Crouching ? 0.5f : Motor.IsSprinting ? 1f : 0.8f;
+            Audio.GameAudio.PlayFlat(Audio.Sfx.Footstep, loud);
+            if (Motor.IsSprinting && Random.value < 0.35f) Audio.GameAudio.PlayFlat(Audio.Sfx.Gear, 0.8f);
         }
 
         private void UpdateLook()

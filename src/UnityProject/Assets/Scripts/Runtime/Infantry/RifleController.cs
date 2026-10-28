@@ -163,7 +163,12 @@ namespace Pacifico.Infantry
             // Correr o deslizarse detiene la manipulación del arma (se retoma al volver a caminar).
             // Bucle for sobre la lista: un foreach sobre IReadOnlyList encajonaría el enumerador en cada fotograma.
             IReadOnlyList<RifleEvent> events = Model.Step(dt, paused: handling);
-            for (int i = 0; i < events.Count; i++) CycleEvent?.Invoke(events[i]);
+            for (int i = 0; i < events.Count; i++)
+            {
+                RifleEventType type = events[i].Type;
+                if (type == RifleEventType.CaseEjected || type == RifleEventType.CartridgeChambered) Audio.GameAudio.PlayFlat(Audio.Sfx.Bolt, 0.8f);
+                CycleEvent?.Invoke(events[i]);
+            }
 
             _fps.AimBlocked = Model.BlocksAiming;
         }

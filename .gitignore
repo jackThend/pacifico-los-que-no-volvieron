@@ -100,3 +100,4 @@ sysinfo.txt
 # Máscaras URP generadas por el editor a partir de las texturas ARM (ArtLibrary)
 *_urp_mask_*.png
 *_urp_mask_*.png.meta
+tools/audio/escucha/

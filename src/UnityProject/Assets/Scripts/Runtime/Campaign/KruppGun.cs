@@ -86,6 +86,7 @@ namespace Pacifico.Campaign
         private void Shoot()
         {
             _recoil = 1f;
+            Audio.GameAudio.Play(Audio.Sfx.FieldGun, transform.position);
             float angle = (float)_random.NextDouble() * Mathf.PI * 2f;
             float r = Mathf.Sqrt((float)_random.NextDouble()) * targetRadius;
             Vector3 impact = targetCenter + new Vector3(Mathf.Cos(angle) * r, 0f, Mathf.Sin(angle) * r);

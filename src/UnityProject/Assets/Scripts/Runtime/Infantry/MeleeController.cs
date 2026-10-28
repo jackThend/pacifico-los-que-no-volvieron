@@ -202,6 +202,7 @@ namespace Pacifico.Infantry
             _parts.TryGetValue(hit.PartId, out Collider part);
             var point = new Vector3(hit.Point.X, hit.Point.Y, hit.Point.Z);
             var direction = new Vector3(hit.Direction.X, hit.Direction.Y, hit.Direction.Z);
+            Audio.GameAudio.Play(Audio.Sfx.Blade, point);
             target.ReceiveMelee(new MeleeStrike
             {
                 Point = point,

@@ -22,7 +22,11 @@ namespace Pacifico.Naval
             rate = puffsPerSecond;
         }
 
-        private void Awake() => Configure(GetComponent<ParticleSystem>(), material, rate, wind);
+        private void Awake()
+        {
+            Configure(GetComponent<ParticleSystem>(), material, rate, wind);
+            Audio.SoundLoop.Attach(gameObject, Audio.Sfx.Engine, 0.35f, 8f, 160f);
+        }
 
         public static void Configure(ParticleSystem particles, Material material, float rate, Vector3 wind)
         {

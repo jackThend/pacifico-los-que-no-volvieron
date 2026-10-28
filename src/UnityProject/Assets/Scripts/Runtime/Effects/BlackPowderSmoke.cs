@@ -77,6 +77,7 @@ namespace Pacifico.Effects
         /// </summary>
         public static bool Emit(Vector3 muzzle, Vector3 direction, float powderChargeG, Vector3 shooterVelocity)
         {
+            Audio.GameAudio.Play(Audio.Sfx.Rifle, muzzle);
             if (s_active == null) return false;
             s_active.EmitShot(muzzle, direction, powderChargeG, shooterVelocity);
             return true;

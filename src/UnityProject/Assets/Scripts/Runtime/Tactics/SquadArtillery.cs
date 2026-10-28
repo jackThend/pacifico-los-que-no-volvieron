@@ -111,6 +111,7 @@ namespace Pacifico.Tactics
             }
             if (target == null) return;
             _recoil = 1f;
+            Audio.GameAudio.Play(Audio.Sfx.FieldGun, transform.position);
 
             Vector3 impact = target.CenterOfMass() + new Vector3(Gaussian() * dispersionM, 0f, Gaussian() * dispersionM);
             if (Physics.Raycast(impact + Vector3.up * 80f, Vector3.down, out RaycastHit hit, 200f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))

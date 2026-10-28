@@ -100,6 +100,22 @@ namespace Pacifico.Infantry
 
             _distance += length;
             transform.position = end;
+            if (!_whizzed && length > 0f) Whizz(start, end);
+        }
+
+        private bool _whizzed;
+
+        /// <summary>Chasquido de la bala que pasa cerca del oído (una vez por bala, nunca la del propio jugador).</summary>
+        private void Whizz(Vector3 start, Vector3 end)
+        {
+            Vector3 ear = Audio.GameAudio.ListenerPosition;
+            if (float.IsNaN(ear.x) || (_shooter != null && Audio.GameAudio.ListenerBelongsTo(_shooter))) return;
+            Vector3 segment = end - start;
+            float t = Mathf.Clamp01(Vector3.Dot(ear - start, segment) / segment.sqrMagnitude);
+            Vector3 closest = start + segment * t;
+            if ((closest - ear).sqrMagnitude > 9f || (start - ear).sqrMagnitude < 25f) return;
+            _whizzed = true;
+            Audio.GameAudio.Play(Audio.Sfx.Flyby, closest);
         }
 
         private bool TryFirstHit(Vector3 start, Vector3 direction, float length, out RaycastHit best)

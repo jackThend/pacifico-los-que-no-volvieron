@@ -28,10 +28,17 @@ namespace Pacifico.Campaign
             startOnAwake = startNow;
         }
 
-        private void Awake() => Riding = startOnAwake;
+        private Audio.SoundLoop _hooves;
+
+        private void Awake()
+        {
+            Riding = startOnAwake;
+            _hooves = Audio.SoundLoop.Attach(gameObject, Audio.Sfx.Gallop, 0.8f, 6f, 160f, 0f);
+        }
 
         private void Update()
         {
+            if (_hooves != null) _hooves.Level = Riding ? 1f : 0f;
             if (!Riding) return;
             if (_index >= waypoints.Length)
             {

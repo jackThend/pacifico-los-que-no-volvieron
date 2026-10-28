@@ -141,14 +141,22 @@ namespace Pacifico.Campaign
                 stats.Clear();
                 int gc = GC.CollectionCount(0);
                 float end = Time.realtimeSinceStartup + seconds;
+                var heard = new System.Collections.Generic.HashSet<string>();
                 while (Time.realtimeSinceStartup < end)
                 {
                     yield return null;
                     stats.Add(Time.unscaledDeltaTime);
+                    if (Time.frameCount % 20 != 0) continue; // buscar fuentes cada fotograma falsearía la medida
+                    foreach (AudioSource source in All<AudioSource>())
+                    {
+                        if (source.isPlaying && source.clip != null && source.volume > 0f) heard.Add(source.clip.name);
+                    }
                 }
                 string row = stats.CsvRow(scene, GC.CollectionCount(0) - gc);
                 report.Append(row).Append('\n');
                 Debug.Log("[Pacífico][Rendimiento] " + row);
+                // Qué se ha oído: comprueba que el sonido funciona sin tener que escucharlo.
+                Debug.Log("[Pacífico][Rendimiento] Sonidos en " + scene + ": " + string.Join(", ", heard));
             }
             string path = Path.Combine(Application.persistentDataPath, "rendimiento_" + DateTime.Now.ToString("yyyyMMdd_HHmm", CultureInfo.InvariantCulture) + ".csv");
             File.WriteAllText(path, report.ToString());

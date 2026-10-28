@@ -11,6 +11,8 @@ namespace Pacifico.Naval
         {
             Quaternion direction = Quaternion.Euler(-launch.ElevationDeg, launch.AzimuthDeg, 0f);
             NavalShell shell = Object.Instantiate(prefab, origin, direction);
+            // Más fuerte cuanto mayor el calibre (el de 300 libras del Huáscar, a tope).
+            Audio.GameAudio.Play(Audio.Sfx.NavalGun, origin, Mathf.Clamp(launch.CaliberMm / 250f, 0.45f, 1f));
             shell.Launch(direction * Vector3.forward * launch.MuzzleVelocity + shipVelocity, launch.ShellMassKg, launch.CaliberMm, shooter);
             return shell;
         }

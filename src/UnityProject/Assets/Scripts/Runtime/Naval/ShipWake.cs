@@ -21,6 +21,7 @@ namespace Pacifico.Naval
         private ParticleSystem _particles;
         private Vector3 _lastPosition;
         private float _speed;
+        private Audio.SoundLoop _sound;
 
         public void Setup(Material foam, float shipBeam, float seconds, float rate)
         {
@@ -86,6 +87,8 @@ namespace Pacifico.Naval
             _speed = Mathf.Lerp(_speed, moved.magnitude / dt, 1f - Mathf.Exp(-dt * 3f));
             ParticleSystem.EmissionModule emission = _particles.emission;
             emission.rateOverTime = Mathf.Min(_speed, 15f) * ratePerMps;
+            if (_sound == null) _sound = Audio.SoundLoop.Attach(gameObject, Audio.Sfx.Wake, 0.55f, 15f, 350f, 0f);
+            _sound.Level = Mathf.Clamp01(_speed / 7f);
         }
     }
 }
