@@ -65,6 +65,10 @@ namespace Pacifico.Campaign
         private bool _letterOpened;
         private bool _recorded;
         private bool _newCollectible;
+        private MissionCheckpoint _resume;
+        private SurvivorGroup _guided;
+        private float _sunkAt = -1f;
+        private string _savedStage;
         private readonly List<SurvivorGroup> _survivors = new List<SurvivorGroup>();
 
         private readonly MissionHud _hud = new MissionHud();
@@ -100,6 +104,9 @@ namespace Pacifico.Campaign
         {
             GuionQuotes quotes = GuionQuotes.Extract(guionChapter, IquiqueChapter.ChapterHeading);
             _runner = new MissionRunner(IquiqueChapter.Build(quotes, survivorGroups));
+            _resume = CheckpointStore.Take(IquiqueChapter.Id);
+            if (!_runner.Resume(_resume)) _resume = null;
+            _savedStage = _runner.CurrentStage.Id;
 
             _esmeraldaDamage = esmeralda.GetComponent<ShipDamageController>();
             _huascarDamage = huascar.GetComponent<ShipDamageController>();
@@ -144,6 +151,8 @@ namespace Pacifico.Campaign
             GameObject shooter = impact.Hit.Shooter;
             if (shooter == huascar.gameObject)
             {
+                // Solo cuentan los del jugador en la torre: los de la IA en el acto I saltarían esa etapa al llegar a ella.
+                if (_perspective != P.HuascarTurret && _perspective != P.HuascarHelm) return;
                 _runner.Facts.Add(F.TurretHits);
                 if (impact.BelowWaterline) _runner.Facts.Add(F.WaterlineHits);
             }
@@ -155,8 +164,17 @@ namespace Pacifico.Campaign
 
         private void OnRammed(RamBow bow, ShipController victim, RamResult result)
         {
-            // Solo cuenta un espolonazo de verdad (RamModel.Critical), no un roce al maniobrar junto a ella.
-            if (victim != esmeralda || !result.Critical || Time.time - _lastRamTime < MinSecondsBetweenRams) return;
+            if (victim != esmeralda || Time.time - _lastRamTime < MinSecondsBetweenRams) return;
+            // Un roce no es un espolonazo (RamModel.Critical); en el acto I, cuenta como embestida esquivada.
+            if (!result.Critical)
+            {
+                if (_runner.CurrentStage.Id == S.Ram)
+                {
+                    _lastRamTime = Time.time;
+                    _runner.Facts.Add(F.RamsDodged);
+                }
+                return;
+            }
             _lastRamTime = Time.time;
             _runner.Facts.Add(F.Rams);
         }
@@ -170,6 +188,7 @@ namespace Pacifico.Campaign
 
         private void OnEsmeraldaSunk(ShipDamageController damage)
         {
+            _sunkAt = _runner.MissionTime;
             _runner.Facts.SetFlag(G.EsmeraldaSunk);
             SpawnSurvivors(esmeralda.transform.position);
         }
@@ -216,10 +235,18 @@ namespace Pacifico.Campaign
                 return;
             }
 
+            if (_resume != null) RestoreWorld();
             ProtectStory();
             ShipDamageState esmeraldaState = _esmeraldaDamage != null ? _esmeraldaDamage.State : null;
             // Hasta el tercer espolonazo, el guion la mantiene a flote (ShipDamageState.KeepAfloat).
             if (esmeraldaState != null && !_foundered) esmeraldaState.KeepAfloat = true;
+            // El Huáscar salió casi intacto de Iquique: los disparos del acto I no pueden hundirlo ni dejarlo sin máquina.
+            ShipDamageState huascarState = _huascarDamage != null ? _huascarDamage.State : null;
+            if (huascarState != null)
+            {
+                huascarState.KeepAfloat = true;
+                huascarState.OnlyStructuralDamage = true;
+            }
             if (_runner.Facts.Flag(G.FounderEsmeralda) && !_foundered && _esmeraldaDamage != null)
             {
                 _foundered = true;
@@ -227,6 +254,7 @@ namespace Pacifico.Campaign
             }
 
             _runner.Step(dt);
+            SaveCheckpointIfNew();
 
             string wanted = _runner.CurrentStage.Perspective;
             if (wanted != _perspective && _pendingPerspective == null)
@@ -250,6 +278,34 @@ namespace Pacifico.Campaign
             {
                 AdjustHuascarAI();
             }
+            if (_perspective == P.HuascarBridge) GuideToSurvivors();
+        }
+
+        /// <summary>Puntos de control: al pasar al Huáscar y al empezar el rescate.</summary>
+        private void SaveCheckpointIfNew()
+        {
+            string stage = _runner.CurrentStage.Id;
+            if (stage == _savedStage) return;
+            _savedStage = stage;
+            if (stage != S.Turret && stage != S.Survivors) return;
+            MissionCheckpoint checkpoint = MissionCheckpoint.Capture(_runner);
+            CheckpointStore.WriteShip(checkpoint, "esmeralda", esmeralda);
+            CheckpointStore.WriteShip(checkpoint, "huascar", huascar);
+            CheckpointStore.Save(checkpoint);
+        }
+
+        /// <summary>Primer fotograma tras volver a un punto de control: los buques en su sitio y, si tocaba, la Esmeralda a pique.</summary>
+        private void RestoreWorld()
+        {
+            MissionCheckpoint checkpoint = _resume;
+            _resume = null;
+            CheckpointStore.ReadShip(checkpoint, "esmeralda", esmeralda);
+            CheckpointStore.ReadShip(checkpoint, "huascar", huascar);
+            if (checkpoint.StageId == S.Survivors && _esmeraldaDamage != null)
+            {
+                _foundered = true;
+                _esmeraldaDamage.Founder();
+            }
         }
 
         /// <summary>
@@ -270,14 +326,44 @@ namespace Pacifico.Campaign
             }
         }
 
+        /// <summary>En el rescate, la marca lleva al grupo de náufragos más cercano que queda.</summary>
+        private void GuideToSurvivors()
+        {
+            if (hud == null) return;
+            SurvivorGroup nearest = null;
+            float best = float.PositiveInfinity;
+            foreach (SurvivorGroup group in _survivors)
+            {
+                if (group == null || group.Rescue.Rescued) continue;
+                float distance = SurvivorGroup.DistanceToHull(huascar, group.transform.position);
+                if (distance < best)
+                {
+                    best = distance;
+                    nearest = group;
+                }
+            }
+            if (nearest != null && nearest != _guided)
+            {
+                _guided = nearest;
+                hud.SetContacts(new NavalContact(nearest.transform, "Náufragos", false));
+            }
+            else if (nearest == null && _guided != null)
+            {
+                _guided = null;
+                hud.SetContacts();
+            }
+        }
+
         private void AdjustHuascarAI()
         {
             if (huascarAI == null) return;
             string stage = _runner.CurrentStage.Id;
             // Primer espolonazo a media máquina (así lo dio Grau); los siguientes, a toda fuerza.
             if (_perspective == P.EsmeraldaBattery) huascarAI.Mode = stage == S.Ram ? RammingMode.Ram : RammingMode.StandOff;
-            else if (_perspective == P.HuascarTurret) huascarAI.Mode = stage == S.ThirdRam ? RammingMode.Ram : RammingMode.StandOff;
-            huascarAI.RamOrder = stage == S.Ram ? EngineOrder.HalfAhead : EngineOrder.FullAhead;
+            else if (_perspective == P.HuascarTurret) huascarAI.Mode = RammingMode.StandOff;
+            else if (_perspective == P.HuascarHelm) huascarAI.Mode = RammingMode.Idle; // los espolonazos los da el jugador
+            // Grau dio el primero a media máquina; aquí, a toda: menos espera.
+            huascarAI.RamOrder = EngineOrder.FullAhead;
         }
 
         /// <summary>Traduce la perspectiva de la etapa a cámara, mandos e IA.</summary>
@@ -285,16 +371,22 @@ namespace Pacifico.Campaign
         {
             _perspective = perspective;
             bool battery = perspective == P.EsmeraldaBattery;
-            bool gunnery = perspective == P.HuascarTurret;
+            bool helm = perspective == P.HuascarHelm;
+            bool gunnery = perspective == P.HuascarTurret || helm;
             bool bridge = perspective == P.HuascarBridge;
             bool document = perspective == P.Document;
 
             if (gunner != null) gunner.PlayerActive = battery;
-            if (esmeraldaAI != null) esmeraldaAI.AutoFire = !battery; // en el acto II sigue disparando sola
-            esmeralda.PlayerControlled = false;
+            // Acto I: el jugador lleva el timón de la Esmeralda. Acto II: la IA la gobierna y sigue disparando sola.
+            if (esmeraldaAI != null)
+            {
+                esmeraldaAI.enabled = !battery;
+                esmeraldaAI.AutoFire = !battery;
+            }
+            esmeralda.PlayerControlled = battery;
             if (_esmeraldaDamage != null) _esmeraldaDamage.PlayerControlled = battery;
 
-            huascar.PlayerControlled = bridge;
+            huascar.PlayerControlled = bridge || helm;
             if (_huascarDamage != null) _huascarDamage.PlayerControlled = gunnery || bridge;
             if (turret != null) turret.PlayerControlled = gunnery || bridge;
             if (huascarAI != null)
@@ -311,8 +403,18 @@ namespace Pacifico.Campaign
             }
 
             ShipController followed = battery ? esmeralda : huascar;
-            if (cameraRig != null) cameraRig.Target = followed.transform;
-            if (hud != null) hud.Ship = followed;
+            ShipController enemy = battery ? huascar : esmeralda;
+            if (cameraRig != null)
+            {
+                cameraRig.Target = followed.transform;
+                cameraRig.LockTarget = battery || gunnery ? enemy.transform : null;
+            }
+            if (hud != null)
+            {
+                hud.Ship = followed;
+                if (battery || gunnery) hud.SetContacts(new NavalContact(enemy.transform, battery ? "Huáscar" : "Esmeralda", true));
+                else hud.SetContacts();
+            }
         }
 
         private void OpenLetter()
@@ -343,10 +445,19 @@ namespace Pacifico.Campaign
             }
             if (_runner.State != MissionState.Running && !viewerOpen)
             {
-                string detail = letter != null ? (_newCollectible ? "Coleccionable desbloqueado: " : "Coleccionable: ") + letter.title : string.Empty;
+                string detail = ResultLine() + (letter != null ? "\n" + (_newCollectible ? "Coleccionable desbloqueado: " : "Coleccionable: ") + letter.title : string.Empty);
                 _hud.DrawEnd(_runner, "CAPÍTULO 1", detail);
             }
             if (_fade >= 0f) MissionHud.DrawFade(1f - Mathf.Abs(_fade - 1f), Color.black);
+        }
+
+        /// <summary>Lo que has hecho tú: la Esmeralda se hunde siempre, pero cuánto resiste y cómo, no está escrito.</summary>
+        private string ResultLine()
+        {
+            MissionFacts f = _runner.Facts;
+            string resisted = _sunkAt > 0f ? "La Esmeralda resistió " + Mathf.FloorToInt(_sunkAt / 60f) + " min  ·  " : string.Empty;
+            return resisted + f.Get(F.BroadsideHits).ToString("0") + " impactos en el Huáscar  ·  " + f.Get(F.RamsDodged).ToString("0") +
+                   " espolonazos esquivados  ·  " + f.Get(F.SurvivorsRescued).ToString("0") + " grupos de náufragos salvados";
         }
 
         private string Who()
@@ -355,6 +466,7 @@ namespace Pacifico.Campaign
             {
                 case P.EsmeraldaBattery: return "Wenceslao Vargas · grumete, batería de la Esmeralda";
                 case P.HuascarTurret: return "Cabo Dámaso Antúnez · torre Coles del Huáscar";
+                case P.HuascarHelm: return "Huáscar · al espolón, a las órdenes de Grau";
                 case P.HuascarBridge: return "Huáscar · a las órdenes de Grau";
                 default: return string.Empty;
             }

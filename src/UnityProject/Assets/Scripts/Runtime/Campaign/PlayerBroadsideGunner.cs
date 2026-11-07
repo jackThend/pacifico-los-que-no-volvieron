@@ -32,6 +32,14 @@ namespace Pacifico.Campaign
 
         public DeckRollModel Roll => _roll;
 
+        /// <summary>Parte del balanceo que llega al tiro (1 = todo). Por debajo de 1, además, hay andanada perfecta.</summary>
+        public float RollForgiveness { get; set; } = 1f;
+
+        /// <summary>Con la cubierta tan horizontal (°), la andanada sale agrupada (solo si <see cref="RollForgiveness"/> es menor que 1).</summary>
+        public float PerfectRollDeg { get; set; }
+
+        private const float NormalDispersionDeg = BroadsideBatteryModel.DefaultDispersionDeg;
+
         /// <summary>Modelo de la batería que sirve el jugador (sectores de tiro y recarga).</summary>
         public BroadsideBatteryModel Battery => _battery != null ? _battery.Model : null;
 
@@ -85,7 +93,7 @@ namespace Pacifico.Campaign
             float relative = Mathf.DeltaAngle(_ship.Motion.HeadingDeg, bearing);
             side = _battery.Model.SideFor(relative);
             range = new Vector2(to.x, to.z).magnitude;
-            error = side == BroadsideSide.None ? 0f : _roll.ElevationErrorDeg(side);
+            error = side == BroadsideSide.None ? 0f : _roll.ElevationErrorDeg(side) * RollForgiveness;
             return side != BroadsideSide.None;
         }
 
@@ -103,9 +111,11 @@ namespace Pacifico.Campaign
             }
             // Las bandas cargan por separado: el balanceo del instante del disparo decide la caída.
             int before = _battery.Model.GunsPerSide;
+            bool perfect = RollForgiveness < 1f && Mathf.Abs(_roll.AngleDeg) <= PerfectRollDeg;
+            _battery.Model.DispersionDeg = perfect ? NormalDispersionDeg * 0.5f : NormalDispersionDeg;
             if (_battery.TryFireAt(target, error))
             {
-                Say("¡Fuego! " + before + " piezas de " + (side == BroadsideSide.Starboard ? "estribor" : "babor"));
+                Say((perfect ? "¡Andanada perfecta! " : "¡Fuego! ") + before + " piezas de " + (side == BroadsideSide.Starboard ? "estribor" : "babor"));
                 PlayerFired?.Invoke(before);
             }
             else
@@ -157,7 +167,7 @@ namespace Pacifico.Campaign
             GUI.Label(new Rect(cx - 170f, top + 42f, 340f, 20f), "Balanceo " + angle.ToString("+0.0;-0.0") + "°  " + (_roll.RateDegPerSecond > 0f ? "▲" : "▼"), _label);
 
             string fall;
-            if (!solved) fall = "Sin blanco por el través";
+            if (!solved) fall = _ship.PlayerControlled ? TurnAdvice() : "Sin blanco por el través";
             else if (float.IsNaN(height)) fall = "FUERA DE ALCANCE";
             else if (onTarget) fall = "AL BLANCO";
             else
@@ -176,13 +186,24 @@ namespace Pacifico.Campaign
             GUI.Label(new Rect(cx - 170f, top + 120f, 340f, 20f), Time.time < _statusUntil ? _status : "[Espacio] ¡Fuego!", _label);
         }
 
+        /// <summary>Hacia dónde girar para poner al enemigo de costado.</summary>
+        private string TurnAdvice()
+        {
+            Vector3 to = target.transform.position - transform.position;
+            float relative = Mathf.DeltaAngle(_ship.Motion.HeadingDeg, Ballistics.Bearing(0f, 0f, to.x, to.z));
+            bool ahead = Mathf.Abs(relative) < 90f;
+            // Por la proa se le aparta la proa; por la popa, se le acerca.
+            bool toPort = ahead ? relative > 0f : relative < 0f;
+            return toPort ? "Gira a babor [A] para batirlo" : "Gira a estribor [D] para batirlo";
+        }
+
         /// <summary>Semiancho (°) del balanceo con el que la andanada pasa por el blanco (para la zona verde).</summary>
         private float BandHalfWidthDeg(float v, float range)
         {
             // La altura en el blanco crece casi linealmente con el error: basta la pendiente.
             float slope = DeckRollModel.MissHeight(v, range, 0.1f) - DeckRollModel.MissHeight(v, range, 0f);
             if (float.IsNaN(slope) || slope <= 0f) return 0f;
-            return Mathf.Min(targetBand.x, targetBand.y) / slope * 0.1f;
+            return Mathf.Min(targetBand.x, targetBand.y) / slope * 0.1f / Mathf.Max(0.05f, RollForgiveness);
         }
     }
 }

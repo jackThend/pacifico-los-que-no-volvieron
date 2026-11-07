@@ -899,3 +899,61 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
 * **Cuidado:** un método privado llamado `Start(...)` con parámetros rompe un MonoBehaviour («Start() can not take parameters»).
 * **Comprobación:** `SoundLibraryTests` (cada grupo tiene clips; los ambientes duran más de 20 s); `PerformanceSuite` registra qué clips suenan en cada capítulo («Sonidos en …»): todos los capítulos con ambiente, y combate con fusiles, impactos, cañones, explosiones, gritos, galope, estela y máquina. Página de escucha para el usuario: `tools/audio/escucha/sonidos.html` (no se sube). Test Runner EditMode 432/432, `tools/verify/verify.sh` sin errores, juego compilado sin errores ni excepciones.
 * **Pendiente:** los fusiles son grabaciones modernas recortadas (no hay pólvora negra en los paquetes); tambores y cornetas; voces y música.
+
+---
+
+### [2026-11-07] - Revisión de jugabilidad con un jugador robot (sin cambios en el juego)
+* **Método:** prueba temporal en modo Play (`Assets/Tests/PlaytestBot`, ya retirada) que carga las escenas reales a velocidad ×6 y da órdenes directas a buques y baterías, sin teclado. Capítulos 1 y 2 con varios perfiles; capítulos 3 a 8 solo sin tocar nada. Fotos con HUD (editor con ventana, `ReadPixels`).
+* **Capítulo 1 (bloqueante):** `Flags.HuascarSunk` hace fracasar la misión y el Huáscar no lleva `KeepAfloat`. Los 40 lb de la Esmeralda perforan `BeltEnds`, marcada `BelowWaterline`, y abren vías de agua (1,2 t/s por impacto contra 0,7 t/s de bombas). Disparando y sin brigada: 6 de 6 fracasos (5:36 a 15:47). Con brigada: 4 de 6 terminan. Las etapas `Ram` y `ThirdRam` no tienen plazo: si los choques no son `Critical` (cierre < 1,5 m/s, Huáscar tocado), la misión se cuelga (dos partidas). El objetivo de flotación suele resolverse por plazo, y la etapa se salta si la IA ya acertó en el acto I (el hecho no se reinicia).
+* **Capítulo 1 (diseño):** sin timón en el acto I aunque el HUD muestra [W/S] y [A/D]; las andanadas cuentan aunque fallen; unos 3 minutos entre golpes.
+* **Capítulo 2:** termina bien jugado (9:50). Sin riesgo: casco mínimo 63 %, ningún espolonazo en 7 partidas, y `HuascarEscaped` es inalcanzable (el Huáscar vira como muy tarde a los 90 s). Duelo y relevo terminan por plazo sin impactos. Único fracaso: los 300 s del abordaje. Andanadas sin mirar el balanceo: 0 impactos de 60. La cámara mira a proa y el blanco queda fuera de imagen al través; sin marca ni brújula. El HUD corta líneas (ancho 290, altura sin contar el ajuste de línea).
+* **Tierra:** sin tocar nada, Pisagua espera en el risco; Tarapacá se estanca con enemigos y aliados en `PathPartial` (faltan 1 o 2 bajas, sin marca); Alianza fracasa a 12:10; Arica mata a los 2 min; Cañete espera; Miraflores mata a los 15 s (80 de 100 por bala).
+* **General:** sin pausa ni salida al menú en misión, sin puntos de control, sin opciones.
+* **Pendiente:** decidir con el usuario el orden de arreglos propuesto en el informe.
+
+### [2026-11-07] - Capítulo 1: el Huáscar ya no se hunde y la historia no se cuelga
+* **Hecho:** `ShipDamageState.OnlyStructuralDamage` (los impactos solo marcan el casco) y `KeepAfloat` para el Huáscar en `IquiqueMissionDirector`. Plazos de seguridad en `IquiqueChapter`: `RamStageTimeoutSeconds` (360 s) y `ThirdRamStageTimeoutSeconds` (480 s). Los impactos de la torre solo cuentan con el jugador en ella, y así la etapa ya no se salta sola.
+* **Comprobación:** Test Runner EditMode 434/434 (2 pruebas nuevas). Robot en la escena real: 9 de 9 partidas llegan a la carta (antes, 6 de 6 fracasos sin brigada), entre 16 y 22 min con su rescate lento.
+* **Queda:** en 5 de las 9 partidas un choque de refilón no cuenta y la Esmeralda se hunde por el plazo de 480 s, sin un tercer golpe visible. Se resolverá al dar el espolón al jugador (rediseño del capítulo 1). Partidas sin probar a mano.
+
+### [2026-11-07] - Pausa, salida al menú y puntos de control en los ocho capítulos
+* **Pausa:** `Runtime/Campaign/PauseMenu.cs` se crea sola al arrancar (`RuntimeInitializeOnLoadMethod`) y vive entre escenas, sin reconstruirlas. Esc abre: seguir, volver al punto de control, empezar de nuevo, salir al menú, con los controles del tipo de capítulo. Congela el tiempo y el sonido. `GameInput.Blocked` bloquea todos los mandos salvo Esc. Esc ya no suelta el cursor en primera persona: lo hace la pausa. No se abre con un documento abierto ni durante el epílogo.
+* **Puntos de control:** `Core/Campaign/MissionCheckpoint.cs` (etapa, hechos y datos de la escena, en texto), `MissionRunner.Resume` y `Runtime/Campaign/CheckpointStore.cs` (un solo punto, en PlayerPrefs; se borra al completar el capítulo). Cada director guarda al entrar en ciertas etapas y, en su primer `Update`, recoloca el mundo en `RestoreWorld`. Al morir: [C] punto de control. En el menú: «Continuar».
+* **Etapas:** cap. 1 torre y náufragos; cap. 2 relevo y válvulas; cap. 3 risco, pozos y defensa; cap. 4 Krupp y final; cap. 5 carga y tenaza; cap. 6 parapeto y retirada; cap. 7 cañaveral, patrulla y asalto; cap. 8 jardines, reducto y piezas.
+* **Decisión de diseño:** no es una foto exacta del mundo. Se recolocan buques, escuadras, hombres y jugador, y el enemigo se prepara según la etapa. Se vuelve con la salud entera y sin perder cartuchos, y con la etapa desde su inicio. En el capítulo 5, al volver a la carga, la primera línea chilena sale de nuevo desde su sitio inicial.
+* **Comprobación:** Test Runner EditMode 437/437. Prueba temporal en modo Play (retirada): en cada capítulo avanza las etapas empujando los hechos, guarda con el código real, vuelve a cada punto y observa 24 s de juego: sin errores de consola y la etapa correcta. Encontró y se corrigieron dos fallos: en Pisagua el contraataque se daba por rechazado al volver (escuadras aún sin soldados en ese fotograma) y en Angamos el Blanco Encalada quedaba lejos. Fotos del menú de pausa, la pantalla de fracaso y el menú principal.
+* **Sin probar:** Esc con un teclado real (se llamó a la pausa desde la prueba) y los puntos de control jugando de verdad hasta ellos.
+* **Visto de paso:** en primera persona sigue en pantalla texto de desarrollo (humo, [V] descarga de 20 fusiles, FPS).
+
+### [2026-11-07] - Barcos: ver al enemigo y entender el panel
+* **Cámara (`ShipCameraRig`):** con `LockTarget` mira hacia el enemigo, dejándolo 14° a un lado para que la arboladura propia no lo tape. Tab cambia a la vista por la popa. Mayús es el catalejo en cualquier buque.
+* **Marcas (`NavalHud.SetContacts`, `NavalContact`):** nombre y distancia sobre cada buque, con flecha en el borde si queda fuera de la imagen. Rojo enemigo, azul aliado. En el rescate, la marca lleva al grupo de náufragos más cercano.
+* **Rosa de marcaciones:** proa al centro, popa en los extremos, sector de tiro de la batería en verde y una raya por contacto. Dice de un vistazo hacia dónde girar.
+* **Panel:** barras de casco, agua y vapor; altura calculada con el texto real (antes se cortaban las últimas líneas). Si el barco lo lleva la dotación, ya no muestra [W/S] ni [A/D]. Avisos grandes con la tecla: timón trabado, vía de agua, incendio. Impactos en español y sin milímetros. El clinómetro dice hacia dónde girar (`PlayerBroadsideGunner.TurnAdvice`).
+* **Comprobación:** Test Runner EditMode verde. El robot jugó los capítulos 1 y 2 con ventana hasta el final, sin errores de consola, y las fotos muestran al Huáscar en imagen a 1.099 m. Tras las fotos se retocó el título del panel (se cortaba «Cochrane») y el texto de los náufragos, sin volver a fotografiar.
+* **Sin probar:** Tab, Mayús y apuntar la torre con el ratón con la cámara nueva, usando teclado y ratón reales.
+* **Visto de paso:** rayas blancas verticales en el cielo en algunas fotos de buques, probablemente de la jarcia de algún modelo. Las había antes de este cambio.
+
+### [2026-11-07] - Capítulo 2 con peligro real
+* **Granadas:** `ShipDamageState.IncomingDamageScale` (2,5 para el Cochrane) multiplica impactos y fuego. La torre del Huáscar tira cada 12 s. Valores de balance en `AngamosChapter`.
+* **Espolón:** carreras repetidas (cada 60 s tras la anterior) cuando está a menos de 1.100 m, tras la primera perforación o 45 s de duelo; duran hasta 150 s. Mientras dura, `ShipMotionModel.SpeedBoost` 1,8 y `TurnBoost` 2,2 (nuevo) y aviso grande en pantalla. `RammingShipAI` apunta con `ShellLauncher.Lead` (antes se pasaba de largo), a 80 m va al centro del blanco y afloja la máquina si va muy desviado (antes describía círculos a 86 m). Esto también ayuda al capítulo 1: más espolonazos de verdad.
+* **Ritmo:** el duelo pide 5 perforaciones. Las del Blanco Encalada, que llega a ayudar a los 240 s (`BlancoHelpSeconds`), también cuentan; el plazo de seguridad sube a 540 s. Las tuyas se cuentan aparte (`OwnPenetrations`) para el resumen final.
+* **Tiro más amable:** solo el 35 % del balanceo llega al tiro (`RollForgiveness`). Con la cubierta casi horizontal sale una «andanada perfecta», con la mitad de dispersión.
+* **Otros:** el abordaje tiene plazo según la distancia (`ScuttleDeadlineSeconds`, de 240 a 480 s, con `MissionCondition.StageTimeReached`). Hay punto de control al empezar el duelo. El Cochrane empieza al 82 % de la distancia de la escena (menos travesía). Al final aparece un resumen: perforaciones tuyas, granadas desviadas, espolonazos y casco.
+* **Medido con el robot (10 partidas de la versión final):**
+  * Bueno (apartarse del espolón, coraza en ángulo, brigada): 3 de 3 ganan, sin espolonazos; casco mínimo entre 30 y 69 %.
+  * Malo (de costado, disparo sin esperar al balanceo): con brigada, 3 de 3 reciben un espolonazo, achican y ganan (46–57 %); sin brigada, 2 de 2 ganan (54–58 %).
+  * No hace nada o solo navega: 2 de 2 hundidos, a los 8 y 11 minutos.
+  * Duración: de 8 a 13 minutos.
+* **Comprobación:** Test Runner EditMode 439/439 (2 pruebas nuevas). Puntos de control de los capítulos 1 y 2: los de la torre, los náufragos y el duelo comprobados al volver; los del relevo y las válvulas no se repitieron tras subir a 5 las perforaciones.
+* **Sin probar:** jugarlo con teclado y ratón; si el aviso del espolón se lee a tiempo; la foto del aviso.
+
+### [2026-11-07] - Capítulo 1: timón de la Esmeralda y espolón en manos del jugador
+* **Acto I:** el jugador lleva timón y máquina de la Esmeralda; su IA se apaga en ese acto y vuelve en el acto II. Un roce del espolón (`RamModel.Critical` falso) cuenta como embestida esquivada (`Facts.RamsDodged`), con objetivo opcional y una línea. La etapa del espolón tiene un plazo de 240 s, y el Huáscar embiste a toda máquina desde el primer golpe para que haya menos espera.
+* **Acto II:** la etapa del tercer espolonazo tiene una perspectiva nueva, `HuascarHelm`: timón, máquina y torre del Huáscar para el jugador, con la IA parada. Plazo de seguridad de 240 s.
+* **Rescate más ágil:** `SurvivorRescue` acepta 70 m, 2,5 m/s y 3 s (antes 45 m, 1,6 m/s y 4 s). Valores de balance.
+* **Resumen final:** cuánto resistió la Esmeralda, impactos en el Huáscar, espolonazos esquivados y grupos de náufragos salvados.
+* **Medido con el robot:** 11 partidas sin un solo fracaso. Las últimas cuatro, con los ajustes finales, duran entre 14 y 14,5 min (antes, entre 17 y 24). El jugador bueno esquiva un espolonazo en el acto I. En el acto II el robot embiste mal: el tercer espolonazo suele terminar por plazo. Con teclado debería salir mejor, pero falta comprobarlo.
+* **Comprobación:** Test Runner EditMode 440/440.
+* **Sin probar:** jugarlo con teclado y ratón (timón de la Esmeralda a 3 nudos y embestidas del Huáscar).
+

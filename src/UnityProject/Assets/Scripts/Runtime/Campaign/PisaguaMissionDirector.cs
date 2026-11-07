@@ -66,6 +66,7 @@ namespace Pacifico.Campaign
         [SerializeField] private CollectibleDataSO dispatch;
 
         private MissionRunner _runner;
+        private MissionCheckpoint _resume;
         private readonly MissionHud _hud = new MissionHud();
         private readonly List<SquadController> _player = new List<SquadController>();
         private readonly List<SquadController> _counter = new List<SquadController>();
@@ -117,6 +118,8 @@ namespace Pacifico.Campaign
         private void Start()
         {
             _runner = new MissionRunner(C.Build(GuionQuotes.Extract(guionChapter, C.ChapterHeading), boats.Length));
+            _resume = CheckpointStore.Take(C.Id);
+            if (!_runner.Resume(_resume)) _resume = null;
             foreach (LandingCraft boat in boats)
             {
                 boat.FireAt = FireOnBoat;
@@ -174,14 +177,76 @@ namespace Pacifico.Campaign
             _runner.Facts.Set(F.MenLanded, _menLanded);
             _runner.Facts.Set(F.MenLostAtSea, _menLost);
             if (survivors <= 0) return;
+            SpawnPlayerSquad(boat.SquadName, survivors, boat.BeachPoint, Quaternion.Euler(0f, 0f, 0f)); // de cara al risco
+        }
 
-            var go = new GameObject("Escuadra_" + boat.SquadName);
-            Vector3 p = boat.BeachPoint;
+        private void SpawnPlayerSquad(string squadName, int men, Vector3 at, Quaternion rotation)
+        {
+            var go = new GameObject("Escuadra_" + squadName);
+            Vector3 p = at;
             if (Physics.Raycast(p + Vector3.up * 100f, Vector3.down, out RaycastHit hit, 300f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) p = hit.point;
-            go.transform.SetPositionAndRotation(p, Quaternion.Euler(0f, 0f, 0f)); // de cara al risco
+            go.transform.SetPositionAndRotation(p, rotation);
             var squad = go.AddComponent<SquadController>();
-            squad.Configure(boat.SquadName, Faction.Chile, comblain, survivors, FormationType.Skirmish, true, chile.coat, chile.trim, chile.model);
+            squad.Configure(squadName, Faction.Chile, comblain, men, FormationType.Skirmish, true, chile.coat, chile.trim, chile.model);
             _player.Add(squad);
+        }
+
+        /// <summary>Puntos de control: al callar los fuertes, al tomar el terraplén y al llegar el contraataque.</summary>
+        private void SaveCheckpoint()
+        {
+            MissionCheckpoint checkpoint = MissionCheckpoint.Capture(_runner);
+            int n = 0;
+            foreach (SquadController squad in _player)
+            {
+                if (squad == null || !squad.IsAlive || squad.Command == null) continue;
+                int boat = System.Array.FindIndex(boats, b => b.SquadName == squad.DisplayName);
+                Vector3 p = squad.Anchor, f = squad.Facing;
+                checkpoint.Data["sq" + n + ".bote"] = boat;
+                checkpoint.Data["sq" + n + ".hombres"] = squad.Strength;
+                checkpoint.Data["sq" + n + ".x"] = p.x;
+                checkpoint.Data["sq" + n + ".z"] = p.z;
+                checkpoint.Data["sq" + n + ".rumbo"] = Quaternion.LookRotation(f, Vector3.up).eulerAngles.y;
+                n++;
+            }
+            checkpoint.Data["escuadras"] = n;
+            CheckpointStore.Save(checkpoint);
+        }
+
+        /// <summary>Primer fotograma tras volver a un punto de control: desembarco hecho y, según la etapa, el terraplén tomado.</summary>
+        private void RestoreWorld()
+        {
+            MissionCheckpoint checkpoint = _resume;
+            _resume = null;
+            _stage = checkpoint.StageId;
+            _secondWave = true;
+            foreach (LandingCraft boat in boats) boat.gameObject.SetActive(false);
+            foreach (CoastalFortBattery fort in forts) fort.SilenceNow();
+
+            Vector3 center = Vector3.zero;
+            int squads = Mathf.RoundToInt(checkpoint.Get("escuadras"));
+            for (int i = 0; i < squads; i++)
+            {
+                int boat = Mathf.RoundToInt(checkpoint.Get("sq" + i + ".bote"));
+                string squadName = boat >= 0 && boat < boats.Length ? boats[boat].SquadName : "Escuadra " + (i + 1);
+                var at = new Vector3(checkpoint.Get("sq" + i + ".x"), 0f, checkpoint.Get("sq" + i + ".z"));
+                center += at;
+                SpawnPlayerSquad(squadName, Mathf.RoundToInt(checkpoint.Get("sq" + i + ".hombres")), at, Quaternion.Euler(0f, checkpoint.Get("sq" + i + ".rumbo"), 0f));
+            }
+            if (squads > 0)
+            {
+                var view = FindAnyObjectByType<RtsCameraController>();
+                if (view != null) view.FocusOn(center / squads);
+            }
+            if (_stage != S.Cliff)
+            {
+                foreach (SquadController nest in nests)
+                {
+                    if (nest == null) continue;
+                    _withdrawn.Add(nest);
+                    nest.gameObject.SetActive(false);
+                }
+            }
+            EnterStage(_stage);
         }
 
         private void OnFortSilenced(CoastalFortBattery fort)
@@ -215,6 +280,11 @@ namespace Pacifico.Campaign
                 return;
             }
 
+            if (_resume != null)
+            {
+                RestoreWorld();
+                return; // las escuadras recién creadas aún no tienen soldados: se leen desde el próximo fotograma
+            }
             HandleDesignation();
             ReadScene();
             _runner.Step(Time.deltaTime);
@@ -223,6 +293,7 @@ namespace Pacifico.Campaign
             {
                 _stage = _runner.CurrentStage.Id;
                 EnterStage(_stage);
+                if (_stage == S.Cliff || _stage == S.Wells || _stage == S.Defense) SaveCheckpoint();
             }
         }
 
@@ -257,7 +328,10 @@ namespace Pacifico.Campaign
             int men = 0;
             foreach (SquadController squad in _player)
             {
-                if (squad != null && squad.IsAlive) men += squad.Strength;
+                if (squad == null) continue;
+                // Recién creada aún no tiene soldados: cuenta como viva hasta su primer fotograma.
+                if (squad.Command == null) men++;
+                else if (squad.IsAlive) men += squad.Strength;
             }
             _runner.Facts.Set(F.MenInField, men);
             if (fleet != null) _runner.Facts.Set(F.Salvos, fleet.Fleet.SalvosFired);

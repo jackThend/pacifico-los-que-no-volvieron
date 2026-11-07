@@ -58,6 +58,7 @@ namespace Pacifico.Campaign
         private const float AssaultEngageRangeM = 70f;
 
         private MissionRunner _runner;
+        private MissionCheckpoint _resume;
         private Combatant _playerCombatant;
         private RifleController _rifle;
         private WeaponSpec _bayonetSpec;
@@ -96,6 +97,8 @@ namespace Pacifico.Campaign
         private void Start()
         {
             _runner = new MissionRunner(TarapacaChapter.Build(GuionQuotes.Extract(guionChapter, TarapacaChapter.ChapterHeading)));
+            _resume = CheckpointStore.Take(TarapacaChapter.Id);
+            if (!_runner.Resume(_resume)) _resume = null;
             _playerCombatant = player.GetComponent<Combatant>();
             _rifle = player.GetComponent<RifleController>();
             _bayonetSpec = bayonet != null ? bayonet.ToSpec() : null;
@@ -109,14 +112,52 @@ namespace Pacifico.Campaign
                 drummer.OnWatered += _ => _runner.Facts.SetFlag(G.WaterGiven);
             }
 
-            for (int i = 0; i < allySpawns.Length; i++)
+            if (_resume == null)
+            {
+                SpawnAllies(allySpawns.Length);
+                SpawnWave(0, FirstWave);
+            }
+            _stage = _runner.CurrentStage.Id;
+        }
+
+        private void SpawnAllies(int count)
+        {
+            for (int i = 0; i < count && i < allySpawns.Length; i++)
             {
                 RiflemanAI ally = Spawn("Zepita_" + (i + 1), Faction.Peru, allySpawns[i], chassepot, AllyCartridges, peruLook);
                 ally.Objective = plaza.position + Offset(i, 4f);
                 _allies.Add(ally);
             }
-            SpawnWave(0, FirstWave);
-            _stage = _runner.CurrentStage.Id;
+        }
+
+        /// <summary>Puntos de control: al empezar la carga contra los Krupp y tras tomarlos.</summary>
+        private void SaveCheckpoint()
+        {
+            MissionCheckpoint checkpoint = MissionCheckpoint.Capture(_runner);
+            CheckpointStore.WritePlayer(checkpoint, player);
+            CheckpointStore.WritePlayerWeapon(checkpoint, player);
+            int allies = 0;
+            foreach (RiflemanAI ally in _allies)
+            {
+                if (ally != null && ally.GetComponent<Combatant>().Alive) allies++;
+            }
+            checkpoint.Data["aliados"] = allies;
+            CheckpointStore.Save(checkpoint);
+        }
+
+        private void RestoreWorld()
+        {
+            MissionCheckpoint checkpoint = _resume;
+            _resume = null;
+            _stage = checkpoint.StageId;
+            _secondWave = true; // las oleadas del pueblo ya pasaron
+            CheckpointStore.ReadPlayer(checkpoint, player, chassepot, comblain);
+            SpawnAllies(Mathf.RoundToInt(checkpoint.Get("aliados")));
+            if (_stage == S.Krupp)
+            {
+                foreach (KruppGun gun in kruppGuns) gun.Firing = true;
+            }
+            EnterStage(_stage);
         }
 
         private void OnDestroy()
@@ -175,6 +216,7 @@ namespace Pacifico.Campaign
                 return;
             }
 
+            if (_resume != null) RestoreWorld();
             WeaponPickup.UpdatePlayer(player);
             if (_rifle != null && _rifle.Model != null) _runner.Facts.Set(F.Rounds, _rifle.Model.TotalRounds);
             if (!_runner.Facts.Flag(G.AtRally) && Flat(player.transform.position, plaza.position) <= plazaRadius) _runner.Facts.SetFlag(G.AtRally);
@@ -193,6 +235,7 @@ namespace Pacifico.Campaign
             {
                 _stage = _runner.CurrentStage.Id;
                 EnterStage(_stage);
+                if (_stage == S.Krupp || _stage == S.Aftermath) SaveCheckpoint();
             }
         }
 

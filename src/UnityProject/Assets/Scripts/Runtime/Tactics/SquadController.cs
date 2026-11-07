@@ -175,6 +175,13 @@ namespace Pacifico.Tactics
             figureModel = model;
         }
 
+        /// <summary>Punto de control: dónde y con cuántos hombres empieza. Hay que llamarlo antes de su Start.</summary>
+        public void OverrideStart(Vector3 position, Quaternion rotation, int count)
+        {
+            transform.SetPositionAndRotation(position, rotation);
+            soldierCount = Mathf.Max(1, count);
+        }
+
         /// <summary>¿Son enemigos? Chile contra la alianza de Perú y Bolivia.</summary>
         public bool IsEnemyOf(SquadController other)
         {

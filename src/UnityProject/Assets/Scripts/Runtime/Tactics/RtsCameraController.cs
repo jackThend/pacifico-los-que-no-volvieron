@@ -42,6 +42,14 @@ namespace Pacifico.Tactics
             Apply();
         }
 
+        /// <summary>Centra la vista en un punto, sin transición (punto de control).</summary>
+        public void FocusOn(Vector3 point)
+        {
+            _focus = point;
+            _smoothedFocus = point;
+            _focusVelocity = Vector3.zero;
+        }
+
         private void LateUpdate()
         {
             float dt = Time.unscaledDeltaTime;

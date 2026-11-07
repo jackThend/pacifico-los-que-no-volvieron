@@ -24,17 +24,36 @@ namespace Pacifico.Core.Campaign
         public const float ChaseRangeM = 3000f;
         /// <summary>Si el Huáscar se aleja tanto del Cochrane durante la caza, ha escapado (m). Diseño.</summary>
         public const float EscapeRangeM = 8000f;
+        /// <summary>Fracción de la distancia inicial de la escena con la que empieza la partida. Diseño: menos travesía.</summary>
+        public const float OpeningDistanceFraction = 0.82f;
         /// <summary>Perforaciones del Cochrane antes del proyectil en la torre de mando. Diseño.</summary>
-        public const int PenetrationsBeforeConningTower = 3;
-        public const float DuelTimeoutSeconds = 300f;
+        public const int PenetrationsBeforeConningTower = 5;
+        /// <summary>Salida de seguridad del duelo (s). Lo normal es que lo decidan los impactos, tuyos o del Blanco Encalada.</summary>
+        public const float DuelTimeoutSeconds = 540f;
+        /// <summary>Si en este tiempo no has perforado lo suficiente, el Blanco Encalada llega a ayudar (s). Balance.</summary>
+        public const float BlancoHelpSeconds = 240f;
         /// <summary>
-        /// El Huáscar (11 nudos) no alcanza al Cochrane carenado (12) si este se aparta: solo se lanza al espolón cuando lo
-        /// tiene cerca, y el jugador lo esquiva maniobrando (como en 1879: los intentos de embestir fracasaron).
+        /// El espolón es una amenaza de verdad: con la máquina forzada alcanza a quien le da el costado, y solo se le
+        /// esquiva apartándose a tiempo. Balance: en 1879 los intentos de embestir fracasaron; aquí puede salir bien.
         /// </summary>
-        public const float RamStartRangeM = 1800f;
-        public const float RamAfterSeconds = 60f;
-        /// <summary>Duración máxima de la carrera de embestida (s): si no hay espolonazo, se ha esquivado.</summary>
-        public const float RamRunSeconds = 40f;
+        public const float RamStartRangeM = 1100f;
+        public const float RamAfterSeconds = 45f;
+        /// <summary>Duración máxima de cada carrera de embestida (s): si no hay espolonazo, se ha esquivado.</summary>
+        public const float RamRunSeconds = 150f;
+        /// <summary>Respiro entre dos carreras de embestida (s).</summary>
+        public const float RamCooldownSeconds = 60f;
+        public const float RamSpeedBoost = 1.8f;
+        public const float RamTurnBoost = 2.2f;
+
+        /// <summary>Daño de impactos y fuego sobre el Cochrane. Balance: quien no se cuida puede hundirse.</summary>
+        public const float CochraneDamageScale = 2.5f;
+        /// <summary>Intervalo de tiro de la torre del Huáscar en el duelo (s). Balance: más vivo que en 1879.</summary>
+        public const float HuascarFireIntervalSeconds = 12f;
+
+        /// <summary>Parte del balanceo que llega al tiro. Balance: disparar regular aún puede acertar.</summary>
+        public const float RollForgiveness = 0.35f;
+        /// <summary>Con la cubierta tan horizontal (°), la andanada sale agrupada: premio por afinar.</summary>
+        public const float PerfectRollDeg = 0.12f;
         /// <summary>Perforaciones (de cualquier buque chileno) tras la muerte de Grau hasta que el Huáscar deja de responder.</summary>
         public const int HitsToSilence = 4;
         public const float ReliefTimeoutSeconds = 240f;
@@ -43,6 +62,9 @@ namespace Pacifico.Core.Campaign
         /// de maniobra del Cochrane (3.500 t, frenada lenta) da 4–5 minutos para llegar desde 1.500 m y quedarse al costado.
         /// </summary>
         public const float ScuttleSeconds = 300f;
+
+        /// <summary>Plazo del abordaje según la distancia al abrirse las válvulas (s): virar, llegar y frenar. Balance.</summary>
+        public static float ScuttleDeadlineSeconds(float rangeM) => Math.Max(240f, Math.Min(480f, 130f + rangeM / 4f));
 
         /// <summary>Abordaje: distancia entre centros, arrancada máxima y tiempo para arriar los botes y llegar al costado.</summary>
         public const float BoardingRadiusM = 200f;
@@ -72,6 +94,10 @@ namespace Pacifico.Core.Campaign
             /// <summary>Granadas del Huáscar que rebotan o no atraviesan la coraza del Cochrane.</summary>
             public const string Deflected = "granadas_desviadas";
             public const string RamsReceived = "espolonazos_recibidos";
+            /// <summary>Perforaciones que has logrado tú (las del Blanco cuentan para avanzar, no para tu resultado).</summary>
+            public const string OwnPenetrations = "perforaciones_propias";
+            /// <summary>Plazo del abordaje de esta partida (s), fijado por la escena al abrirse las válvulas.</summary>
+            public const string ScuttleDeadline = "plazo_del_abordaje";
             /// <summary>Progreso del abordaje (0 a 1).</summary>
             public const string Boarding = "abordaje";
         }
@@ -93,6 +119,8 @@ namespace Pacifico.Core.Campaign
             public const string RamAttempt = "huascar_al_espolon";
             /// <summary>Escena: pasó la carrera de embestida sin espolonazo.</summary>
             public const string RamAvoided = "espolon_esquivado";
+            /// <summary>Escena: el Blanco Encalada llega en ayuda durante el duelo.</summary>
+            public const string BlancoArrives = "blanco_llega";
             public const string HuascarSteeringJammed = "huascar_sin_gobierno";
             /// <summary>Guion → escena: el Huáscar deja de responder y abre las válvulas.</summary>
             public const string ValvesOpen = "valvulas_abiertas";
@@ -197,7 +225,7 @@ namespace Pacifico.Core.Campaign
             duel.OnEnter.Add(Narrate("El Huáscar abre fuego. Sus granadas de 300 libras levantan columnas de agua junto al Cochrane."));
             duel.OnEnter.Add(Narrate("Latorre ordena no responder hasta tenerlo a " + openFire + " m: más lejos, las granadas de 250 libras no atraviesan su coraza."));
             duel.OnEnter.Add(Hint("Espacio: andanada cuando la cubierta pase por la horizontal (la aguja en la zona verde)."));
-            duel.OnEnter.Add(Hint("Mientras recargas, presenta la coraza en ángulo (unos 45°): sus granadas no atravesarán los extremos. Para la andanada, vuelve a ponerlo por el través. 1/2/3: averías."));
+            duel.OnEnter.Add(Hint("Tenlo en ángulo, en el borde de la zona verde de arriba: tiras y tu coraza desvía sus granadas. Si te da de frente, pueden hundirte."));
             duel.Objectives.Add(new MissionObjective
             {
                 Id = "perforar", Text = "Perfora la coraza del Huáscar",
@@ -238,6 +266,13 @@ namespace Pacifico.Core.Campaign
             var ramRun = new MissionTrigger { Id = "al_espolon", When = MissionCondition.Flag(Flags.RamAttempt), Interrupts = true };
             ramRun.Lines.Add(Narrate("Grau lanza el Huáscar al espolón contra el Cochrane. ¡Todo el timón a la banda!"));
             duel.Triggers.Add(ramRun);
+            var rammed = new MissionTrigger { Id = "espolonazo_recibido", When = MissionCondition.AtLeast(Facts.RamsReceived, 1), Interrupts = true };
+            rammed.Lines.Add(Narrate("El espolón abre el costado del Cochrane. El agua entra a raudales."));
+            rammed.Lines.Add(Hint("2: achique, antes de que el agua te hunda."));
+            duel.Triggers.Add(rammed);
+            var help = new MissionTrigger { Id = "llega_el_blanco", When = MissionCondition.Flag(Flags.BlancoArrives) };
+            help.Lines.Add(Narrate("El Blanco Encalada, con el comodoro Galvarino Riveros a bordo, entra en combate. Ya no estás solo."));
+            duel.Triggers.Add(help);
             var avoided = new MissionTrigger { Id = "espolon_esquivado", When = MissionCondition.Flag(Flags.RamAvoided) };
             avoided.Lines.Add(Narrate("El espolón pasa de largo. El Huáscar vuelve a abrir distancia."));
             duel.Triggers.Add(avoided);
@@ -252,7 +287,7 @@ namespace Pacifico.Core.Campaign
             // ---- Intercalado: la torre de mando del Huáscar --------------------------------------------------
             var tower = new MissionStage { Id = Stages.ConningTower, Title = "La torre de mando", Perspective = Perspectives.HuascarDeck };
             tower.OnEnter.Add(Narrate("A bordo del Huáscar."));
-            tower.OnEnter.Add(Narrate("Un proyectil perforante del Cochrane estalla de lleno en la torre de mando."));
+            tower.OnEnter.Add(Narrate("Un proyectil perforante chileno estalla de lleno en la torre de mando."));
             tower.OnEnter.Add(Narrate("Mueren en el acto Miguel Grau y su ayudante, el teniente Diego Ferré."));
             tower.OnEnter.Add(Narrate("El capitán de corbeta Elías Aguirre asume el mando. El Huáscar no arría su pabellón."));
             tower.Transitions.Add(new MissionTransition(MissionCondition.All(MissionCondition.StageTime(1f), idle), Stages.Relief));
@@ -260,7 +295,7 @@ namespace Pacifico.Core.Campaign
 
             // ---- El relevo de los comandantes ----------------------------------------------------------------
             var relief = new MissionStage { Id = Stages.Relief, Title = "El relevo", Perspective = Perspectives.CochraneBridge };
-            relief.OnEnter.Add(Narrate("El Blanco Encalada, con el comodoro Galvarino Riveros a bordo, se suma al combate."));
+            relief.OnEnter.Add(Narrate("El comodoro Galvarino Riveros estrecha el cerco: el Blanco Encalada y el Cochrane baten juntos al Huáscar."));
             relief.OnEnter.Add(Hint("Sigue batiendo al Huáscar hasta que deje de responder."));
             relief.Objectives.Add(new MissionObjective
             {
@@ -301,7 +336,7 @@ namespace Pacifico.Core.Campaign
             valves.Triggers.Add(boarded);
             var founders = new MissionTrigger
             {
-                Id = "a_pique", When = MissionCondition.All(MissionCondition.StageTime(ScuttleSeconds), MissionCondition.NotFlag(Flags.Boarded)),
+                Id = "a_pique", When = MissionCondition.All(MissionCondition.StageTimeReached(Facts.ScuttleDeadline, ScuttleSeconds), MissionCondition.NotFlag(Flags.Boarded)),
                 Interrupts = true, SetsFlag = Flags.ScuttleComplete,
             };
             founders.Lines.Add(Narrate("El agua inunda la sala de máquinas. El Huáscar se va a pique con su pabellón."));
@@ -321,7 +356,7 @@ namespace Pacifico.Core.Campaign
                 "Los botes no llegaron a tiempo: el Huáscar se ha ido a pique con las válvulas abiertas."));
             script.Failures.Add(new MissionFailure(MissionCondition.All(MissionCondition.Flag(Flags.HuascarSunk), MissionCondition.NotFlag(Flags.ScuttleComplete)),
                 "El Huáscar se ha hundido."));
-            script.Failures.Add(new MissionFailure(MissionCondition.Flag(Flags.CochraneSunk), "El Cochrane se ha hundido."));
+            script.Failures.Add(new MissionFailure(MissionCondition.Flag(Flags.CochraneSunk), "El Cochrane se ha hundido: el Huáscar vuelve a escapar."));
             return script;
         }
     }

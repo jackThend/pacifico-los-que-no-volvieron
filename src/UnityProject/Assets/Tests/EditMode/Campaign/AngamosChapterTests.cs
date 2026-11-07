@@ -149,7 +149,7 @@ namespace Pacifico.Tests.Campaign
             Assert.That(runner.History.Any(e => e.Kind == MissionEventKind.TriggerFired && e.Detail == "al_espolon"), Is.True);
             Wait(runner, 30f);
             runner.Facts.SetFlag(G.RamAvoided);
-            runner.Facts.Add(F.PenetratingHits, 2);
+            runner.Facts.Add(F.PenetratingHits, AngamosChapter.PenetrationsBeforeConningTower - 1);
             RunUntil(runner, () => runner.CurrentStage.Id == S.ConningTower);
             MissionStage duel = runner.Script.Stage(S.Duel);
             foreach (string id in new[] { "perforar", "retener_fuego", "coraza_en_angulo", "esquivar_espolon" })
@@ -223,6 +223,52 @@ namespace Pacifico.Tests.Campaign
             runner.Step(Dt);
             Assert.That(runner.State, Is.EqualTo(MissionState.Failed));
             StringAssert.Contains("escapado", runner.FailureReason);
+        }
+
+        [Test]
+        public void Abordaje_ElPlazoDependeDeLaDistancia()
+        {
+            Assert.That(AngamosChapter.ScuttleDeadlineSeconds(400f), Is.EqualTo(240f), "nunca menos de cuatro minutos");
+            Assert.That(AngamosChapter.ScuttleDeadlineSeconds(1400f), Is.GreaterThan(AngamosChapter.ScuttleDeadlineSeconds(800f)));
+            Assert.That(AngamosChapter.ScuttleDeadlineSeconds(9000f), Is.EqualTo(480f), "con tope");
+
+            var runner = new MissionRunner(Chapter());
+            runner.Facts.SetFlag(G.WithinRange);
+            RunUntil(runner, () => runner.CurrentStage.Id == S.Duel);
+            runner.Facts.Add(F.ConningTowerHits);
+            RunUntil(runner, () => runner.CurrentStage.Id == S.Relief);
+            runner.Facts.Add(F.HitsSinceGrau, AngamosChapter.HitsToSilence);
+            RunUntil(runner, () => runner.CurrentStage.Id == S.Valves);
+            runner.Facts.Set(F.ScuttleDeadline, 400f);
+            float t = RunUntil(runner, () => runner.Facts.Flag(G.ScuttleComplete));
+            Assert.That(t, Is.EqualTo(400f).Within(0.1f));
+        }
+
+        [Test]
+        public void Peligro_ElCochranePuedeHundirseYElEspolonAlcanza()
+        {
+            ShipSpec cochrane = ShipCatalog.Cochrane();
+            var hit = new ArmorImpactResult { Outcome = ImpactOutcome.NoPenetration, StructuralDamage = 30f };
+            var flat = new ShipDamageState(cochrane);
+            var scaled = new ShipDamageState(cochrane) { IncomingDamageScale = AngamosChapter.CochraneDamageScale };
+            flat.ApplyImpact(hit, ArmorZone.BeltMidships, false, 254f);
+            scaled.ApplyImpact(hit, ArmorZone.BeltMidships, false, 254f);
+            Assert.That(scaled.StructuralDamage, Is.EqualTo(flat.StructuralDamage * AngamosChapter.CochraneDamageScale));
+
+            // Con la máquina forzada, el Huáscar es más rápido que el Cochrane.
+            var motion = new ShipMotionModel(ShipCatalog.Huascar());
+            motion.Telegraph.Set(EngineOrder.FullAhead);
+            float normal = motion.TargetSpeed;
+            motion.SpeedBoost = AngamosChapter.RamSpeedBoost;
+            Assert.That(motion.TargetSpeed, Is.EqualTo(normal * AngamosChapter.RamSpeedBoost).Within(1e-3f));
+            Assert.That(motion.TargetSpeed, Is.GreaterThan(cochrane.MaxSpeedMps));
+
+            // Un espolonazo con arrancada abre una vía que las bombas solas no pueden con ella.
+            RamResult ram = RamModel.Resolve(ShipCatalog.Huascar(), 90f, motion.TargetSpeed, cochrane, 0f, 2f);
+            Assert.That(ram.Critical, Is.True);
+            var state = new ShipDamageState(cochrane);
+            state.ApplyRamReceived(ram);
+            Assert.That(state.InflowRate, Is.GreaterThan(state.BasePumpRate));
         }
 
         /// <summary>Si el jugador no logra perforar, la historia sigue: el duelo y el relevo terminan por tiempo.</summary>

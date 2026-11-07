@@ -19,8 +19,12 @@ namespace Pacifico.Input
     /// </summary>
     public static class GameInput
     {
+        /// <summary>En pausa el juego no lee mandos; solo Esc sigue funcionando, para quitarla.</summary>
+        public static bool Blocked { get; set; }
+
         public static bool Held(GameKey key)
         {
+            if (Blocked) return false;
 #if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
             var control = Resolve(key);
             return control != null && control.isPressed;
@@ -33,6 +37,7 @@ namespace Pacifico.Input
 
         public static bool Pressed(GameKey key)
         {
+            if (Blocked && key != GameKey.Escape) return false;
 #if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
             var control = Resolve(key);
             return control != null && control.wasPressedThisFrame;
@@ -48,6 +53,7 @@ namespace Pacifico.Input
         {
             get
             {
+                if (Blocked) return Vector2.zero;
 #if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
                 return Mouse.current != null ? Mouse.current.delta.ReadValue() : Vector2.zero;
 #elif ENABLE_LEGACY_INPUT_MANAGER
@@ -63,6 +69,7 @@ namespace Pacifico.Input
         {
             get
             {
+                if (Blocked) return 0f;
 #if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
                 return Mouse.current != null ? Mouse.current.scroll.ReadValue().y / 120f : 0f;
 #elif ENABLE_LEGACY_INPUT_MANAGER
@@ -75,6 +82,7 @@ namespace Pacifico.Input
 
         public static bool MouseHeld(int button)
         {
+            if (Blocked) return false;
 #if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
             if (Mouse.current == null) return false;
             return button == 0 ? Mouse.current.leftButton.isPressed : Mouse.current.rightButton.isPressed;
@@ -87,6 +95,7 @@ namespace Pacifico.Input
 
         public static bool MousePressed(int button)
         {
+            if (Blocked) return false;
 #if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
             if (Mouse.current == null) return false;
             return button == 0 ? Mouse.current.leftButton.wasPressedThisFrame : Mouse.current.rightButton.wasPressedThisFrame;
@@ -99,6 +108,7 @@ namespace Pacifico.Input
 
         public static bool MouseReleased(int button)
         {
+            if (Blocked) return false;
 #if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
             if (Mouse.current == null) return false;
             return button == 0 ? Mouse.current.leftButton.wasReleasedThisFrame : Mouse.current.rightButton.wasReleasedThisFrame;

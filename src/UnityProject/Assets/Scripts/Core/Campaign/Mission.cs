@@ -73,6 +73,14 @@ namespace Pacifico.Core.Campaign
         public static MissionCondition StageTime(float seconds) =>
             new MissionCondition(c => c.StageTime >= seconds, "etapa ≥ " + seconds.ToString(CultureInfo.InvariantCulture) + " s");
 
+        /// <summary>La etapa ha durado el plazo guardado en un hecho (o <paramref name="fallback"/> si aún no se ha fijado).</summary>
+        public static MissionCondition StageTimeReached(string fact, float fallback) =>
+            new MissionCondition(c =>
+            {
+                float limit = c.Facts.Get(fact);
+                return c.StageTime >= (limit > 0f ? limit : fallback);
+            }, "etapa ≥ " + fact);
+
         /// <summary>No queda ninguna línea de diálogo por decir (para cambiar de escena sin cortar a nadie).</summary>
         public static MissionCondition DialogueIdle() => new MissionCondition(c => c.DialogueIdle, "diálogo terminado");
 
@@ -404,6 +412,22 @@ namespace Pacifico.Core.Campaign
             float value = IsObjectiveComplete(objective) ? objective.ProgressTarget : Math.Min(objective.ProgressTarget, Facts.Get(objective.ProgressFact));
             return objective.Text + " (" + value.ToString("0", CultureInfo.InvariantCulture) + "/" +
                    objective.ProgressTarget.ToString("0", CultureInfo.InvariantCulture) + ")";
+        }
+
+        /// <summary>
+        /// Vuelve a un punto de control: los hechos de aquel momento y la etapa desde su inicio, con sus líneas y reacciones.
+        /// Solo sirve al empezar la misión. False si el punto de control no es de esta misión (empieza normal).
+        /// </summary>
+        public bool Resume(MissionCheckpoint checkpoint)
+        {
+            if (checkpoint == null || checkpoint.ChapterId != Script.Id) return false;
+            MissionStage stage = Script.Stage(checkpoint.StageId);
+            if (stage == null) return false;
+            foreach (KeyValuePair<string, float> number in checkpoint.Numbers) Facts.Set(number.Key, number.Value);
+            foreach (string flag in checkpoint.Flags) Facts.SetFlag(flag);
+            Dialogue.Clear();
+            Enter(stage);
+            return true;
         }
 
         public void Step(float dt)

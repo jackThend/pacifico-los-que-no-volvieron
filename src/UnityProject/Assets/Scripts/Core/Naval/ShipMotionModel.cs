@@ -67,6 +67,12 @@ namespace Pacifico.Core.Naval
         /// <summary>Si el servomotor está dañado, el timón queda trabado en su ángulo actual.</summary>
         public bool RudderJammed { get; set; }
 
+        /// <summary>Máquina forzada (1 = normal): la carrera de un espolón, por encima de su velocidad de crucero.</summary>
+        public float SpeedBoost { get; set; } = 1f;
+
+        /// <summary>Giro forzado (1 = normal): la carrera de un espolón cierra el giro más que en crucero.</summary>
+        public float TurnBoost { get; set; } = 1f;
+
         public float MaxSpeed => _baseMaxSpeed;
         public float SpeedKnots => Units.MetersPerSecondToKnots(Speed);
 
@@ -77,7 +83,7 @@ namespace Pacifico.Core.Naval
             {
                 float fraction = EngineTelegraph.SpeedFraction(Telegraph.Order);
                 float turnLoss = 1f - TurnSpeedLoss * Math.Abs(Rudder) * SteerageFactor(Speed);
-                return fraction * _baseMaxSpeed * MathUtil.Clamp01(PropulsionFactor) * turnLoss;
+                return fraction * _baseMaxSpeed * SpeedBoost * MathUtil.Clamp01(PropulsionFactor) * turnLoss;
             }
         }
 
@@ -122,7 +128,7 @@ namespace Pacifico.Core.Naval
             Speed += (target - Speed) * (1f - (float)Math.Exp(-dt / tau));
 
             // 3) Guiñada: el timón solo actúa con arrancada; marcha atrás invierte el efecto.
-            float targetYaw = _handling.MaxTurnRateDegPerSecond * Rudder * SteerageFactor(Speed) * Math.Sign(Speed);
+            float targetYaw = _handling.MaxTurnRateDegPerSecond * TurnBoost * Rudder * SteerageFactor(Speed) * Math.Sign(Speed);
             YawRateDegPerSecond += (targetYaw - YawRateDegPerSecond) * (1f - (float)Math.Exp(-dt / YawResponseSeconds));
 
             // 4) Integración de la posición (punto medio del rumbo para reducir la deriva numérica en giros).

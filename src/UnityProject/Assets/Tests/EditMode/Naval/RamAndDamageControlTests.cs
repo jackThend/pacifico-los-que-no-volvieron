@@ -15,6 +15,20 @@ namespace Pacifico.Tests.Naval
         }
 
         [Test]
+        public void Averias_SeRecuperanDeUnPuntoDeControl()
+        {
+            var state = new ShipDamageState(ShipCatalog.Cochrane());
+            state.Restore(200f, 100f, 3f, 0.5f, true);
+            Assert.That(state.StructuralDamage, Is.EqualTo(200f));
+            Assert.That(state.WaterTonnes, Is.EqualTo(100f));
+            Assert.That(state.InflowRate, Is.EqualTo(3f));
+            Assert.That(state.BoilerDamage, Is.EqualTo(0.5f));
+            Assert.That(state.FramesBroken, Is.True);
+            Assert.That(state.OnFire, Is.False);
+            Assert.That(state.IsSunk, Is.False);
+        }
+
+        [Test]
         public void Huascar_AVelocidadCritica_ParteLasCuadernasDeLaEsmeralda()
         {
             var ram = HuascarRamsEsmeralda(10f, 90f);

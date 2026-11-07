@@ -119,7 +119,7 @@ namespace Pacifico.Tests.Campaign
             Assert.That(perspectives, Is.EqualTo(new[]
             {
                 IquiqueChapter.Perspectives.EsmeraldaBattery, IquiqueChapter.Perspectives.EsmeraldaBattery,
-                IquiqueChapter.Perspectives.HuascarTurret, IquiqueChapter.Perspectives.HuascarTurret,
+                IquiqueChapter.Perspectives.HuascarTurret, IquiqueChapter.Perspectives.HuascarHelm,
                 IquiqueChapter.Perspectives.HuascarBridge, IquiqueChapter.Perspectives.Document,
             }));
         }
@@ -134,6 +134,58 @@ namespace Pacifico.Tests.Campaign
             RunUntil(runner, () => runner.CurrentStage.Id == S.Turret);
             t = RunUntil(runner, () => runner.CurrentStage.Id == S.ThirdRam);
             Assert.That(t, Is.EqualTo(IquiqueChapter.TurretStageTimeoutSeconds).Within(0.1f));
+        }
+
+        /// <summary>Si los espolonazos no llegan (o los choques son roces), la historia sigue igualmente.</summary>
+        [Test]
+        public void Partida_SinEspolonazos_NoSeCuelga()
+        {
+            var runner = new MissionRunner(Chapter());
+            RunUntil(runner, () => runner.CurrentStage.Id == S.Ram);
+            float t = RunUntil(runner, () => runner.Facts.Flag(G.PratBoards));
+            Assert.That(t, Is.EqualTo(IquiqueChapter.RamStageTimeoutSeconds).Within(0.1f));
+            RunUntil(runner, () => runner.CurrentStage.Id == S.Turret);
+            Assert.That(runner.CurrentStage.Id, Is.EqualTo(S.Turret));
+            RunUntil(runner, () => runner.CurrentStage.Id == S.ThirdRam);
+            t = RunUntil(runner, () => runner.Facts.Flag(G.FounderEsmeralda));
+            Assert.That(t, Is.EqualTo(IquiqueChapter.ThirdRamStageTimeoutSeconds).Within(0.1f));
+        }
+
+        /// <summary>El buque que la historia necesita entero acusa los impactos en el casco, pero no se inunda ni se para.</summary>
+        [Test]
+        public void Huascar_ProtegidoPorElGuion_NoSeInundaNiPierdeMaquina()
+        {
+            var state = new ShipDamageState(ShipCatalog.Huascar()) { KeepAfloat = true, OnlyStructuralDamage = true };
+            var hit = new ArmorImpactResult { Outcome = ImpactOutcome.Penetration, StructuralDamage = 30f, FireChance = 1f };
+            Assert.That(hit.Penetrated, Is.True);
+            for (int i = 0; i < 200; i++)
+            {
+                state.ApplyImpact(hit, ArmorZone.BeltEnds, true, 120f);
+                state.ApplyImpact(hit, ArmorZone.BeltMidships, true, 120f);
+                state.Step(1f);
+            }
+            Assert.That(state.IsSunk, Is.False);
+            Assert.That(state.InflowRate, Is.Zero);
+            Assert.That(state.WaterTonnes, Is.Zero);
+            Assert.That(state.OnFire, Is.False);
+            Assert.That(state.BoilerDamage, Is.Zero);
+            Assert.That(state.SteeringJammed, Is.False);
+            Assert.That(state.PropulsionFactor, Is.EqualTo(1f));
+            Assert.That(state.IntegrityFraction, Is.LessThan(1f), "el casco sí acusa los golpes");
+        }
+
+        [Test]
+        public void Partida_UnRoceNoAcabaElActoPeroCuenta()
+        {
+            var runner = new MissionRunner(Chapter());
+            RunUntil(runner, () => runner.CurrentStage.Id == S.Ram);
+            runner.Facts.Add(F.RamsDodged);
+            RunUntil(runner, () => false, 10f);
+            Assert.That(runner.CurrentStage.Id, Is.EqualTo(S.Ram), "esquivar no termina el acto: el Huáscar vuelve a la carga");
+            Assert.That(runner.IsObjectiveComplete(runner.Script.Stage(S.Ram).Objectives.First(o => o.Id == "esquivar")), Is.True);
+            runner.Facts.Add(F.Rams);
+            RunUntil(runner, () => runner.CurrentStage.Id == S.Turret);
+            Assert.That(runner.CurrentStage.Id, Is.EqualTo(S.Turret));
         }
 
         [Test]

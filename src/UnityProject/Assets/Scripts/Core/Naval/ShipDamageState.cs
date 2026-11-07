@@ -117,9 +117,9 @@ namespace Pacifico.Core.Naval
         public void ApplyImpact(ArmorImpactResult impact, ArmorZone zone, bool belowWaterline, float caliberMm)
         {
             if (IsSunk) return;
-            AddStructuralDamage(impact.StructuralDamage);
+            AddStructuralDamage(impact.StructuralDamage * IncomingDamageScale);
 
-            if (impact.Penetrated)
+            if (impact.Penetrated && !OnlyStructuralDamage)
             {
                 if (_random.NextDouble() < impact.FireChance) FireIntensity = Math.Min(MaxFireIntensity, FireIntensity + FireIntensityPerIgnition);
                 if (belowWaterline) InflowRate += caliberMm / 100f;
@@ -169,7 +169,7 @@ namespace Pacifico.Core.Naval
                 float growth = FireGrowthPerSecond * FireIntensity * (1f - FireIntensity / MaxFireIntensity);
                 float extinguish = FireSelfExtinguishPerSecond + (brigade(DamageControlAction.FireFighting) ? BrigadeExtinguishPerSecond : 0f);
                 FireIntensity = MathUtil.Clamp(FireIntensity + (growth - extinguish) * dt, 0f, MaxFireIntensity);
-                AddStructuralDamage(FireDamagePerSecond * FireIntensity * dt);
+                AddStructuralDamage(FireDamagePerSecond * FireIntensity * dt * IncomingDamageScale);
             }
 
             // Inundación: entra agua por las vías, las bombas achican; la brigada además tapona.
@@ -240,6 +240,18 @@ namespace Pacifico.Core.Naval
             _steeringRepairProgress = 0f;
         }
 
+        /// <summary>Vuelve al estado de un punto de control (incendios y brigada, a cero: se retoma con la brigada lista).</summary>
+        public void Restore(float structuralDamage, float waterTonnes, float inflowRate, float boilerDamage, bool framesBroken)
+        {
+            StructuralDamage = MathUtil.Clamp(structuralDamage, 0f, StructureCapacity);
+            WaterTonnes = Math.Max(0f, waterTonnes);
+            InflowRate = Math.Max(0f, inflowRate);
+            BoilerDamage = MathUtil.Clamp01(boilerDamage);
+            FramesBroken = framesBroken;
+            FireIntensity = 0f;
+            CheckSunk();
+        }
+
         /// <summary>Tope de agua y de daño estructural mientras <see cref="KeepAfloat"/> está activo (fracción).</summary>
         public const float KeepAfloatMaxFraction = 0.92f;
 
@@ -249,6 +261,16 @@ namespace Pacifico.Core.Naval
         /// Sin esto, la Esmeralda del modelo se iría a pique tras el primer espolonazo y no habría un tercero.
         /// </summary>
         public bool KeepAfloat { get; set; }
+
+        /// <summary>Multiplica el daño de los impactos y del fuego: el peligro que un capítulo quiere para este buque.</summary>
+        public float IncomingDamageScale { get; set; } = 1f;
+
+        /// <summary>
+        /// Los impactos solo marcan el casco: sin incendios, vías de agua, calderas ni timón. Para el buque que la historia
+        /// necesita entero (el Huáscar en Iquique apenas sufrió daños): así sigue gobernando y embistiendo, y los disparos
+        /// del jugador en un acto no lo hunden en el siguiente.
+        /// </summary>
+        public bool OnlyStructuralDamage { get; set; }
 
         private void CheckSunk()
         {

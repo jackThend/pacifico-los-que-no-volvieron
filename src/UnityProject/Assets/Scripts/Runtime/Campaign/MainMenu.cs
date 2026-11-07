@@ -64,7 +64,17 @@ namespace Pacifico.Campaign
                 return;
             }
             ChapterEntry next = CampaignCatalog.Continue(_progress);
-            if (next != null && GUI.Button(new Rect(x, y, width, 44f), "Continuar: " + Label(next), _button)) CampaignNavigator.Load(next);
+            MissionCheckpoint checkpoint = CheckpointStore.Current;
+            ChapterEntry saved = null;
+            foreach (ChapterEntry chapter in CampaignCatalog.Chapters)
+            {
+                if (checkpoint != null && chapter.Id == checkpoint.ChapterId) saved = chapter;
+            }
+            if (saved != null)
+            {
+                if (GUI.Button(new Rect(x, y, width, 44f), "Continuar: Capítulo " + saved.Number + " · " + checkpoint.StageTitle, _button)) CampaignNavigator.ResumeCheckpoint();
+            }
+            else if (next != null && GUI.Button(new Rect(x, y, width, 44f), "Continuar: " + Label(next), _button)) CampaignNavigator.Load(next);
             y += 60f;
             foreach (ChapterEntry chapter in CampaignCatalog.Chapters)
             {

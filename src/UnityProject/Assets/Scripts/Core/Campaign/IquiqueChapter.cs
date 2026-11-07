@@ -21,6 +21,9 @@ namespace Pacifico.Core.Campaign
         /// <summary>Si el jugador no dispara, la historia sigue igualmente (s).</summary>
         public const float BroadsideStageTimeoutSeconds = 240f;
         public const float TurretStageTimeoutSeconds = 150f;
+        /// <summary>Salidas de seguridad (s): si el espolonazo no llega, la historia sigue. Diseño, por encima de lo normal.</summary>
+        public const float RamStageTimeoutSeconds = 240f;
+        public const float ThirdRamStageTimeoutSeconds = 240f;
 
         /// <summary>Hechos que escribe la escena.</summary>
         public static class Facts
@@ -34,6 +37,8 @@ namespace Pacifico.Core.Campaign
             public const string WaterlineHits = "impactos_linea_de_flotacion";
             public const string ShotsAfterSinking = "disparos_tras_hundimiento";
             public const string SurvivorsRescued = "naufragos_rescatados";
+            /// <summary>Embestidas del Huáscar que la Esmeralda reduce a un roce maniobrando (acto I).</summary>
+            public const string RamsDodged = "espolonazos_esquivados";
         }
 
         /// <summary>Marcas: las primeras las pone la escena; las demás, el guion para que la escena reaccione.</summary>
@@ -64,6 +69,8 @@ namespace Pacifico.Core.Campaign
         {
             public const string EsmeraldaBattery = "esmeralda_bateria";
             public const string HuascarTurret = "huascar_torre";
+            /// <summary>Timón, máquina y torre del Huáscar: el jugador da los espolonazos.</summary>
+            public const string HuascarHelm = "huascar_espolon";
             public const string HuascarBridge = "huascar_puente";
             public const string Document = "documento";
         }
@@ -100,9 +107,10 @@ namespace Pacifico.Core.Campaign
             deck.OnEnter.Add(Narrate("21 de mayo de 1879, rada de Iquique. Corbeta Esmeralda. Grumete Wenceslao Vargas, batería de 40 libras."));
             deck.OnEnter.Add(Narrate("El monitor Huáscar emerge de la bruma. Hacia el sur, la Independencia persigue a la Covadonga."));
             deck.OnEnter.Add(Hint("Espacio: andanada. Dispara cuando la cubierta pase por la horizontal: si escora, el tiro sale corto o largo."));
+            deck.OnEnter.Add(Hint("W/S: máquina. A/D: timón. Aléjate de las baterías de tierra y pon al Huáscar en la zona verde de arriba."));
             deck.Objectives.Add(new MissionObjective
             {
-                Id = "andanadas", Text = "Dispara las andanadas de estribor contra el Huáscar",
+                Id = "andanadas", Text = "Dispara las andanadas contra el Huáscar",
                 Complete = MissionCondition.AtLeast(Facts.Broadsides, 3), ProgressFact = Facts.Broadsides, ProgressTarget = 3,
             });
             deck.Objectives.Add(new MissionObjective
@@ -130,14 +138,22 @@ namespace Pacifico.Core.Campaign
             // ---- Acto I: el espolón ---------------------------------------------------------------------------
             var ram = new MissionStage { Id = Stages.Ram, Title = "El espolón", Perspective = Perspectives.EsmeraldaBattery };
             ram.OnEnter.Add(Narrate("El Huáscar vira y arremete contra la Esmeralda con el espolón por delante."));
-            ram.OnEnter.Add(Hint("Sigue disparando mientras se acerca."));
+            ram.OnEnter.Add(Hint("Gira para darle la proa o la popa: de refilón, el espolón solo roza. Y sigue disparando."));
             ram.Objectives.Add(new MissionObjective
             {
                 Id = "resistir", Text = "Resiste la embestida del Huáscar", Complete = MissionCondition.AtLeast(Facts.Rams, 1),
             });
+            ram.Objectives.Add(new MissionObjective
+            {
+                Id = "esquivar", Text = "Haz que el espolón solo roce", Optional = true, Complete = MissionCondition.AtLeast(Facts.RamsDodged, 1),
+            });
+            var dodged = new MissionTrigger { Id = "roce", When = MissionCondition.AtLeast(Facts.RamsDodged, 1) };
+            dodged.Lines.Add(Narrate("El espolón resbala por el costado: Prat ha maniobrado a tiempo. El Huáscar da atrás y vuelve a la carga."));
+            ram.Triggers.Add(dodged);
             var boarding = new MissionTrigger
             {
-                Id = "al_abordaje", When = MissionCondition.AtLeast(Facts.Rams, 1), Interrupts = true, SetsFlag = Flags.PratBoards,
+                Id = "al_abordaje", Interrupts = true, SetsFlag = Flags.PratBoards,
+                When = MissionCondition.Any(MissionCondition.AtLeast(Facts.Rams, 1), MissionCondition.StageTime(RamStageTimeoutSeconds)),
             };
             boarding.Lines.Add(Narrate("El espolón parte las cuadernas de babor. El agua entra a raudales."));
             boarding.Lines.Add(Say(Prat, "¡Al abordaje"));
@@ -166,17 +182,22 @@ namespace Pacifico.Core.Campaign
                 Stages.ThirdRam));
             script.Stages.Add(turret);
 
-            var third = new MissionStage { Id = Stages.ThirdRam, Title = "El tercer espolonazo", Perspective = Perspectives.HuascarTurret };
+            var third = new MissionStage { Id = Stages.ThirdRam, Title = "El tercer espolonazo", Perspective = Perspectives.HuascarHelm };
             third.OnEnter.Add(Narrate("Grau ordena embestir de nuevo. La Esmeralda sigue disparando con sus últimos cañones a flor de agua."));
+            third.OnEnter.Add(Hint("W: toda máquina. A/D: timón. Lanza el espolón contra su costado, no de refilón. Tras el golpe, S: atrás."));
             third.Objectives.Add(new MissionObjective
             {
-                Id = "espolonazos", Text = "Mantén el fuego mientras el Huáscar embiste",
+                Id = "espolonazos", Text = "Embiste a la Esmeralda con el espolón",
                 Complete = MissionCondition.AtLeast(Facts.Rams, 3), ProgressFact = Facts.Rams, ProgressTarget = 3,
             });
             var second = new MissionTrigger { Id = "segundo_espolonazo", When = MissionCondition.AtLeast(Facts.Rams, 2) };
             second.Lines.Add(Narrate("Segundo espolonazo. La corbeta escora, pero su pabellón sigue arriba."));
             third.Triggers.Add(second);
-            third.Triggers.Add(new MissionTrigger { Id = "a_pique", When = MissionCondition.AtLeast(Facts.Rams, 3), SetsFlag = Flags.FounderEsmeralda });
+            third.Triggers.Add(new MissionTrigger
+            {
+                Id = "a_pique", SetsFlag = Flags.FounderEsmeralda,
+                When = MissionCondition.Any(MissionCondition.AtLeast(Facts.Rams, 3), MissionCondition.StageTime(ThirdRamStageTimeoutSeconds)),
+            });
             third.Transitions.Add(new MissionTransition(sunk, Stages.Survivors));
             script.Stages.Add(third);
 

@@ -19,6 +19,20 @@ namespace Pacifico.Campaign
             SceneManager.LoadScene(chapter.Scene);
         }
 
+        /// <summary>Vuelve al último punto de control guardado, sea del capítulo que sea.</summary>
+        public static void ResumeCheckpoint()
+        {
+            MissionCheckpoint checkpoint = CheckpointStore.Current;
+            if (checkpoint == null) return;
+            foreach (ChapterEntry chapter in CampaignCatalog.Chapters)
+            {
+                if (chapter.Id != checkpoint.ChapterId) continue;
+                CheckpointStore.RequestResume();
+                Load(chapter);
+                return;
+            }
+        }
+
         public static void Menu()
         {
             Time.timeScale = 1f;
@@ -34,13 +48,14 @@ namespace Pacifico.Campaign
                 if (next != null) Load(next);
                 else Menu();
             }
+            if (!completed && CheckpointStore.ExistsFor(chapterId) && GameInput.Pressed(GameKey.C)) ResumeCheckpoint();
             if (GameInput.Pressed(GameKey.M)) Menu();
         }
 
         /// <summary>Texto de ayuda del panel final.</summary>
         public static string EndHint(string chapterId, bool completed)
         {
-            if (!completed) return "[R] reintentar · [M] menú";
+            if (!completed) return CheckpointStore.ExistsFor(chapterId) ? "[C] punto de control · [R] desde el principio · [M] menú" : "[R] reintentar · [M] menú";
             return CampaignCatalog.Next(chapterId) != null ? "[N] siguiente capítulo · [R] volver a jugar · [M] menú" : "[R] volver a jugar · [M] menú";
         }
     }

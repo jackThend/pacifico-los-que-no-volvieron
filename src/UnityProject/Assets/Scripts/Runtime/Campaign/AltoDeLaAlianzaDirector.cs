@@ -47,6 +47,7 @@ namespace Pacifico.Campaign
         [SerializeField] private AudioClip huayno;
 
         private MissionRunner _runner;
+        private MissionCheckpoint _resume;
         private readonly MissionHud _hud = new MissionHud();
         private readonly List<SquadController> _chileans = new List<SquadController>();
         private string _stage;
@@ -78,9 +79,25 @@ namespace Pacifico.Campaign
             rearGuard = rear;
         }
 
+        /// <summary>Antes del Start de las escuadras: con un punto de control, empiezan donde estaban y con quienes quedaban.</summary>
+        private void Awake()
+        {
+            MissionCheckpoint checkpoint = CheckpointStore.Peek(AltoDeLaAlianzaChapter.Id);
+            if (checkpoint == null) return;
+            for (int i = 0; i < playerSquads.Length; i++)
+            {
+                int men = Mathf.RoundToInt(checkpoint.Get("sq" + i + ".hombres"));
+                if (men <= 0) playerSquads[i].gameObject.SetActive(false);
+                else playerSquads[i].OverrideStart(new Vector3(checkpoint.Get("sq" + i + ".x"), playerSquads[i].transform.position.y, checkpoint.Get("sq" + i + ".z")),
+                                                   Quaternion.Euler(0f, checkpoint.Get("sq" + i + ".rumbo"), 0f), men);
+            }
+        }
+
         private void Start()
         {
             _runner = new MissionRunner(AltoDeLaAlianzaChapter.Build(GuionQuotes.Extract(guionChapter, AltoDeLaAlianzaChapter.ChapterHeading), playerSquads.Length));
+            _resume = CheckpointStore.Take(AltoDeLaAlianzaChapter.Id);
+            if (!_runner.Resume(_resume)) _resume = null;
             SquadController.CasualtiesTaken += OnCasualties;
             foreach (SquadArtillery gun in leftFlankGuns) gun.Captured += OnGunCaptured;
             foreach (SquadArtillery gun in chileanBattery) gun.Firing = false; // bajo la camanchaca no se ve a quién tirar
@@ -136,6 +153,7 @@ namespace Pacifico.Campaign
                 return;
             }
 
+            if (_resume != null) RestoreWorld();
             if (_stage == S.Charge && !_charged && GameInput.Pressed(GameKey.C)) OrderCharge();
             if (_stage == S.Retreat) EvacuateArrivals();
             UpdateFacts();
@@ -146,7 +164,43 @@ namespace Pacifico.Campaign
             {
                 _stage = _runner.CurrentStage.Id;
                 EnterStage(_stage);
+                if (_stage == S.Charge || _stage == S.Retreat) SaveCheckpoint();
             }
+        }
+
+        /// <summary>Puntos de control: al ceder la izquierda y al cerrarse la tenaza.</summary>
+        private void SaveCheckpoint()
+        {
+            MissionCheckpoint checkpoint = MissionCheckpoint.Capture(_runner);
+            for (int i = 0; i < playerSquads.Length; i++)
+            {
+                SquadController squad = playerSquads[i];
+                if (squad == null || !squad.IsAlive || squad.Evacuated) continue;
+                Vector3 p = squad.Anchor, f = squad.Facing;
+                checkpoint.Data["sq" + i + ".hombres"] = squad.Strength;
+                checkpoint.Data["sq" + i + ".x"] = p.x;
+                checkpoint.Data["sq" + i + ".z"] = p.z;
+                checkpoint.Data["sq" + i + ".rumbo"] = Quaternion.LookRotation(f, Vector3.up).eulerAngles.y;
+            }
+            CheckpointStore.Save(checkpoint);
+        }
+
+        /// <summary>Primer fotograma tras volver a un punto de control: el frente chileno como corresponde a la etapa.</summary>
+        private void RestoreWorld()
+        {
+            MissionCheckpoint checkpoint = _resume;
+            _resume = null;
+            _stage = checkpoint.StageId;
+            if (_stage == S.Charge)
+            {
+                EnterStage(S.Advance);
+                FlankGives();
+            }
+            else
+            {
+                foreach (SquadArtillery gun in chileanBattery) gun.Firing = true;
+            }
+            EnterStage(_stage);
         }
 
         private void UpdateFacts()

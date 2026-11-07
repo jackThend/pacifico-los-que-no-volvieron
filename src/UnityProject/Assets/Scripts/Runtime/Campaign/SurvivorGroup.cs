@@ -95,7 +95,7 @@ namespace Pacifico.Campaign
             string blocker = _rescue.Blocker(distance, _rescuer.Motion.Speed);
             string text = men + " náufragos · " + distance.ToString("0") + " m" +
                           (blocker != null ? "\n" + blocker : "\nArriando bote… " + (_rescue.Progress * 100f).ToString("0") + "%");
-            var rect = new Rect(screen.x - 120f, Screen.height - screen.y - 24f, 240f, 40f);
+            var rect = new Rect(screen.x - 180f, Screen.height - screen.y - 24f, 360f, 40f);
             GUI.color = new Color(0f, 0f, 0f, 0.8f);
             GUI.Label(new Rect(rect.x + 1f, rect.y + 1f, rect.width, rect.height), text, _style);
             GUI.color = blocker == null ? new Color(0.6f, 1f, 0.7f) : Color.white;
@@ -103,7 +103,7 @@ namespace Pacifico.Campaign
             if (_rescue.Progress > 0f)
             {
                 GUI.color = new Color(0.5f, 1f, 0.6f, 0.9f);
-                GUI.DrawTexture(new Rect(rect.x + 60f, rect.yMax + 2f, 120f * _rescue.Progress, 4f), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(rect.x + 120f, rect.yMax + 2f, 120f * _rescue.Progress, 4f), Texture2D.whiteTexture);
             }
             GUI.color = Color.white;
         }

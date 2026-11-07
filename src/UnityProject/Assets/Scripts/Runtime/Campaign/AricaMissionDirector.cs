@@ -44,6 +44,7 @@ namespace Pacifico.Campaign
         private const float AssaultChargeWithinM = 40f;
 
         private MissionRunner _runner;
+        private MissionCheckpoint _resume;
         private Combatant _playerCombatant;
         private WeaponSpec _bayonetSpec;
         private readonly List<RiflemanAI> _defenders = new List<RiflemanAI>();
@@ -82,6 +83,8 @@ namespace Pacifico.Campaign
         private void Start()
         {
             _runner = new MissionRunner(AricaChapter.Build(GuionQuotes.Extract(guionChapter, AricaChapter.ChapterHeading)));
+            _resume = CheckpointStore.Take(AricaChapter.Id);
+            if (!_runner.Resume(_resume)) _resume = null;
             _playerCombatant = player.GetComponent<Combatant>();
             _bayonetSpec = bayonet != null ? bayonet.ToSpec() : null;
             Combatant.Downed += OnDowned;
@@ -144,6 +147,7 @@ namespace Pacifico.Campaign
                 return;
             }
 
+            if (_resume != null) RestoreWorld();
             if (_stage != S.Council) WeaponPickup.UpdatePlayer(player);
             if (_stage == S.Withdraw && Flat(player.transform.position, summit.position) <= summitRadius) _runner.Facts.SetFlag(G.AtSummit);
             if (_runner.Facts.Flag(G.BolognesiFalls) && _officersFall < 1f)
@@ -158,6 +162,36 @@ namespace Pacifico.Campaign
             {
                 _stage = _runner.CurrentStage.Id;
                 EnterStage(_stage);
+                if (_stage == S.Parapet || _stage == S.Withdraw) SaveCheckpoint();
+            }
+        }
+
+        /// <summary>Puntos de control: al empezar el asalto (sin repetir la junta) y al retirarse hacia la explanada.</summary>
+        private void SaveCheckpoint()
+        {
+            MissionCheckpoint checkpoint = MissionCheckpoint.Capture(_runner);
+            CheckpointStore.WritePlayer(checkpoint, player);
+            CheckpointStore.Save(checkpoint);
+        }
+
+        private void RestoreWorld()
+        {
+            MissionCheckpoint checkpoint = _resume;
+            _resume = null;
+            _stage = checkpoint.StageId;
+            CheckpointStore.ReadPlayer(checkpoint, player);
+            SetPlayerControl(true);
+            if (_stage == S.Withdraw) SpawnDefenders();
+            EnterStage(_stage);
+        }
+
+        private void SpawnDefenders()
+        {
+            for (int i = 0; i < defenderPosts.Length; i++)
+            {
+                RiflemanAI defender = Spawn("Artesanos_de_Tacna_" + (i + 1), Faction.Peru, defenderPosts[i], peruRifle, 40, peruLook);
+                defender.HoldPosition = true;
+                _defenders.Add(defender);
             }
         }
 
@@ -166,12 +200,7 @@ namespace Pacifico.Campaign
             if (stage == S.Parapet)
             {
                 SetPlayerControl(true);
-                for (int i = 0; i < defenderPosts.Length; i++)
-                {
-                    RiflemanAI defender = Spawn("Artesanos_de_Tacna_" + (i + 1), Faction.Peru, defenderPosts[i], peruRifle, 40, peruLook);
-                    defender.HoldPosition = true;
-                    _defenders.Add(defender);
-                }
+                SpawnDefenders();
                 SpawnWave(10, parapet.position);
                 if (gatling != null) gatling.Firing = true;
                 if (detonator != null) detonator.Active = true;

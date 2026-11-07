@@ -52,7 +52,6 @@ namespace Pacifico.Naval
             // Se registran siempre; solo hablan mientras el jugador manda este buque (el capítulo 1 cambia de bando).
             if (NavalHud.Active != null)
             {
-                NavalHud.Active.ExtraLines.Add(() => Shown ? StatusLine() : string.Empty);
                 NavalHud.Active.ExtraLines.Add(() => Shown ? BrigadeLine() : string.Empty);
                 NavalHud.Active.ExtraLines.Add(() => Shown ? _lastEvent : string.Empty);
             }
@@ -123,16 +122,6 @@ namespace Pacifico.Naval
             Sunk?.Invoke(this);
         }
 
-        private string StatusLine()
-        {
-            if (State == null) return string.Empty;
-            return "Casco " + (State.IntegrityFraction * 100f).ToString("0") + "%  ·  Agua " + State.WaterTonnes.ToString("0") + "/" +
-                   State.ReserveBuoyancy.ToString("0") + " t  ·  " + (State.OnFire ? "FUEGO" : "sin fuego") +
-                   "  ·  Vapor " + ((1f - State.BoilerDamage) * 100f).ToString("0") + "%" +
-                   (State.SteeringJammed ? "  ·  TIMÓN TRABADO" : string.Empty) +
-                   (State.FramesBroken ? "  ·  CUADERNAS PARTIDAS" : string.Empty);
-        }
-
         private string BrigadeLine()
         {
             if (State == null) return string.Empty;
@@ -142,7 +131,7 @@ namespace Pacifico.Naval
             }
             return State.CooldownRemaining > 0f
                 ? "Brigada: descansando " + State.CooldownRemaining.ToString("0") + " s"
-                : "Brigada lista: [1] incendios  [2] achique  [3] vapor";
+                : "Brigada lista: [1] fuego  [2] agua  [3] vapor y timón";
         }
 
         private static string ActionName(DamageControlAction action)

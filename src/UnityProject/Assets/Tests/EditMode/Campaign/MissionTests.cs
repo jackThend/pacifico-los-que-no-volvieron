@@ -34,6 +34,47 @@ namespace Pacifico.Tests.Campaign
         }
 
         [Test]
+        public void PuntoDeControl_SeGuardaSeLeeYRetomaLaEtapa()
+        {
+            MissionScript Script() => TarapacaChapter.Build(Read);
+            var first = new MissionRunner(Script());
+            first.Facts.Set(TarapacaChapter.Facts.EnemiesDown, TarapacaChapter.DefaultVillageEnemies);
+            first.Facts.SetFlag(TarapacaChapter.Flags.AtRally);
+            for (int i = 0; i < 5000 && first.CurrentStage.Id != TarapacaChapter.Stages.Krupp; i++) first.Step(0.1f);
+            Assert.That(first.CurrentStage.Id, Is.EqualTo(TarapacaChapter.Stages.Krupp));
+
+            MissionCheckpoint saved = MissionCheckpoint.Capture(first);
+            saved.Data["jugador.x"] = -12.5f;
+            MissionCheckpoint loaded = MissionCheckpoint.Parse(saved.Serialize());
+            Assert.That(loaded.ChapterId, Is.EqualTo(TarapacaChapter.Id));
+            Assert.That(loaded.StageTitle, Is.EqualTo(saved.StageTitle));
+            Assert.That(loaded.Get("jugador.x"), Is.EqualTo(-12.5f));
+            Assert.That(loaded.Serialize(), Is.EqualTo(saved.Serialize()));
+
+            var second = new MissionRunner(Script());
+            Assert.That(second.Resume(loaded), Is.True);
+            Assert.That(second.CurrentStage.Id, Is.EqualTo(TarapacaChapter.Stages.Krupp));
+            Assert.That(second.StageTime, Is.Zero, "la etapa empieza de cero");
+            Assert.That(second.Facts.Flag(TarapacaChapter.Flags.AtRally), Is.True);
+            Assert.That(second.Facts.Get(TarapacaChapter.Facts.EnemiesDown), Is.EqualTo((float)TarapacaChapter.DefaultVillageEnemies));
+            second.Step(0.1f);
+            Assert.That(second.State, Is.EqualTo(MissionState.Running));
+        }
+
+        [Test]
+        public void PuntoDeControl_AjenoOVacioNoRompeNada()
+        {
+            var runner = new MissionRunner(TarapacaChapter.Build(Read));
+            string start = runner.CurrentStage.Id;
+            Assert.That(runner.Resume(null), Is.False);
+            Assert.That(runner.Resume(new MissionCheckpoint { ChapterId = "otro", StageId = start }), Is.False);
+            Assert.That(runner.Resume(new MissionCheckpoint { ChapterId = TarapacaChapter.Id, StageId = "no_existe" }), Is.False);
+            Assert.That(runner.CurrentStage.Id, Is.EqualTo(start));
+            Assert.That(MissionCheckpoint.Parse(null), Is.Null);
+            Assert.That(MissionCheckpoint.Parse("basura mas"), Is.Null);
+        }
+
+        [Test]
         public void Runner_ObjetivosReaccionesYTransiciones()
         {
             var runner = new MissionRunner(TwoStages());

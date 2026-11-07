@@ -45,6 +45,7 @@ namespace Pacifico.Campaign
         [SerializeField] private SoldierLook civilLook = new SoldierLook();
 
         private MissionRunner _runner;
+        private MissionCheckpoint _resume;
         private Combatant _playerCombatant;
         private WeaponSpec _bayonetSpec;
         private readonly HashSet<Combatant> _redoubtDefenders = new HashSet<Combatant>();
@@ -91,6 +92,8 @@ namespace Pacifico.Campaign
         private void Start()
         {
             _runner = new MissionRunner(MirafloresChapter.Build(GuionQuotes.Extract(guionChapter, MirafloresChapter.ChapterHeading)));
+            _resume = CheckpointStore.Take(MirafloresChapter.Id);
+            if (!_runner.Resume(_resume)) _resume = null;
             _playerCombatant = player.GetComponent<Combatant>();
             _bayonetSpec = bayonet != null ? bayonet.ToSpec() : null;
             _pivot = player.ViewCamera != null ? player.ViewCamera.transform.parent : null;
@@ -157,7 +160,7 @@ namespace Pacifico.Campaign
         private void Update()
         {
             if (_runner == null) return;
-            if (_slowUntil > 0f && Time.unscaledTime >= _slowUntil)
+            if (_slowUntil > 0f && !PauseMenu.IsPaused && Time.unscaledTime >= _slowUntil)
             {
                 _slowUntil = -1f;
                 Time.timeScale = 1f;
@@ -178,6 +181,7 @@ namespace Pacifico.Campaign
                 return;
             }
 
+            if (_resume != null) RestoreWorld();
             if (_stage == S.Gardens || _stage == S.Redoubt || _stage == S.Guns) WeaponPickup.UpdatePlayer(player);
             if (_stage == S.Gardens && redoubt != null && Flat(player.transform.position, redoubt.position) <= redoubtRadius + 10f) _runner.Facts.SetFlag(G.AtRedoubt);
             if (_runner.Facts.Get(F.GunsSilenced) >= MirafloresChapter.RedoubtGuns && flag != null && _flagFall < 1f)
@@ -193,27 +197,52 @@ namespace Pacifico.Campaign
             {
                 _stage = _runner.CurrentStage.Id;
                 EnterStage(_stage);
+                if (_stage == S.Gardens || _stage == S.Redoubt || _stage == S.Guns) SaveCheckpoint();
             }
+        }
+
+        /// <summary>Puntos de control: al empezar a avanzar (sin repetir el prólogo), ante el reducto y al llegar a las piezas.</summary>
+        private void SaveCheckpoint()
+        {
+            MissionCheckpoint checkpoint = MissionCheckpoint.Capture(_runner);
+            CheckpointStore.WritePlayer(checkpoint, player);
+            CheckpointStore.WritePlayerWeapon(checkpoint, player);
+            CheckpointStore.Save(checkpoint);
+        }
+
+        private void RestoreWorld()
+        {
+            MissionCheckpoint checkpoint = _resume;
+            _resume = null;
+            _stage = checkpoint.StageId;
+            CheckpointStore.ReadPlayer(checkpoint, player, comblain, defenderRifle);
+            if (_stage != S.Gardens) StartBattle(false); // los jardines ya se cruzaron: sin reservistas
+            EnterStage(_stage);
+        }
+
+        private void StartBattle(bool gardenDefenders)
+        {
+            SetPlayerControl(true);
+            if (bombardment != null) bombardment.Firing = true;
+            for (int i = 0; i < squadSpawns.Length; i++)
+            {
+                RiflemanAI mate = Spawn("3.º de Línea_" + (i + 1), Faction.Chile, squadSpawns[i], comblain, 60, chileLook);
+                mate.Objective = redoubt.position + new Vector3((i - 2) * 3f, 0f, -12f);
+                mate.Brain.EngageRangeM = 120f;
+            }
+            for (int i = 0; gardenDefenders && i < gardenPosts.Length; i++)
+            {
+                RiflemanAI defender = Spawn("Reservista_" + (i + 1), Faction.Peru, gardenPosts[i], defenderRifle, 25, civilLook);
+                defender.HoldPosition = true;
+            }
+            foreach (KruppGun gun in redoubtGuns) gun.Firing = true;
         }
 
         private void EnterStage(string stage)
         {
             if (stage == S.Gardens)
             {
-                SetPlayerControl(true);
-                if (bombardment != null) bombardment.Firing = true;
-                for (int i = 0; i < squadSpawns.Length; i++)
-                {
-                    RiflemanAI mate = Spawn("3.º de Línea_" + (i + 1), Faction.Chile, squadSpawns[i], comblain, 60, chileLook);
-                    mate.Objective = redoubt.position + new Vector3((i - 2) * 3f, 0f, -12f);
-                    mate.Brain.EngageRangeM = 120f;
-                }
-                for (int i = 0; i < gardenPosts.Length; i++)
-                {
-                    RiflemanAI defender = Spawn("Reservista_" + (i + 1), Faction.Peru, gardenPosts[i], defenderRifle, 25, civilLook);
-                    defender.HoldPosition = true;
-                }
-                foreach (KruppGun gun in redoubtGuns) gun.Firing = true;
+                StartBattle(true);
             }
             else if (stage == S.Redoubt)
             {

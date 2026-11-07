@@ -10,11 +10,11 @@ namespace Pacifico.Core.Campaign
     public sealed class SurvivorRescue
     {
         /// <summary>Distancia máxima de la borda a los náufragos para arriar un bote (m). Diseño.</summary>
-        public const float DefaultRadiusM = 45f;
-        /// <summary>Arrancada máxima para arriar botes con seguridad: unos tres nudos.</summary>
-        public const float DefaultMaxSpeedMps = 1.6f;
+        public const float DefaultRadiusM = 70f;
+        /// <summary>Arrancada máxima para arriar botes con seguridad: unos cinco nudos.</summary>
+        public const float DefaultMaxSpeedMps = 2.5f;
         /// <summary>Tiempo de juego para arriar, recoger y subir a bordo (s). Comprimido respecto a la realidad.</summary>
-        public const float DefaultHoldSeconds = 4f;
+        public const float DefaultHoldSeconds = 3f;
         /// <summary>Velocidad con la que se pierde el progreso fuera de condiciones (fracción de la de avance).</summary>
         public const float DecayFactor = 0.5f;
 

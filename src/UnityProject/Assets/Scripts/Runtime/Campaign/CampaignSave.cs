@@ -24,6 +24,7 @@ namespace Pacifico.Campaign
         {
             CampaignProgress progress = Load();
             bool isNew = progress.Complete(mission);
+            CheckpointStore.Clear(mission.Id);
             PlayerPrefs.SetString(Key, progress.Serialize());
             PlayerPrefs.Save();
             return isNew;

@@ -62,6 +62,7 @@ namespace Pacifico.Campaign
         private const float GateBlastHurtM = 9f;
 
         private MissionRunner _runner;
+        private MissionCheckpoint _resume;
         private Combatant _playerCombatant;
         private WeaponSpec _bayonetSpec;
         private readonly MissionHud _hud = new MissionHud();
@@ -114,6 +115,8 @@ namespace Pacifico.Campaign
         private void Start()
         {
             _runner = new MissionRunner(C.Build(GuionQuotes.Extract(guionChapter, C.ChapterHeading)));
+            _resume = CheckpointStore.Take(C.Id);
+            if (!_runner.Resume(_resume)) _resume = null;
             _playerCombatant = player.GetComponent<Combatant>();
             _bayonetSpec = bayonet != null ? bayonet.ToSpec() : null;
             Combatant.Downed += OnDowned;
@@ -222,6 +225,7 @@ namespace Pacifico.Campaign
                 return;
             }
 
+            if (_resume != null) RestoreWorld();
             if (_stage == S.Assault) WeaponPickup.UpdatePlayer(player);
             if (_runner.Facts.Flag(G.PatrolBlast) && !_blastDone) PatrolBlast();
             if (_stage == S.Blood && _blastDone) Hail();
@@ -250,7 +254,38 @@ namespace Pacifico.Campaign
             {
                 _stage = _runner.CurrentStage.Id;
                 EnterStage(_stage);
+                if (_stage == S.Silence || _stage == S.Blood || _stage == S.Assault) SaveCheckpoint();
             }
+        }
+
+        /// <summary>Puntos de control: al entrar en el cañaveral, al estallar la patrulla y al empezar el asalto.</summary>
+        private void SaveCheckpoint()
+        {
+            MissionCheckpoint checkpoint = MissionCheckpoint.Capture(_runner);
+            CheckpointStore.WritePlayer(checkpoint, player);
+            CheckpointStore.WritePlayerWeapon(checkpoint, player);
+            CheckpointStore.Save(checkpoint);
+        }
+
+        private void RestoreWorld()
+        {
+            MissionCheckpoint checkpoint = _resume;
+            _resume = null;
+            _stage = checkpoint.StageId;
+            CheckpointStore.ReadPlayer(checkpoint, player, winchester, comblain, remington);
+            SetPlayerControl(true);
+            if (_stage != S.Silence)
+            {
+                // La senda ya estaba abierta: las minas cortadas no vuelven a armarse.
+                foreach (TripwireMine mine in trailMines) mine.gameObject.SetActive(false);
+            }
+            if (_stage == S.Assault)
+            {
+                _blastDone = true;
+                if (patrolMine != null) patrolMine.gameObject.SetActive(false);
+                SpawnWallDefenders();
+            }
+            EnterStage(_stage);
         }
 
         private void EnterStage(string stage)
@@ -277,18 +312,23 @@ namespace Pacifico.Campaign
             _blastDone = true;
             if (patrolMine != null) patrolMine.Detonate();
             if (wounded != null) wounded.Activate(player, WoundedComrade.DefaultBleedSeconds);
-            foreach (Transform post in wallPosts)
-            {
-                RiflemanAI defender = Spawn("Fusilero_peruano_" + _seed, Faction.Peru, post.position, post.eulerAngles.y, remington, 60, peruLook);
-                defender.HoldPosition = true;
-                defender.Brain.EngageRangeM = C.NightSightM; // de noche, solo ven a quien está cerca
-            }
+            SpawnWallDefenders();
             foreach (Transform spawn in finisherSpawns)
             {
                 RiflemanAI f = Spawn("Tirador_peruano_" + _seed, Faction.Peru, spawn.position, spawn.eulerAngles.y, remington, 20, peruLook);
                 f.Brain.EngageRangeM = C.FinisherSightM; // van a por el herido: solo ven a quien tienen encima
                 f.Objective = wounded != null ? wounded.Position : spawn.position;
                 _finishers.Add(f);
+            }
+        }
+
+        private void SpawnWallDefenders()
+        {
+            foreach (Transform post in wallPosts)
+            {
+                RiflemanAI defender = Spawn("Fusilero_peruano_" + _seed, Faction.Peru, post.position, post.eulerAngles.y, remington, 60, peruLook);
+                defender.HoldPosition = true;
+                defender.Brain.EngageRangeM = C.NightSightM; // de noche, solo ven a quien está cerca
             }
         }
 

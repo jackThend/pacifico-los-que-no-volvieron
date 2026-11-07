@@ -77,8 +77,20 @@ namespace Pacifico.Naval
                 case ImpactOutcome.CriticalPenetration: outcome = "PERFORACIÓN CRÍTICA"; break;
                 default: outcome = "PERFORACIÓN"; break;
             }
-            return outcome + " · " + impact.Zone + " · " + impact.ObliquityDeg.ToString("0") + "° · " +
-                   impact.Result.PenetrationMm.ToString("0") + "/" + impact.Result.EffectiveThicknessMm.ToString("0") + " mm";
+            return outcome + " · " + ZoneName(impact.Zone);
+        }
+
+        private static string ZoneName(ArmorZone zone)
+        {
+            switch (zone)
+            {
+                case ArmorZone.BeltMidships: return "cinturón central";
+                case ArmorZone.BeltEnds: return "extremos del casco";
+                case ArmorZone.MainBattery: return "batería";
+                case ArmorZone.ConningTower: return "torre de mando";
+                case ArmorZone.Deck: return "cubierta";
+                default: return "obra muerta";
+            }
         }
     }
 }

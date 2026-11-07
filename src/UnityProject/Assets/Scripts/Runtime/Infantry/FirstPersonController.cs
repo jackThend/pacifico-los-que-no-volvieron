@@ -109,6 +109,16 @@ namespace Pacifico.Infantry
             ApplyCapsule(Motor.Height);
         }
 
+        /// <summary>Lleva al jugador a otro sitio (punto de control).</summary>
+        public void Teleport(Vector3 position, float yawDeg)
+        {
+            bool wasEnabled = _controller.enabled;
+            _controller.enabled = false;
+            transform.SetPositionAndRotation(position, Quaternion.Euler(0f, yawDeg, 0f));
+            _controller.enabled = wasEnabled;
+            _yaw = yawDeg;
+        }
+
         /// <summary>Cambia el arma empuñada (p. ej. recoger un Comblain del suelo en Tarapacá).</summary>
         public void EquipWeapon(WeaponDataSO weaponData)
         {
@@ -141,7 +151,6 @@ namespace Pacifico.Infantry
             float dt = Time.deltaTime;
             if (dt <= 0f) return;
 
-            if (GameInput.Pressed(GameKey.Escape)) SetCursorLocked(Cursor.lockState != CursorLockMode.Locked);
             bool hasFocus = HasInputFocus;
 
             if (hasFocus) UpdateLook();

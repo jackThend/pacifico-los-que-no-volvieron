@@ -40,6 +40,8 @@ namespace Pacifico.Campaign
         [SerializeField] private float aiFireIntervalSeconds = 25f;
         [SerializeField] private float thinkIntervalSeconds = 0.25f;
 
+        private const float CloseAimRangeM = 80f;
+
         private ShipController _ship;
         private ShipDamageController _damage;
         private RammingMode _mode = RammingMode.StandOff;
@@ -167,10 +169,13 @@ namespace Pacifico.Campaign
                 else
                 {
                     // Punto de encuentro: el blanco avanza mientras el espolón recorre la distancia.
-                    float closing = Mathf.Max(1f, _ship.Motion.Speed);
-                    Vector3 meet = target.transform.position + target.Velocity * (range / closing);
+                    Vector3 meet = ShellLauncher.Lead(transform.position, target.transform.position, target.Velocity, Mathf.Max(1f, _ship.Motion.Speed));
+                    // Encima del blanco, a su centro: con adelanto se le pasa rozando sin tocarlo.
+                    if (range < CloseAimRangeM) meet = target.transform.position;
                     desired = Ballistics.Bearing(transform.position.x, transform.position.z, meet.x, meet.z);
                     order = RamOrder;
+                    // Encima y desviado, a toda máquina describe círculos a su alrededor: afloja para cerrar el giro.
+                    if (range < 300f && Mathf.Abs(Mathf.DeltaAngle(_ship.Motion.HeadingDeg, desired)) > 30f) order = EngineOrder.HalfAhead;
                 }
             }
             else

@@ -65,8 +65,9 @@ namespace Pacifico.Campaign
         private string _perspective;
         private string _pendingPerspective;
         private float _fade = -1f;
-        private float _ramWindowStart = -1f;
-        private bool _ramDone;
+        /// <summary>Hasta cuándo dura la carrera de embestida en curso (&lt; 0: ninguna).</summary>
+        private float _ramRunUntil = -1f;
+        private float _nextRamTime;
         private float _lastRamTime = float.NegativeInfinity;
         private bool _unionReleased;
         private bool _foundered;
@@ -74,6 +75,8 @@ namespace Pacifico.Campaign
         private int _plate;
         private bool _recorded;
         private GUIStyle _caption;
+        private MissionCheckpoint _resume;
+        private string _savedStage;
 
         private readonly MissionHud _hud = new MissionHud();
 
@@ -111,6 +114,10 @@ namespace Pacifico.Campaign
         {
             GuionQuotes quotes = GuionQuotes.Extract(guionChapter, C.ChapterHeading);
             _runner = new MissionRunner(C.Build(quotes));
+            _resume = CheckpointStore.Take(C.Id);
+            if (!_runner.Resume(_resume)) _resume = null;
+            _savedStage = _runner.CurrentStage.Id;
+            if (_resume == null) ShortenOpening();
             _openingFireRangeM = C.OpeningFireRangeM();
             _boarding = new SurvivorRescue(C.BoardingRadiusM, C.BoardingMaxSpeedMps, C.BoardingHoldSeconds);
 
@@ -121,6 +128,8 @@ namespace Pacifico.Campaign
             {
                 gunner.Target = huascar;
                 gunner.PlayerFired += OnPlayerFired;
+                gunner.RollForgiveness = C.RollForgiveness;
+                gunner.PerfectRollDeg = C.PerfectRollDeg;
             }
             var huascarHull = huascar.GetComponent<ArmoredHull>();
             if (huascarHull != null) huascarHull.ImpactResolved += OnHuascarHit;
@@ -138,8 +147,8 @@ namespace Pacifico.Campaign
             {
                 huascarAI.Target = cochrane;
                 huascarAI.FleeHeadingDeg = FleeHeadingDeg;
-                huascarAI.SetStandOff(400f, 1100f); // el combate se cerró hasta pocos cientos de metros
-                huascarAI.AiFireIntervalSeconds = 20f;
+                huascarAI.SetStandOff(400f, 800f); // el combate se cerró hasta pocos cientos de metros
+                huascarAI.AiFireIntervalSeconds = C.HuascarFireIntervalSeconds;
                 huascarAI.Mode = RammingMode.Flee;
                 huascarAI.HoldFire = true;
             }
@@ -157,12 +166,21 @@ namespace Pacifico.Campaign
             }
             if (hud != null)
             {
+                hud.PriorityAlert = () => _ramRunUntil >= 0f && _perspective == P.CochraneBridge ? "¡EL ESPOLÓN VIENE A POR TI!  Apártate" : null;
                 hud.ExtraLines.Add(RangeLine);
                 hud.ExtraLines.Add(ArmorAngleLine);
                 hud.ExtraLines.Add(ValvesLine);
             }
 
             Apply(_runner.CurrentStage.Perspective);
+        }
+
+        /// <summary>Menos travesía antes del primer disparo: el Cochrane empieza más cerca que en la escena construida.</summary>
+        private void ShortenOpening()
+        {
+            Vector3 from = huascar.transform.position;
+            Vector3 offset = cochrane.transform.position - from;
+            cochrane.Teleport(from + new Vector3(offset.x, 0f, offset.z) * C.OpeningDistanceFraction, cochrane.transform.eulerAngles.y);
         }
 
         private void OnDestroy()
@@ -187,7 +205,13 @@ namespace Pacifico.Campaign
         {
             GameObject shooter = impact.Hit.Shooter;
             bool penetrated = impact.Result.Penetrated;
-            if (shooter == cochrane.gameObject && Stage == S.Duel)
+            if (penetrated && shooter == cochrane.gameObject) _runner.Facts.Add(F.OwnPenetrations);
+            if (Stage == S.Duel && blanco != null && shooter == blanco.gameObject)
+            {
+                // El Blanco Encalada también decide el duelo si el jugador no lo logra.
+                if (penetrated) _runner.Facts.Add(F.PenetratingHits);
+            }
+            else if (shooter == cochrane.gameObject && Stage == S.Duel)
             {
                 if (!penetrated)
                 {
@@ -218,7 +242,7 @@ namespace Pacifico.Campaign
             if (victim != cochrane || !result.Critical || Time.time - _lastRamTime < MinSecondsBetweenRams) return;
             _lastRamTime = Time.time;
             _runner.Facts.Add(F.RamsReceived);
-            EndRamRun();
+            EndRamRun(true);
         }
 
         // ------------------------------------------------------------------------------------------
@@ -242,8 +266,10 @@ namespace Pacifico.Campaign
                 return;
             }
 
+            if (_resume != null) RestoreWorld();
             ReadScene(dt);
             _runner.Step(dt);
+            SaveCheckpointIfNew();
             Direct();
 
             string wanted = _runner.CurrentStage.Perspective;
@@ -271,6 +297,36 @@ namespace Pacifico.Campaign
             }
         }
 
+        /// <summary>Puntos de control: al empezar el duelo, al caer Grau y al abrirse las válvulas.</summary>
+        private void SaveCheckpointIfNew()
+        {
+            string stage = _runner.CurrentStage.Id;
+            if (stage == _savedStage) return;
+            _savedStage = stage;
+            if (stage != S.Duel && stage != S.Relief && stage != S.Valves) return;
+            MissionCheckpoint checkpoint = MissionCheckpoint.Capture(_runner);
+            CheckpointStore.WriteShip(checkpoint, "cochrane", cochrane);
+            CheckpointStore.WriteShip(checkpoint, "huascar", huascar);
+            CheckpointStore.WriteShip(checkpoint, "blanco", blanco);
+            CheckpointStore.Save(checkpoint);
+        }
+
+        /// <summary>Primer fotograma tras volver a un punto de control: los buques en su sitio y la Unión ya lejos.</summary>
+        private void RestoreWorld()
+        {
+            MissionCheckpoint checkpoint = _resume;
+            _resume = null;
+            CheckpointStore.ReadShip(checkpoint, "cochrane", cochrane);
+            CheckpointStore.ReadShip(checkpoint, "huascar", huascar);
+            CheckpointStore.ReadShip(checkpoint, "blanco", blanco);
+            _unionReleased = true;
+            if (union != null) union.gameObject.SetActive(false);
+            // El punto de control se guarda antes de que el Blanco Encalada se sume al combate: se trae de nuevo.
+            _blancoBrought = false;
+            if (checkpoint.StageId == S.Relief) BringBlanco();
+            else _blancoBrought = true;
+        }
+
         /// <summary>Lo que la escena sabe y el guion no: distancias, gobierno del Huáscar, abordaje.</summary>
         private void ReadScene(float dt)
         {
@@ -294,11 +350,28 @@ namespace Pacifico.Campaign
                 if (_boarding.Step(dt, distance, speed)) facts.SetFlag(G.Boarded);
                 facts.Set(F.Boarding, _boarding.Progress);
             }
-            // La carrera de espolón: tras la primera perforación (o un rato de duelo), en cuanto lo tiene cerca.
-            if (Stage == S.Duel && !facts.Flag(G.RamAttempt) && range < C.RamStartRangeM &&
-                (facts.Get(F.PenetratingHits) >= 1f || _runner.StageTime >= C.RamAfterSeconds))
+            // El Cochrane se puede perder de verdad: las granadas y el fuego hacen más daño que en el modelo llano.
+            if (_cochraneDamage != null && _cochraneDamage.State != null) _cochraneDamage.State.IncomingDamageScale = C.CochraneDamageScale;
+            if (Stage == S.Valves && facts.Get(F.ScuttleDeadline) <= 0f) facts.Set(F.ScuttleDeadline, C.ScuttleDeadlineSeconds(range));
+
+            // Si tardas en perforar, el Blanco Encalada llega a ayudar.
+            if (Stage == S.Duel && !_blancoBrought && _runner.StageTime >= C.BlancoHelpSeconds)
+            {
+                facts.SetFlag(G.BlancoArrives);
+                BringBlanco();
+            }
+
+            // Las carreras de espolón: tras la primera perforación (o un rato de duelo), cada vez que lo tiene cerca.
+            if (Stage != S.Duel) EndRamRun(false);
+            else if (_ramRunUntil < 0f && Time.time >= _nextRamTime && range < C.RamStartRangeM &&
+                     (facts.Get(F.PenetratingHits) >= 1f || _runner.StageTime >= C.RamAfterSeconds))
             {
                 facts.SetFlag(G.RamAttempt);
+                _ramRunUntil = Time.time + C.RamRunSeconds;
+            }
+            else if (_ramRunUntil >= 0f && Time.time >= _ramRunUntil)
+            {
+                EndRamRun(false);
             }
             if (facts.Flag(G.ScuttleComplete) && !_foundered && _huascarDamage != null)
             {
@@ -323,6 +396,7 @@ namespace Pacifico.Campaign
                 // Rendido: máquina parada, la torre callada.
                 huascarAI.Mode = RammingMode.Idle;
                 huascarAI.HoldFire = true;
+                EndRamRun(false);
                 huascar.Command(EngineOrder.Stop, 0f);
                 if (gunner != null) gunner.PlayerActive = false; // no se dispara sobre un buque rendido
                 if (blancoAI != null) blancoAI.AutoFire = false;
@@ -338,22 +412,32 @@ namespace Pacifico.Campaign
             }
 
             huascarAI.HoldFire = false;
-            if (Stage == S.Duel && facts.Flag(G.RamAttempt) && !_ramDone)
+            bool ramming = _ramRunUntil >= 0f;
+            if (huascar.Motion != null)
             {
-                if (_ramWindowStart < 0f) _ramWindowStart = Time.time;
+                huascar.Motion.SpeedBoost = ramming ? C.RamSpeedBoost : 1f;
+                huascar.Motion.TurnBoost = ramming ? C.RamTurnBoost : 1f;
+            }
+            if (ramming)
+            {
                 huascarAI.Mode = RammingMode.Ram;
                 huascarAI.RamOrder = EngineOrder.FullAhead;
-                if (Time.time - _ramWindowStart > C.RamRunSeconds) EndRamRun();
                 return;
             }
             huascarAI.Mode = RammingMode.StandOff;
         }
 
-        private void EndRamRun()
+        private void EndRamRun(bool hit)
         {
-            if (_ramDone || _ramWindowStart < 0f) return;
-            _ramDone = true;
-            if (_runner.Facts.Get(F.RamsReceived) < 1f) _runner.Facts.SetFlag(G.RamAvoided);
+            if (_ramRunUntil < 0f) return;
+            _ramRunUntil = -1f;
+            _nextRamTime = Time.time + C.RamCooldownSeconds;
+            if (!hit && Stage == S.Duel) _runner.Facts.SetFlag(G.RamAvoided);
+            if (huascar.Motion != null)
+            {
+                huascar.Motion.SpeedBoost = 1f;
+                huascar.Motion.TurnBoost = 1f;
+            }
             if (huascarAI != null) huascarAI.Mode = RammingMode.StandOff;
         }
 
@@ -382,8 +466,17 @@ namespace Pacifico.Campaign
             if (bridge && Stage == S.Relief) BringBlanco();
 
             ShipController followed = deck ? huascar : cochrane;
-            if (cameraRig != null) cameraRig.Target = followed.transform;
-            if (hud != null) hud.Ship = followed;
+            if (cameraRig != null)
+            {
+                cameraRig.Target = followed.transform;
+                cameraRig.LockTarget = bridge ? huascar.transform : null;
+            }
+            if (hud != null)
+            {
+                hud.Ship = followed;
+                if (bridge) hud.SetContacts(new NavalContact(huascar.transform, "Huáscar", true), new NavalContact(blanco.transform, "Blanco Encalada", false));
+                else hud.SetContacts();
+            }
         }
 
         /// <summary>El proyectil en la torre de mando: una nube de humo y fuego sobre el Huáscar.</summary>
@@ -416,9 +509,9 @@ namespace Pacifico.Campaign
         {
             if (_runner == null || _perspective != P.CochraneBridge || Stage == S.Valves) return string.Empty;
             float range = Range;
-            return "Huáscar a " + C.Meters(range) + " m  ·  " + (range <= _openingFireRangeM
-                ? "a distancia de perforar su coraza"
-                : "fuera de perforación (" + C.Meters(_openingFireRangeM) + " m)");
+            return range <= _openingFireRangeM
+                ? "A distancia de perforar su coraza"
+                : "Aún no perforas su coraza: acércate a " + C.Meters(_openingFireRangeM) + " m";
         }
 
         private string ArmorAngleLine()
@@ -429,20 +522,19 @@ namespace Pacifico.Campaign
             // La batería bate hasta 40° a cada lado del través; la coraza protege los extremos a partir de ~35°.
             // La oblicuidad coincide con el apartamiento del través: la batería bate mientras no pase de su semisector.
             float fireArc = gunner != null && gunner.Battery != null ? gunner.Battery.ArcHalfWidthDeg : BroadsideBatteryModel.DefaultArcHalfWidthDeg;
-            string advice = obliquity < 30f ? "de través: andanada lista, coraza expuesta"
-                : obliquity <= fireArc ? "en ángulo y aún con la batería por el través"
-                : "en ángulo: la batería no lo bate";
-            return "Coraza a " + obliquity.ToString("0") + "° del fuego enemigo  ·  " + advice;
+            return obliquity < 30f ? "De costado: tiras, pero tu coraza recibe de lleno"
+                : obliquity <= fireArc ? "En ángulo: tiras y tu coraza desvía sus granadas"
+                : "Muy en ángulo: tu coraza desvía, pero no puedes tirar";
         }
 
         private string ValvesLine()
         {
             if (_runner == null || Stage != S.Valves || !_runner.Facts.Flag(G.ValvesOpen) || _runner.Facts.Flag(G.Boarded)) return string.Empty;
-            float left = Mathf.Max(0f, C.ScuttleSeconds - _runner.StageTime);
-            float speedKn = cochrane.Motion != null ? cochrane.Motion.SpeedKnots : 0f;
+            float deadline = _runner.Facts.Get(F.ScuttleDeadline);
+            float left = Mathf.Max(0f, (deadline > 0f ? deadline : C.ScuttleSeconds) - _runner.StageTime);
             string blocker = _boarding.Blocker(Range, cochrane.Motion != null ? cochrane.Motion.Speed : 0f);
-            return "VÁLVULAS ABIERTAS: se hunde en " + left.ToString("0") + " s  ·  " +
-                   (blocker ?? "arriando los botes " + (_boarding.Progress * 100f).ToString("0") + "%") + "  ·  " + speedKn.ToString("0.0") + " nudos";
+            return "VÁLVULAS ABIERTAS: se hunde en " + left.ToString("0") + " s\n" +
+                   (blocker ?? "Arriando los botes " + (_boarding.Progress * 100f).ToString("0") + " %");
         }
 
         private void OnGUI()
@@ -457,9 +549,18 @@ namespace Pacifico.Campaign
             }
             else
             {
-                _hud.DrawEnd(_runner, "CAPÍTULO 2", "El Huáscar, capturado a flote. Grau ha muerto en su torre de mando.");
+                _hud.DrawEnd(_runner, "CAPÍTULO 2", "El Huáscar, capturado a flote. Grau ha muerto en su torre de mando.\n" + ResultLine());
             }
             if (_fade >= 0f) MissionHud.DrawFade(1f - Mathf.Abs(_fade - 1f), Color.black);
+        }
+
+        /// <summary>Lo que has hecho tú en la batalla: el final está escrito, pero cómo se llega a él, no.</summary>
+        private string ResultLine()
+        {
+            MissionFacts f = _runner.Facts;
+            float hull = _cochraneDamage != null && _cochraneDamage.State != null ? _cochraneDamage.State.IntegrityFraction * 100f : 100f;
+            return f.Get(F.OwnPenetrations).ToString("0") + " perforaciones tuyas  ·  " + f.Get(F.Deflected).ToString("0") + " granadas desviadas  ·  " +
+                   f.Get(F.RamsReceived).ToString("0") + " espolonazos  ·  casco " + hull.ToString("0") + " %";
         }
 
         /// <summary>Lámina de época a pantalla completa con su pie.</summary>
