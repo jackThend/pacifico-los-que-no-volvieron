@@ -39,9 +39,16 @@ namespace Pacifico.EditorTools
             public Func<string, Vector3, bool> Drop;
             public string Rifle;
             public float RifleLengthM;
+            /// <summary>Piezas del fusil que no se ven (p. ej. un cartucho que el modelo trae suelto).</summary>
+            public string[] RifleHidden = new string[0];
             public float HipY, HipX, KneeY, AnkleY, ToeY, ToeZ;
             public float SpineY, ChestY, NeckY, HeadY;
-            public float ShoulderX, ShoulderY, ElbowX, ElbowY, WristX, WristY, HandX, HandY;
+            public float ShoulderX, ShoulderY, ElbowX, ElbowY, WristX, WristY;
+            /// <summary>
+            /// Dedos de la mano derecha (pulgar, índice, medio, anular, meñique): base, articulación y punta, en fracción
+            /// de la altura. La izquierda es su reflejo.
+            /// </summary>
+            public Vector3[][] Fingers;
             /// <summary>Prenda de un triángulo (material, altura en fracción, hueso dominante): ver <see cref="SoldierFigure.PartCoat"/>.</summary>
             public Func<string, float, SoldierFigure.Bone, int> Part = (material, y, bone) => 0;
             /// <summary>Materiales del equipo militar que se quitan para vestir civiles (mochila, correaje, charreteras…).</summary>
@@ -60,11 +67,19 @@ namespace Pacifico.EditorTools
             Part = (material, y, bone) =>
                 material.StartsWith("Union_fig", StringComparison.Ordinal)
                     ? (IsLeg(bone) && !bone.ToString().EndsWith("Foot", StringComparison.Ordinal) && y > 0.07f ? SoldierFigure.PartTrousers
-                       : !IsLeg(bone) && !bone.ToString().EndsWith("Hand", StringComparison.Ordinal) ? SoldierFigure.PartCoat : 0)
+                       : !IsLeg(bone) && !IsHand(bone) ? SoldierFigure.PartCoat : 0)
                     : material.StartsWith("Head_hands", StringComparison.Ordinal) && y > 0.925f ? SoldierFigure.PartCap : 0,
             HipY = 0.52f, HipX = 0.06f, KneeY = 0.275f, AnkleY = 0.054f, ToeY = 0.02f, ToeZ = 0.07f,
             SpineY = 0.61f, ChestY = 0.72f, NeckY = 0.83f, HeadY = 0.88f,
-            ShoulderX = 0.097f, ShoulderY = 0.8f, ElbowX = 0.216f, ElbowY = 0.692f, WristX = 0.324f, WristY = 0.592f, HandX = 0.39f, HandY = 0.514f,
+            ShoulderX = 0.097f, ShoulderY = 0.8f, ElbowX = 0.216f, ElbowY = 0.692f, WristX = 0.324f, WristY = 0.592f,
+            Fingers = new[]
+            {
+                new[] { new Vector3(0.3136f, 0.5695f, 0.0353f), new Vector3(0.3283f, 0.5486f, 0.0579f), new Vector3(0.3397f, 0.5248f, 0.0805f) },
+                new[] { new Vector3(0.3570f, 0.5487f, 0.0433f), new Vector3(0.3787f, 0.5292f, 0.0538f), new Vector3(0.3937f, 0.5035f, 0.0644f) },
+                new[] { new Vector3(0.3670f, 0.5475f, 0.0281f), new Vector3(0.3885f, 0.5303f, 0.0351f), new Vector3(0.4026f, 0.5062f, 0.0421f) },
+                new[] { new Vector3(0.3778f, 0.5506f, 0.0120f), new Vector3(0.3895f, 0.5317f, 0.0129f), new Vector3(0.4032f, 0.5147f, 0.0138f) },
+                new[] { new Vector3(0.3775f, 0.5471f, -0.0050f), new Vector3(0.3814f, 0.5303f, -0.0061f), new Vector3(0.3860f, 0.5080f, -0.0100f) },
+            },
         };
 
         private static readonly Fit Peruvian = new Fit
@@ -72,7 +87,7 @@ namespace Pacifico.EditorTools
             // Infante francés de 1870: el ejército peruano vestía y se instruía a la francesa.
             Model = "soldado_frances_1870", Prefab = "Soldado_Peruano", HeightM = 1.8f, ForwardPart = "Eyeball1_1_Eyeball1_10_0",
             Drop = null,
-            Rifle = "fusil_remington_rolling_block", RifleLengthM = 1.25f,
+            Rifle = "fusil_remington_rolling_block", RifleLengthM = 1.25f, RifleHidden = new[] { "BulletHead", "BulletHolster" },
             // Cada prenda es su propio material.
             Part = (material, y, bone) =>
                 material.StartsWith("Jacket0", StringComparison.Ordinal) ? SoldierFigure.PartCoat
@@ -82,7 +97,15 @@ namespace Pacifico.EditorTools
             Gear = new[] { "Cap1", "Epps", "Belt", "Blanket", "Knapsack", "Pouches", "Cross_strap" },
             HipY = 0.475f, HipX = 0.07f, KneeY = 0.225f, AnkleY = 0.05f, ToeY = 0.012f, ToeZ = 0.07f,
             SpineY = 0.57f, ChestY = 0.687f, NeckY = 0.838f, HeadY = 0.9f,
-            ShoulderX = 0.113f, ShoulderY = 0.814f, ElbowX = 0.217f, ElbowY = 0.715f, WristX = 0.311f, WristY = 0.611f, HandX = 0.377f, HandY = 0.536f,
+            ShoulderX = 0.113f, ShoulderY = 0.814f, ElbowX = 0.217f, ElbowY = 0.715f, WristX = 0.311f, WristY = 0.611f,
+            Fingers = new[]
+            {
+                new[] { new Vector3(0.3089f, 0.5938f, 0.0246f), new Vector3(0.3179f, 0.5658f, 0.0333f), new Vector3(0.3313f, 0.5409f, 0.0421f) },
+                new[] { new Vector3(0.3626f, 0.5788f, 0.0371f), new Vector3(0.3599f, 0.5502f, 0.0407f), new Vector3(0.3699f, 0.5304f, 0.0442f) },
+                new[] { new Vector3(0.3671f, 0.5759f, 0.0239f), new Vector3(0.3728f, 0.5434f, 0.0301f), new Vector3(0.3780f, 0.5105f, 0.0363f) },
+                new[] { new Vector3(0.3631f, 0.5701f, 0.0085f), new Vector3(0.3825f, 0.5470f, 0.0142f), new Vector3(0.3824f, 0.5104f, 0.0199f) },
+                new[] { new Vector3(0.3690f, 0.5739f, -0.0106f), new Vector3(0.3755f, 0.5454f, -0.0042f), new Vector3(0.3828f, 0.5174f, 0.0021f) },
+            },
         };
 
         private static Fit FitFor(Faction faction) =>
@@ -164,7 +187,11 @@ namespace Pacifico.EditorTools
                 skin.localBounds = local;
 
                 Transform rifle = CreateRifle(root.transform, fit);
-                root.AddComponent<SoldierFigure>().Setup(bones, rifle, skin, parts);
+                (Vector3 rightGrip, float rightRadius) = RifleSection(rifle, 0f);
+                (Vector3 leftGrip, float leftRadius) = RifleSection(rifle, LeftGripAlongRifleM);
+                Debug.Log("[Pacífico] Agarres de " + fit.Rifle + ": derecha " + rightGrip.ToString("F3") + " r " + rightRadius.ToString("F3") +
+                          ", izquierda " + leftGrip.ToString("F3") + " r " + leftRadius.ToString("F3"));
+                root.AddComponent<SoldierFigure>().Setup(bones, rifle, skin, parts, rightGrip, rightRadius, leftGrip, leftRadius);
                 var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath(fit));
                 Debug.Log("[Pacífico] Soldado con esqueleto: " + PrefabPath(fit) + " (" + mesh.vertexCount + " vértices, " + TriangleCount(mesh) + " triángulos)");
                 return prefab;
@@ -642,9 +669,22 @@ namespace Pacifico.EditorTools
                 Make(left ? SoldierFigure.Bone.LeftFoot : SoldierFigure.Bone.RightFoot, left ? SoldierFigure.Bone.LeftLowerLeg : SoldierFigure.Bone.RightLowerLeg, P(fit, side * fit.HipX, fit.AnkleY, -0.01f));
                 Make(left ? SoldierFigure.Bone.LeftUpperArm : SoldierFigure.Bone.RightUpperArm, SoldierFigure.Bone.Chest, P(fit, side * fit.ShoulderX, fit.ShoulderY));
                 Make(left ? SoldierFigure.Bone.LeftLowerArm : SoldierFigure.Bone.RightLowerArm, left ? SoldierFigure.Bone.LeftUpperArm : SoldierFigure.Bone.RightUpperArm, P(fit, side * fit.ElbowX, fit.ElbowY));
-                Make(left ? SoldierFigure.Bone.LeftHand : SoldierFigure.Bone.RightHand, left ? SoldierFigure.Bone.LeftLowerArm : SoldierFigure.Bone.RightLowerArm, P(fit, side * fit.WristX, fit.WristY));
+                SoldierFigure.Bone hand = left ? SoldierFigure.Bone.LeftHand : SoldierFigure.Bone.RightHand;
+                Make(hand, left ? SoldierFigure.Bone.LeftLowerArm : SoldierFigure.Bone.RightLowerArm, P(fit, side * fit.WristX, fit.WristY));
+                for (int finger = 0; finger < SoldierFigure.FingerCount; finger++)
+                {
+                    SoldierFigure.Bone first = SoldierFigure.FingerBone(left, finger, 0);
+                    Make(first, hand, FingerPoint(fit, side, finger, 0));
+                    Make(SoldierFigure.FingerBone(left, finger, 1), first, FingerPoint(fit, side, finger, 1));
+                }
             }
             return bones;
+        }
+
+        private static Vector3 FingerPoint(Fit fit, float side, int finger, int point)
+        {
+            Vector3 p = fit.Fingers[finger][point];
+            return P(fit, side * p.x, p.y, p.z);
         }
 
         /// <summary>Tramos de cada hueso (de su articulación a la siguiente), en el espacio del soldado.</summary>
@@ -668,7 +708,14 @@ namespace Pacifico.EditorTools
                 Add(left ? SoldierFigure.Bone.LeftFoot : SoldierFigure.Bone.RightFoot, P(fit, side * fit.HipX, fit.AnkleY, -0.01f), P(fit, side * fit.HipX, fit.ToeY, fit.ToeZ));
                 Add(left ? SoldierFigure.Bone.LeftUpperArm : SoldierFigure.Bone.RightUpperArm, P(fit, side * fit.ShoulderX, fit.ShoulderY), P(fit, side * fit.ElbowX, fit.ElbowY));
                 Add(left ? SoldierFigure.Bone.LeftLowerArm : SoldierFigure.Bone.RightLowerArm, P(fit, side * fit.ElbowX, fit.ElbowY), P(fit, side * fit.WristX, fit.WristY));
-                Add(left ? SoldierFigure.Bone.LeftHand : SoldierFigure.Bone.RightHand, P(fit, side * fit.WristX, fit.WristY), P(fit, side * fit.HandX, fit.HandY));
+                SoldierFigure.Bone hand = left ? SoldierFigure.Bone.LeftHand : SoldierFigure.Bone.RightHand;
+                for (int finger = 0; finger < SoldierFigure.FingerCount; finger++)
+                {
+                    // La palma va de la muñeca a la base de cada dedo; cada falange, de articulación a articulación.
+                    Add(hand, P(fit, side * fit.WristX, fit.WristY), FingerPoint(fit, side, finger, 0));
+                    Add(SoldierFigure.FingerBone(left, finger, 0), FingerPoint(fit, side, finger, 0), FingerPoint(fit, side, finger, 1));
+                    Add(SoldierFigure.FingerBone(left, finger, 1), FingerPoint(fit, side, finger, 1), FingerPoint(fit, side, finger, 2));
+                }
             }
             return segments;
         }
@@ -676,7 +723,9 @@ namespace Pacifico.EditorTools
         private static bool IsLeft(SoldierFigure.Bone b) => b.ToString().StartsWith("Left", StringComparison.Ordinal);
         private static bool IsRight(SoldierFigure.Bone b) => b.ToString().StartsWith("Right", StringComparison.Ordinal);
         private static bool IsLeg(SoldierFigure.Bone b) => b.ToString().EndsWith("Leg", StringComparison.Ordinal) || b.ToString().EndsWith("Foot", StringComparison.Ordinal);
-        private static bool IsArm(SoldierFigure.Bone b) => b.ToString().EndsWith("Arm", StringComparison.Ordinal) || b.ToString().EndsWith("Hand", StringComparison.Ordinal);
+        private static bool IsFinger(SoldierFigure.Bone b) => b >= SoldierFigure.Bone.LeftThumb1;
+        private static bool IsHand(SoldierFigure.Bone b) => IsFinger(b) || b.ToString().EndsWith("Hand", StringComparison.Ordinal);
+        private static bool IsArm(SoldierFigure.Bone b) => b.ToString().EndsWith("Arm", StringComparison.Ordinal) || IsHand(b);
 
         /// <summary>
         /// Peso de cada hueso sobre cada vértice: inverso de la distancia a sus tramos (a la sexta potencia, para que
@@ -689,6 +738,8 @@ namespace Pacifico.EditorTools
             float h = fit.HeightM;
             float band = 0.012f * h;
             float eps = 0.01f * h;
+            float fingerReach = 0.028f * h;
+            float fingerBack = 0.008f * h;
             var kinds = (SoldierFigure.Bone[])Enum.GetValues(typeof(SoldierFigure.Bone));
             var result = new BoneWeight[vertices.Length];
             var scores = new float[kinds.Length];
@@ -706,6 +757,12 @@ namespace Pacifico.EditorTools
                     if ((bone == SoldierFigure.Bone.Head || bone == SoldierFigure.Bone.Neck) && p.y < (fit.NeckY - 0.04f) * h) continue;
                     float d = float.MaxValue;
                     foreach (var (a, b) in segments[i]) d = Mathf.Min(d, DistanceToSegment(p, a, b));
+                    if (IsFinger(bone))
+                    {
+                        // Un dedo solo mueve lo que queda de su base en adelante y cerca de él (no el puño ni la manga).
+                        (Vector3 start, Vector3 end) = segments[i][0];
+                        if (d > fingerReach || Vector3.Dot(p - start, (end - start).normalized) < -fingerBack) continue;
+                    }
                     float w = 1f / (d + eps);
                     w *= w * w;
                     scores[i] = w * w;
@@ -770,6 +827,11 @@ namespace Pacifico.EditorTools
             model.name = "Modelo_" + fit.Rifle;
             model.transform.SetParent(holder, false);
             foreach (Collider collider in model.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(collider);
+            foreach (MeshFilter filter in model.GetComponentsInChildren<MeshFilter>())
+            {
+                if (Array.IndexOf(fit.RifleHidden, PartName(filter)) < 0) continue;
+                filter.gameObject.SetActive(false);
+            }
 
             Bounds bounds = ShipModelLibrary.LocalBounds(model, holder);
             if (bounds.size.x > bounds.size.z) model.transform.localRotation = Quaternion.Euler(0f, 90f, 0f) * model.transform.localRotation;
@@ -787,6 +849,66 @@ namespace Pacifico.EditorTools
             model.transform.localPosition += new Vector3(-bounds.center.x, -bounds.center.y + 0.02f, -(bounds.min.z + 0.3f));
             foreach (Renderer renderer in model.GetComponentsInChildren<Renderer>()) renderer.shadowCastingMode = ShadowCastingMode.On;
             return holder;
+        }
+
+        /// <summary>Donde va la mano izquierda: en la caña, a esta distancia por delante de la derecha (m).</summary>
+        private const float LeftGripAlongRifleM = 0.36f;
+
+        /// <summary>
+        /// Centro y radio del arma a esa distancia del origen, en ejes del fusil: corta sus triángulos con ese plano y se
+        /// queda con el mayor grupo de puntos (sin guardamonte, palanca ni anilla de portafusil, que quedan separados).
+        /// </summary>
+        private static (Vector3 center, float radius) RifleSection(Transform holder, float z)
+        {
+            var xs = new List<float>();
+            var ys = new List<float>();
+            void Cut(Vector3 a, Vector3 b)
+            {
+                if ((a.z - z) * (b.z - z) > 0f || Mathf.Approximately(a.z, b.z)) return;
+                Vector3 p = Vector3.Lerp(a, b, (z - a.z) / (b.z - a.z));
+                xs.Add(p.x);
+                ys.Add(p.y);
+            }
+            foreach (MeshFilter filter in holder.GetComponentsInChildren<MeshFilter>())
+            {
+                if (filter.sharedMesh == null) continue;
+                Matrix4x4 m = holder.worldToLocalMatrix * filter.transform.localToWorldMatrix;
+                Vector3[] vertices = filter.sharedMesh.vertices;
+                int[] triangles = filter.sharedMesh.triangles;
+                for (int t = 0; t < triangles.Length; t += 3)
+                {
+                    Vector3 a = m.MultiplyPoint3x4(vertices[triangles[t]]);
+                    Vector3 b = m.MultiplyPoint3x4(vertices[triangles[t + 1]]);
+                    Vector3 c = m.MultiplyPoint3x4(vertices[triangles[t + 2]]);
+                    Cut(a, b);
+                    Cut(b, c);
+                    Cut(c, a);
+                }
+            }
+            if (xs.Count < 8) return (new Vector3(0f, 0f, z), 0.022f);
+            List<float> width = LargestGroup(xs);
+            List<float> height = LargestGroup(ys);
+            var center = new Vector3((width[0] + width[width.Count - 1]) * 0.5f, (height[0] + height[height.Count - 1]) * 0.5f, z);
+            return (center, Mathf.Clamp((height[height.Count - 1] - height[0]) * 0.5f, 0.012f, 0.03f));
+        }
+
+        /// <summary>El mayor grupo de valores seguidos sin saltos grandes: el arma, sin las piezas que van separadas de ella.</summary>
+        private static List<float> LargestGroup(List<float> values)
+        {
+            const float Gap = 0.03f;
+            values.Sort();
+            int bestStart = 0, bestCount = 0, start = 0;
+            for (int i = 1; i <= values.Count; i++)
+            {
+                if (i < values.Count && values[i] - values[i - 1] <= Gap) continue;
+                if (i - start > bestCount)
+                {
+                    bestStart = start;
+                    bestCount = i - start;
+                }
+                start = i;
+            }
+            return values.GetRange(bestStart, bestCount);
         }
 
         /// <summary>Alto de la sección del arma en su extremo +Z (o −Z): la culata es más alta que la boca.</summary>

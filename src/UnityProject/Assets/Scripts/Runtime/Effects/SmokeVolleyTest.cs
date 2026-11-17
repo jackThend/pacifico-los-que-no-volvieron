@@ -34,7 +34,8 @@ namespace Pacifico.Effects
             Transform view = eye != null ? eye : (Camera.main != null ? Camera.main.transform : null);
             if (smoke == null || view == null) return;
 
-            if (GameInput.Pressed(GameKey.V)) StartVolley(view);
+            // Solo en el editor y en compilaciones de desarrollo: el juego que reciben los jugadores no la trae.
+            if (Debug.isDebugBuild && GameInput.Pressed(GameKey.V)) StartVolley(view);
             FirePending(smoke);
 
             _clarity = smoke.ViewClarity(view);
@@ -80,7 +81,7 @@ namespace Pacifico.Effects
         private void OnGUI()
         {
             BlackPowderSmoke smoke = BlackPowderSmoke.Active;
-            if (!showOverlay || smoke == null || smoke.Model == null) return;
+            if (!showOverlay || !Debug.isDebugBuild || smoke == null || smoke.Model == null) return;
             if (_style == null) _style = new GUIStyle(GUI.skin.label) { fontSize = 14 };
             string text = "Humo — claridad de la vista " + (_clarity * 100f).ToString("0") + " % (mín. " +
                           (_worstClarity * 100f).ToString("0") + " %) · bocanadas " + smoke.Model.Count + "/" +

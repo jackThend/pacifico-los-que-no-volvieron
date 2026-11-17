@@ -103,7 +103,7 @@ namespace Pacifico.Infantry
                 if (strike.Length > 0) GUI.Label(new Rect(Screen.width - 330f, Screen.height - 118f, 320f, 22f), "Golpe: " + strike, _label);
             }
 
-            if (showDebug)
+            if (showDebug && Debug.isDebugBuild)
             {
                 GUI.Label(new Rect(Screen.width - 260f, 16f, 250f, 22f),
                     _smoothedFps.ToString("0") + " FPS · " + m.HorizontalSpeed.ToString("0.0") + " m/s", _label);

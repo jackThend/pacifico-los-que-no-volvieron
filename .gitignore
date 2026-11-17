@@ -101,3 +101,6 @@ sysinfo.txt
 *_urp_mask_*.png
 *_urp_mask_*.png.meta
 tools/audio/escucha/
+
+# Instalador generado por tools/instalador/crear_instalador.py
+tools/instalador/salida/

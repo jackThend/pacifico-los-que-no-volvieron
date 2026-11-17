@@ -98,6 +98,16 @@ La historia se divide en **8 capítulos dinámicos más prólogo y epílogo**, a
 
 ---
 
+## 💿 Instalar el juego (jugadores de prueba)
+
+1. Abre **`Pacifico_Instalador_<versión>.exe`**. Si Windows avisa de que es un programa desconocido, pulsa *Más información → Ejecutar de todas formas*: el instalador todavía no lleva firma digital.
+2. Pulsa **Siguiente** hasta **Instalar**. No pide permiso de administrador y deja un acceso directo en el escritorio.
+3. Al terminar, deja marcada la casilla **«Jugar ahora»** o abre el juego desde el escritorio.
+
+Se desinstala como cualquier programa, desde *Configuración → Aplicaciones*. Los créditos de los recursos gratuitos que usa el juego están en el menú Inicio.
+
+*Para el equipo:* el instalador se crea con `python tools/instalador/crear_instalador.py` después de compilar el juego (ver `CLAUDE.md`). Hace falta [Inno Setup 6](https://jrsoftware.org/isinfo.php). El logo y el icono salen de `python tools/arte/generar_logo.py`.
+
 ## 🕹️ Cómo probar el juego (3 pasos)
 
 1. **Descargar:** en GitHub pulsa *Code → Download ZIP* y descomprímelo.
