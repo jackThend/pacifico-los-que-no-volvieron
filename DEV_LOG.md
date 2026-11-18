@@ -991,4 +991,6 @@ Se revisó toda la rama (`d0f859d..HEAD`) con una revisión automática de alto 
   * Sin tocar nada: Miraflores, el jugador cae a los 80–104 s (antes, 15 s); Arica, a los 149 s (antes, unos 120); Cañete sigue vivo a los 6 min.
   * Con el jugador quieto en su salida, pegado a una tapia, los chilenos llegan a 1 m sin verlo y no atacan: un jugador real se mueve y tiene las marcas.
 * **Comprobación:** Test Runner EditMode 444/444 (4 pruebas nuevas de salud del jugador).
-* **Sin probar:** jugar con teclado y ratón; las marcas y los deslizadores no se fotografiaron.
+* **Instalador y publicación:** compilación 1297 MB sin errores ni avisos; `Pacifico_Instalador_0.7.1.exe` (545 MB), instalado en una carpeta de prueba (86 s), con los 9 capítulos sin errores (`-pacifico-perf`, 50,3–60 FPS a 1280×720) y desinstalado. Publicado como `prueba-0.7.1` (descarga comprobada); la `prueba-0.7.0` queda con el título «Reemplazada por la 0.7.1».
+* **Ojo:** la instalación de prueba comparte `AppId` con la del usuario: al desinstalarla se borró el acceso directo de su 0.7.0. Se arregló instalando la 0.7.1 encima de la suya. Para probar, mejor instalar encima de la del usuario o volver a instalar al acabar.
+* **Sin probar:** jugar con teclado y ratón; las marcas y los deslizadores no se fotografiaron (la captura de pantalla de Windows no trae al frente la ventana del juego: no usar `CopyFromScreen`, puede capturar otra ventana del usuario).
