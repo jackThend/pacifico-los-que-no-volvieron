@@ -54,7 +54,7 @@ namespace Pacifico.Naval
             }
             if (GameInput.MouseHeld(1))
             {
-                Vector2 delta = GameInput.MouseDelta * orbitSensitivity;
+                Vector2 delta = GameInput.MouseDelta * (orbitSensitivity * Campaign.GameSettings.MouseSensitivity);
                 _yawOffset += delta.x;
                 _pitch = Mathf.Clamp(_pitch - delta.y, pitchRange.x, pitchRange.y);
             }

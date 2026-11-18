@@ -168,5 +168,49 @@ namespace Pacifico.Tests.Infantry
             v.ApplyDamage(1f);
             Assert.That(v.SinceDamageSeconds, Is.Zero);
         }
+
+        [Test]
+        public void Salud_ElJugadorAguantaVariosBalazosYNuncaCaeDeUnoSoloConMasDeMediaSalud()
+        {
+            var v = Vitality.ForPlayer(4f);
+            float bullet = Comblain.DamageAtDistance(50f);
+            v.ApplyDamage(bullet * Vitality.HeadMultiplier);
+            Assert.That(v.IsDown, Is.False, "un tiro a la cabeza con la salud entera");
+            Assert.That(v.Health, Is.GreaterThan(0f));
+
+            var w = Vitality.ForPlayer(4f);
+            int hits = 0;
+            while (!w.IsDown && hits < 20) { w.ApplyDamage(bullet); w.Step(0.5f); hits++; }
+            Assert.That(hits, Is.GreaterThanOrEqualTo(3), "al pecho, a 50 m, un balazo cada medio segundo");
+            Assert.That(w.IsDown, Is.True, "la protección no lo hace invencible");
+        }
+
+        [Test]
+        public void Salud_TrasSalvarseDeUnBalazoHayUnRespiroParaCubrirse()
+        {
+            var v = Vitality.ForPlayer(4f);
+            v.ApplyDamage(200f);
+            Assert.That(v.GraceLeftSeconds, Is.GreaterThan(0f));
+            float health = v.Health;
+            v.ApplyDamage(50f);
+            Assert.That(v.Health, Is.EqualTo(health), "durante el respiro");
+            v.Step(v.ShieldGraceSeconds + 0.1f);
+            Assert.That(v.ApplyDamage(50f), Is.True, "pasado el respiro, con poca salud, cae");
+        }
+
+        [Test]
+        public void Salud_LasMuertesDeLaHistoriaSiguenSiendoMortalesParaElJugador()
+        {
+            var v = Vitality.ForPlayer(4f);
+            Assert.That(v.ApplyDamage(1000f), Is.True, "mina, voladura o final del capítulo");
+        }
+
+        [Test]
+        public void Salud_LosSoldadosDeLaIANoTienenProteccion()
+        {
+            var v = new Vitality();
+            v.ApplyDamage(Comblain.DamageAtDistance(50f) * Vitality.HeadMultiplier);
+            Assert.That(v.IsDown, Is.True);
+        }
     }
 }

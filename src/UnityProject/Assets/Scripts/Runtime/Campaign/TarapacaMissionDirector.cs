@@ -71,6 +71,9 @@ namespace Pacifico.Campaign
         private int _seed = 1879;
         private float _fadeIn = 1f;
         private GUIStyle _small;
+        private float _lastEnemyDown;
+        private bool _lastCharge;
+        private readonly List<Vector3> _markers = new List<Vector3>();
 
         public MissionRunner Runner => _runner;
 
@@ -191,7 +194,11 @@ namespace Pacifico.Campaign
         private void OnDowned(Combatant who, GameObject by)
         {
             if (who.IsPlayer) _runner.Facts.SetFlag(G.PlayerDown);
-            else if (who.Faction == Faction.Chile) _runner.Facts.Add(F.EnemiesDown);
+            else if (who.Faction == Faction.Chile)
+            {
+                _runner.Facts.Add(F.EnemiesDown);
+                _lastEnemyDown = Time.time;
+            }
         }
 
         private void OnPickedUp(WeaponPickup pickup, FirstPersonController fps)
@@ -225,6 +232,7 @@ namespace Pacifico.Campaign
                 _secondWave = true;
                 SpawnWave(FirstWave, TarapacaChapter.DefaultVillageEnemies - FirstWave);
             }
+            if (_stage == S.Village && _secondWave && !_lastCharge) OrderLastCharge();
             if (_stage == S.Aftermath && !_runner.Facts.Flag(G.ReachedColumn) && Flat(player.transform.position, column.position) <= columnRadius)
             {
                 _runner.Facts.SetFlag(G.ReachedColumn);
@@ -288,6 +296,27 @@ namespace Pacifico.Campaign
             }
         }
 
+        /// <summary>
+        /// Los últimos chilenos del pueblo no se quedan tiroteándose de lejos (con el robot, 2 de 3 partidas quedaban
+        /// paradas 15 minutos): cuando ya se marcan, cargan a la bayoneta y vienen a buscar al Zepita.
+        /// </summary>
+        private void OrderLastCharge()
+        {
+            int alive = 0;
+            foreach (RiflemanAI soldier in _chileans)
+            {
+                if (soldier != null && soldier.GetComponent<Combatant>().Alive) alive++;
+            }
+            if (!EnemyMarkers.ShouldShow(alive, Time.time - _lastEnemyDown)) return;
+            _lastCharge = true;
+            foreach (RiflemanAI soldier in _chileans)
+            {
+                if (soldier == null) continue;
+                soldier.ChargeOrdered = true;
+                soldier.Objective = plaza.position;
+            }
+        }
+
         private static float Flat(Vector3 a, Vector3 b) => Vector2.Distance(new Vector2(a.x, a.z), new Vector2(b.x, b.z));
 
         // ------------------------------------------------------------------------------------------
@@ -310,6 +339,7 @@ namespace Pacifico.Campaign
 
             if (_runner.State == MissionState.Running)
             {
+                DrawLastEnemies();
                 _hud.DrawObjectives(_runner, "CAPÍTULO 4", "Soldado Mariano Santos · batallón Zepita (Cáceres)");
                 _hud.DrawDialogue(_runner, 190f);
             }
@@ -321,6 +351,19 @@ namespace Pacifico.Campaign
                 _hud.DrawEnd(_runner, "CAPÍTULO 4", detail);
             }
             MissionHud.DrawFade(_fadeIn, Color.black);
+        }
+
+        /// <summary>En el pueblo, si quedan pocos chilenos y nadie cae en un rato, se marcan para no buscarlos a ciegas.</summary>
+        private void DrawLastEnemies()
+        {
+            if (_stage != S.Village || !_secondWave) return;
+            _markers.Clear();
+            foreach (RiflemanAI soldier in _chileans)
+            {
+                if (soldier != null && soldier.GetComponent<Combatant>().Alive) _markers.Add(soldier.transform.position);
+            }
+            if (!EnemyMarkers.ShouldShow(_markers.Count, Time.time - _lastEnemyDown)) return;
+            EnemyMarkers.Draw(player.ViewCamera, _markers, new Color(0.95f, 0.45f, 0.35f));
         }
 
         private void DrawHealth()

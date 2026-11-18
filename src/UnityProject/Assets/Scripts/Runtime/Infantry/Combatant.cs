@@ -49,12 +49,13 @@ namespace Pacifico.Infantry
             isPlayer = player;
             head = headCollider;
             displayName = name;
-            Vitality = new Vitality { RecoveryPerSecond = recoveryPerSecond };
+            Vitality = player ? Vitality.ForPlayer(recoveryPerSecond) : new Vitality { RecoveryPerSecond = recoveryPerSecond };
         }
 
         private void Awake()
         {
-            if (Vitality == null) Vitality = new Vitality { RecoveryPerSecond = isPlayer ? 4f : 0f };
+            // En la escena guardada solo quedan los campos serializados: la salud se crea aquí, al cargar.
+            if (Vitality == null) Vitality = isPlayer ? Vitality.ForPlayer(4f) : new Vitality();
         }
 
         private void OnEnable() => s_all.Add(this);

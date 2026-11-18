@@ -144,7 +144,7 @@ namespace Pacifico.Campaign
 
             float width = Mathf.Min(520f, Screen.width - 40f);
             float x = (Screen.width - width) * 0.5f;
-            float y = Mathf.Max(30f, Screen.height * 0.5f - 280f);
+            float y = Mathf.Max(20f, Screen.height * 0.5f - 320f);
             GUI.Label(new Rect(x, y, width, 44f), "PAUSA", _title);
             GUI.Label(new Rect(x, y + 44f, width, 26f), "Capítulo " + _chapter.Number + " · " + _chapter.Title, _text);
             y += 84f;
@@ -171,7 +171,8 @@ namespace Pacifico.Campaign
                 CampaignNavigator.Menu();
                 return;
             }
-            y += 62f;
+            y += 58f;
+            y += GameSettings.DrawSliders(new Rect(x, y, width, 60f)) + 4f;
             GUI.Label(new Rect(x, y, width, Screen.height - y - 10f), ControlsText(_chapter.Mode), _text);
 
             // Nada de lo que queda debajo debe recibir el ratón mientras dura la pausa.

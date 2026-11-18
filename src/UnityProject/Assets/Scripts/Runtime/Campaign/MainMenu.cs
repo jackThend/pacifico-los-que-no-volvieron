@@ -89,7 +89,11 @@ namespace Pacifico.Campaign
             y += 10f;
             if (GUI.Button(new Rect(x, y, width * 0.49f, 34f), "La memoria rota (coleccionables)", _button)) _showCollectibles = true;
             if (GUI.Button(new Rect(x + width * 0.51f, y, width * 0.49f, 34f), "Salir", _button)) Application.Quit();
-            GUI.Label(new Rect(x, Screen.height - 34f, Screen.width - 2f * x, 24f), "F3 en cualquier escena: medidor de rendimiento", _small);
+            y += 48f;
+            if (y + 60f < Screen.height - 40f) GameSettings.DrawSliders(new Rect(x, y, width, 60f));
+            // La versión, para que los jugadores de prueba digan cuál jugaron.
+            GUI.Label(new Rect(x, Screen.height - 34f, Screen.width - 2f * x, 24f),
+                      "Versión de prueba " + Application.version + "  ·  F3: medidor de rendimiento", _small);
         }
 
         private static string Label(ChapterEntry c) => (c.Number == 0 ? "Prólogo" : "Capítulo " + c.Number) + " · " + c.Title + " · " + c.Date;

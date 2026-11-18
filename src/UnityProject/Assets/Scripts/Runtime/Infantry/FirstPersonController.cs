@@ -207,7 +207,7 @@ namespace Pacifico.Infantry
 
         private void UpdateLook()
         {
-            Vector2 mouse = GameInput.MouseDelta * mouseSensitivity;
+            Vector2 mouse = GameInput.MouseDelta * (mouseSensitivity * Campaign.GameSettings.MouseSensitivity);
             _yaw = MathUtil.WrapAngle360(_yaw + mouse.x);
             _pitch = Mathf.Clamp(_pitch + (invertY ? mouse.y : -mouse.y), -maxPitch, maxPitch);
             transform.rotation = Quaternion.Euler(0f, _yaw, 0f);

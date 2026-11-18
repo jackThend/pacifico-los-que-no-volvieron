@@ -21,7 +21,27 @@ namespace Pacifico.Infantry
         private const float WalkSpeed = 1.6f;
         private const float ChargeSpeed = 4f;
         private const float MaxSenseRangeM = 350f;
+        /// <summary>
+        /// Segundos queriendo andar sin avanzar un metro antes de recolocarlo (revisión del 2026-11-07: en Tarapacá
+        /// quedaban soldados en una isla del NavMesh con camino parcial y el capítulo no terminaba). Valor de balance.
+        /// </summary>
+        private const float StuckSeconds = 12f;
+        /// <summary>Más cerca que esto del jugador y en su campo de visión, no se recoloca (se vería el salto).</summary>
+        private const float VisibleToPlayerM = 90f;
         private static readonly RaycastHit[] Hits = new RaycastHit[16];
+        private Vector3 _progressPoint;
+        private float _progressTime;
+        private Vector3 _requestedDestination = new Vector3(float.MaxValue, 0f, 0f);
+        private float _requestedAt = float.NegativeInfinity;
+
+        /// <summary>Veces que la IA se ha recolocado por estar atascada (para el registro de pruebas).</summary>
+        public static int Unstuck { get; private set; }
+        /// <summary>Veces que estaba atascado pero a la vista del jugador (no se recoloca: el jugador puede ir a por él).</summary>
+        public static int StuckInSight { get; private set; }
+        /// <summary>Veces que estaba atascado y no se encontró ningún sitio libre donde ponerlo.</summary>
+        public static int StuckNoSpot { get; private set; }
+        /// <summary>Veces que la vigilancia llegó a comprobar un atasco (para el registro de pruebas).</summary>
+        public static int StuckChecks { get; private set; }
 
         private Combatant _self;
         private NavMeshAgent _agent;
@@ -112,6 +132,91 @@ namespace Pacifico.Infantry
             };
             RiflemanDecision d = _brain.Step(dt, p);
             Act(d);
+            WatchStuck(d);
+        }
+
+        /// <summary>
+        /// Si lleva <see cref="StuckSeconds"/> queriendo andar sin avanzar porque su destino queda fuera de su trozo de
+        /// NavMesh (o él mismo quedó fuera del NavMesh), lo recoloca donde sí hay camino, siempre fuera de la vista.
+        /// </summary>
+        private void WatchStuck(RiflemanDecision d)
+        {
+            bool wantsToMove = _agent.enabled && !HoldPosition && (d.MoveToTarget || d.MoveToObjective);
+            if (!wantsToMove || (transform.position - _progressPoint).sqrMagnitude > 1f)
+            {
+                _progressPoint = transform.position;
+                _progressTime = Time.time;
+                return;
+            }
+            if (Time.time - _progressTime < StuckSeconds) return;
+            _progressPoint = transform.position;
+            _progressTime = Time.time;
+            StuckChecks++;
+
+            var filter = new NavMeshQueryFilter { agentTypeID = _agent.agentTypeID, areaMask = NavMesh.AllAreas };
+            if (!_agent.isOnNavMesh)
+            {
+                if (NavMesh.SamplePosition(transform.position, out NavMeshHit near, 15f, filter) && !SeenByPlayer(near.position)) Warp(near.position);
+                return;
+            }
+            // No se mira el estado del camino: con el robot, dos chilenos quedaron 10 minutos parados a 40 m de su
+            // blanco con un camino «completo» y nada por recorrer (el blanco, fuera del NavMesh, sobre una tapia).
+            Vector3 goal = d.MoveToTarget && _target != null ? _target.transform.position : Objective ?? transform.position;
+            if (Vector3.Distance(transform.position, goal) < 5f) return;
+            if (SeenByPlayer(transform.position))
+            {
+                StuckInSight++;
+                return;
+            }
+            // El destino puede estar fuera del NavMesh (un soldado subido a una tapia): se busca el punto del NavMesh
+            // más cercano en un radio amplio.
+            Vector3 anchor = NavMesh.SamplePosition(goal, out NavMeshHit goalHit, 15f, filter) ? goalHit.position : goal;
+            // Un punto unido al destino, lo más atrás posible en dirección a donde estaba (no aparecer encima de nadie).
+            Vector3 back = Vector3.ProjectOnPlane(transform.position - anchor, Vector3.up);
+            back = back.sqrMagnitude > 1e-3f ? back.normalized : -transform.forward;
+            var path = new NavMeshPath();
+            Vector3? fallback = null;
+            foreach (float m in new[] { 30f, 22f, 15f, 8f })
+            {
+                if (!NavMesh.SamplePosition(anchor + back * m, out NavMeshHit candidate, 5f, filter)) continue;
+                if (SeenByPlayer(candidate.position)) continue;
+                if (NavMesh.CalculatePath(candidate.position, anchor, filter, path) && path.status == NavMeshPathStatus.PathComplete)
+                {
+                    Warp(candidate.position);
+                    return;
+                }
+                fallback = candidate.position; // el más cercano que no se ve: si no hay camino a ningún sitio, allí
+            }
+            if (fallback.HasValue) Warp(fallback.Value);
+            else StuckNoSpot++;
+        }
+
+        private void Warp(Vector3 position)
+        {
+            if (!_agent.Warp(position)) return;
+            Unstuck++;
+            _progressPoint = position;
+            _requestedDestination = new Vector3(float.MaxValue, 0f, 0f); // pedir camino de nuevo desde el sitio nuevo
+        }
+
+        /// <summary>El jugador lo tiene delante, sin nada en medio y a una distancia a la que se notaría un salto.</summary>
+        private static bool SeenByPlayer(Vector3 point)
+        {
+            Camera camera = Camera.main;
+            if (camera == null) return false;
+            Vector3 chest = point + Vector3.up * 1.2f;
+            Vector3 v = camera.WorldToViewportPoint(chest);
+            bool inView = v.z > 0f && v.x > -0.1f && v.x < 1.1f && v.y > -0.1f && v.y < 1.1f;
+            if (!inView || v.z >= VisibleToPlayerM) return false;
+            // Una tapia o una casa en medio lo tapa: los soldados no cuentan como obstáculo.
+            Vector3 eye = camera.transform.position;
+            Vector3 to = chest - eye;
+            int count = Physics.RaycastNonAlloc(eye, to.normalized, Hits, to.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+            {
+                if (Hits[i].collider.GetComponentInParent<Combatant>() == null) return false;
+            }
+            return true;
         }
 
         private void Sense()
@@ -165,8 +270,8 @@ namespace Pacifico.Infantry
             if (onMesh)
             {
                 _agent.speed = d.State == RiflemanState.Charge ? ChargeSpeed : WalkSpeed;
-                if (d.MoveToTarget && _target != null) _agent.SetDestination(_target.transform.position);
-                else if (d.MoveToObjective && Objective.HasValue) _agent.SetDestination(Objective.Value);
+                if (d.MoveToTarget && _target != null) MoveTo(_target.transform.position);
+                else if (d.MoveToObjective && Objective.HasValue) MoveTo(Objective.Value);
                 _agent.isStopped = !(d.MoveToTarget || d.MoveToObjective);
             }
             if (_target != null && (d.State == RiflemanState.Engage || d.State == RiflemanState.Melee || d.State == RiflemanState.Reload))
@@ -186,6 +291,20 @@ namespace Pacifico.Infantry
             if (_pose != null) _pose.AimTarget = d.State == RiflemanState.Engage || d.State == RiflemanState.Reload ? 1f : 0f;
             if (d.Fire) Fire();
             if (d.Strike && _target != null) _target.Hurt(_bayonetDamage, gameObject, transform.position);
+        }
+
+        /// <summary>
+        /// Pide camino solo si el destino cambió de verdad. Antes se pedía en cada fotograma: con un camino difícil,
+        /// Unity no llegaba a terminar de calcularlo y el soldado se quedaba quieto «esperando» (robot, Tarapacá).
+        /// </summary>
+        private void MoveTo(Vector3 destination)
+        {
+            float moved = (destination - _requestedDestination).sqrMagnitude;
+            if (_agent.pathPending && moved < 9f) return;
+            if (_agent.hasPath && moved < 1f && Time.time - _requestedAt < 2f) return;
+            _agent.SetDestination(destination);
+            _requestedDestination = destination;
+            _requestedAt = Time.time;
         }
 
         private void Fire()

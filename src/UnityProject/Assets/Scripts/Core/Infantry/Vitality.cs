@@ -37,10 +37,61 @@ namespace Pacifico.Core.Infantry
 
         public event Action Downed;
 
+        /// <summary>
+        /// Daño a partir del cual un golpe es una muerte preparada por la historia (minas, voladuras, el final de un
+        /// capítulo): no se reduce ni se amortigua. Los balazos y bayonetazos nunca llegan (la ficha más dura hace 100).
+        /// </summary>
+        public const float ScriptedLethalDamage = 500f;
+
+        /// <summary>
+        /// Fracción del daño que llega de verdad (1 = todo). El jugador usa <see cref="PlayerIncomingScale"/>.
+        /// </summary>
+        public float IncomingScale { get; set; } = 1f;
+
+        /// <summary>
+        /// Si la salud está por encima de esta fracción, un golpe normal no puede tumbar: deja <see cref="ShieldLeftHealth"/>.
+        /// 0 = sin protección. Licencia de jugabilidad para el jugador: siempre hay un aviso antes de caer.
+        /// </summary>
+        public float OneShotShieldFraction { get; set; }
+
+        /// <summary>Salud que queda cuando la protección de un solo golpe actúa.</summary>
+        public float ShieldLeftHealth { get; set; } = 10f;
+
+        /// <summary>
+        /// Segundos sin recibir daño normal después de que actúe la protección: tiempo para ponerse a cubierto (en
+        /// Miraflores, quieto, se pasaba de la salud entera a caer en 8 s). Valor de balance.
+        /// </summary>
+        public float ShieldGraceSeconds { get; set; } = 2f;
+
+        /// <summary>Lo que queda del respiro tras la protección.</summary>
+        public float GraceLeftSeconds { get; private set; }
+
+        /// <summary>Valores de balance para el jugador (revisión del 2026-11-17: en Miraflores moría a los 15 s).</summary>
+        public const float PlayerIncomingScale = 0.5f;
+        public const float PlayerOneShotShieldFraction = 0.5f;
+
+        /// <summary>Salud del jugador: recupera, recibe la mitad del daño y no cae de un solo golpe con más de media salud.</summary>
+        public static Vitality ForPlayer(float recoveryPerSecond) => new Vitality
+        {
+            RecoveryPerSecond = recoveryPerSecond,
+            IncomingScale = PlayerIncomingScale,
+            OneShotShieldFraction = PlayerOneShotShieldFraction,
+        };
+
         /// <summary>Aplica daño; devuelve true si este golpe lo deja fuera de combate.</summary>
         public bool ApplyDamage(float amount)
         {
             if (IsDown || amount <= 0f) return false;
+            if (amount < ScriptedLethalDamage)
+            {
+                if (GraceLeftSeconds > 0f) return false;
+                amount *= IncomingScale;
+                if (OneShotShieldFraction > 0f && Health > MaxHealth * OneShotShieldFraction && amount >= Health)
+                {
+                    amount = Health - Math.Min(ShieldLeftHealth, Health);
+                    GraceLeftSeconds = ShieldGraceSeconds;
+                }
+            }
             Health = Math.Max(0f, Health - amount);
             SinceDamageSeconds = 0f;
             if (!IsDown) return false;
@@ -51,6 +102,7 @@ namespace Pacifico.Core.Infantry
         public void Step(float dt)
         {
             if (IsDown || dt <= 0f) return;
+            GraceLeftSeconds = Math.Max(0f, GraceLeftSeconds - dt);
             SinceDamageSeconds += dt;
             float cap = MaxHealth * RecoveryCap;
             if (RecoveryPerSecond > 0f && SinceDamageSeconds >= RecoveryDelaySeconds && Health < cap)
