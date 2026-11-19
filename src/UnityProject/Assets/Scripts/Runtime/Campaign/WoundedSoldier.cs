@@ -25,6 +25,9 @@ namespace Pacifico.Campaign
         public bool Active => _model != null;
         public Vector3 Position => body != null ? body.position : transform.position;
 
+        /// <summary>Adónde hay que llevarlo (la acequia), o null si la escena no lo marca.</summary>
+        public Transform SafeSpot => safeSpot;
+
         /// <summary>Distancia del enemigo más cercano (la pone el director).</summary>
         public Func<Vector3, float> NearestEnemy { get; set; }
 

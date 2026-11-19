@@ -27,6 +27,9 @@ namespace Pacifico.Infantry
         /// <summary>Cualquier combatiente que cae (y quién lo derribó, si se sabe).</summary>
         public static event Action<Combatant, GameObject> Downed;
 
+        /// <summary>Cualquier combatiente herido: víctima, atacante y si cayó (para el aviso de impacto y la vibración).</summary>
+        public static event Action<Combatant, GameObject, bool> Hit;
+
         public Vitality Vitality { get; private set; }
         public Faction Faction => faction;
         public bool IsPlayer => isPlayer;
@@ -82,7 +85,10 @@ namespace Pacifico.Infantry
         {
             if (!Alive || damage <= 0f) return;
             LastHurtTime = Time.time;
-            if (!Vitality.ApplyDamage(damage)) return;
+            bool down = Vitality.ApplyDamage(damage);
+            Hit?.Invoke(this, attacker, down);
+            if (isPlayer) Input.GameInput.Rumble(0.7f, 0.45f, 0.25f);
+            if (!down) return;
             if (!isPlayer) Fall(from);
             Downed?.Invoke(this, attacker);
         }

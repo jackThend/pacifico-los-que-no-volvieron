@@ -60,28 +60,29 @@ namespace Pacifico.Campaign
             EnsureStyles();
             // Deja 380 px a cada lado para los paneles del buque, de las escuadras y de la munición.
             float width = Mathf.Clamp(Screen.width - 760f, Mathf.Min(520f, Screen.width - 40f), 980f);
-            var rect = new Rect((Screen.width - width) * 0.5f, Screen.height - Mathf.Max(bottomOffset, 100f) - 14f, width, 90f);
+            float inner = width - 28f;
             string said = ControlPrompts.Resolve(line.Text);
+            bool quote = line.Kind == LineKind.Quote;
+            string text = quote ? "«" + said + "»" : said;
+            GUIStyle style = line.Kind == LineKind.Quote || line.Kind == LineKind.Hint ? _line : _center;
+            float header = quote ? 24f : 0f;
+            float textHeight = style.CalcHeight(new GUIContent(text), inner);
+            // El recuadro crece hacia arriba con textos largos: el borde de abajo no se mueve y nada se corta.
+            float height = Mathf.Max(90f, header + textHeight + 18f);
+            float bottom = Screen.height - Mathf.Max(bottomOffset, 100f) + 76f;
+            var rect = new Rect((Screen.width - width) * 0.5f, bottom - height, width, height);
             GUI.color = new Color(0f, 0f, 0f, 0.6f);
             GUI.DrawTexture(rect, Texture2D.whiteTexture);
             float alpha = Mathf.Clamp01(runner.Dialogue.CurrentElapsed / 0.25f);
-            switch (line.Kind)
+            if (quote)
             {
-                case LineKind.Quote:
-                    GUI.color = new Color(1f, 0.85f, 0.5f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 6f, width - 28f, 20f), line.Speaker.ToUpperInvariant(), _speaker);
-                    GUI.color = new Color(1f, 1f, 1f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 28f, width - 28f, 58f), "«" + said + "»", _line);
-                    break;
-                case LineKind.Hint:
-                    GUI.color = new Color(0.75f, 0.9f, 1f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 8f, width - 28f, 74f), said, _line);
-                    break;
-                default:
-                    GUI.color = new Color(0.92f, 0.88f, 0.78f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 8f, width - 28f, 74f), said, _center);
-                    break;
+                GUI.color = new Color(1f, 0.85f, 0.5f, alpha);
+                GUI.Label(new Rect(rect.x + 14f, rect.y + 6f, inner, 20f), line.Speaker.ToUpperInvariant(), _speaker);
             }
+            GUI.color = quote ? new Color(1f, 1f, 1f, alpha)
+                : line.Kind == LineKind.Hint ? new Color(0.75f, 0.9f, 1f, alpha) : new Color(0.92f, 0.88f, 0.78f, alpha);
+            float top = rect.y + 8f + header;
+            GUI.Label(new Rect(rect.x + 14f, top, inner, rect.yMax - top - 6f), text, style);
             GUI.color = Color.white;
         }
 

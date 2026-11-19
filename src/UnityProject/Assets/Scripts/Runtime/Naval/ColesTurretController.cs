@@ -140,6 +140,7 @@ namespace Pacifico.Naval
                 ShellLauncher.Launch(shellPrefab, MuzzlePosition(launch.GunIndex, launch.LateralOffsetM), launch, ship.Velocity, ship.gameObject);
             }
             Fired?.Invoke(this);
+            if (playerControlled) GameInput.Rumble(1f, 0.6f, 0.5f);
         }
 
         private Vector3 MuzzlePosition(int gunIndex, float lateralOffset)

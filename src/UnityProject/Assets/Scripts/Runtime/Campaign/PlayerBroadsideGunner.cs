@@ -118,6 +118,7 @@ namespace Pacifico.Campaign
             {
                 Say((perfect ? "¡Disparo perfecto! " : "¡Fuego! ") + before + " cañones");
                 PlayerFired?.Invoke(before);
+                GameInput.Rumble(1f, 0.5f, 0.45f);
             }
             else
             {

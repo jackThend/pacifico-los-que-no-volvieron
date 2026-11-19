@@ -343,6 +343,7 @@ namespace Pacifico.Campaign
             if (_runner.State == MissionState.Running)
             {
                 if (!seated) _hud.DrawObjectives(_runner, "CAPÍTULO 8", "Soldado Abraham Quiroz · 3.º de Línea");
+                if (!seated && Waypoint(out Vector3 goal, out string goalName)) ObjectiveMarker.Draw(Camera.main, goal, goalName);
                 _hud.DrawDialogue(_runner, 190f);
                 if (seated && _shotTime < 0f) DrawLetter();
             }
@@ -401,5 +402,49 @@ namespace Pacifico.Campaign
             GUI.DrawTexture(new Rect(w * (1f - border), 0f, w * border, h), Texture2D.whiteTexture);
             GUI.color = Color.white;
         }
-    }
+    
+        /// <summary>Adónde ir: el reducto, el cañón más cercano sin tomar y, al final, el parapeto donde sentarse.</summary>
+        private bool Waypoint(out Vector3 at, out string name)
+        {
+            at = Vector3.zero;
+            name = string.Empty;
+            if (player == null) return false;
+            if (_stage == S.Gardens && redoubt != null)
+            {
+                at = redoubt.position;
+                name = "El reducto";
+                return true;
+            }
+            if (_stage == S.Guns && NearestOf(redoubtGuns, g => !g.IsCaptured, out at))
+            {
+                name = "Cañón";
+                return true;
+            }
+            if (_stage == S.Ending && seat != null && seat.Active && !seat.Used)
+            {
+                at = seat.transform.position;
+                name = "El parapeto";
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>El primero de <paramref name="points"/> más cercano al jugador (para la marca de objetivo).</summary>
+        private bool NearestOf<T>(T[] items, System.Func<T, bool> pending, out Vector3 at) where T : Component
+        {
+            at = Vector3.zero;
+            float best = float.MaxValue;
+            foreach (T item in items)
+            {
+                if (item == null || !pending(item)) continue;
+                float d = Flat(item.transform.position, player.transform.position);
+                if (d < best)
+                {
+                    best = d;
+                    at = item.transform.position;
+                }
+            }
+            return best < float.MaxValue;
+        }
+}
 }

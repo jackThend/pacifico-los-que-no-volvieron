@@ -191,6 +191,7 @@ namespace Pacifico.Infantry
             Vector3 origin = eye.position - eye.up * sightHeight;
             Vector3 direction = eye.rotation * Quaternion.Euler(-shot.PitchDeg, shot.YawDeg, 0f) * Vector3.forward;
             RifleBullet.Fire(origin, direction * Model.Weapon.MuzzleVelocityMps, Model.Weapon, _dragFactor, gameObject, hitMask);
+            GameInput.Rumble(0.35f, 0.75f, 0.12f);
 
             // Humo de pólvora negra (ROADMAP 3.3): sale de la boca en la dirección del ánima, con la velocidad del tirador.
             Vector3 muzzlePosition = muzzle != null ? muzzle.position : origin + eye.forward * DefaultMuzzleDistanceM;

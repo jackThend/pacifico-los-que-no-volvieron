@@ -208,9 +208,67 @@ namespace Pacifico.Infantry
         private void UpdateLook()
         {
             Vector2 mouse = GameInput.MouseDelta * (mouseSensitivity * Campaign.GameSettings.MouseSensitivity);
+            float yawTo = 0f, pitchTo = 0f, angle = float.MaxValue;
+            bool assist = GameInput.UsingGamepad && viewCamera != null && FindAssistTarget(out yawTo, out pitchTo, out angle);
+            // Con mando, la mira «pesa» un poco más sobre un enemigo: cuesta menos dejarla encima.
+            if (assist && angle < AssistSlowdownDeg) mouse *= AssistSlowdown;
             _yaw = MathUtil.WrapAngle360(_yaw + mouse.x);
             _pitch = Mathf.Clamp(_pitch + (invertY ? mouse.y : -mouse.y), -maxPitch, maxPitch);
+
+            bool aiming = Motor != null && Motor.IsAiming;
+            if (assist && aiming)
+            {
+                // Al encarar (LT) la mira salta buena parte del camino hacia el enemigo cercano; después tira suave.
+                float pull = !_wasAiming ? AssistSnapFraction : Mathf.Clamp01(AssistPullDegPerSecond * Time.deltaTime / Mathf.Max(0.01f, angle));
+                _yaw = MathUtil.WrapAngle360(_yaw + Mathf.DeltaAngle(_yaw, yawTo) * pull);
+                _pitch = Mathf.Clamp(_pitch + (pitchTo - _pitch) * pull, -maxPitch, maxPitch);
+            }
+            _wasAiming = aiming;
             transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
+        }
+
+        // Ayuda de puntería con mando (valores de jugabilidad, pensados para escolares).
+        private const float AssistConeDeg = 9f;
+        private const float AssistSlowdownDeg = 4f;
+        private const float AssistSlowdown = 0.5f;
+        private const float AssistSnapFraction = 0.7f;
+        private const float AssistPullDegPerSecond = 14f;
+        private const float AssistRangeM = 140f;
+        private bool _wasAiming;
+        private Combatant _self;
+
+        /// <summary>El enemigo vivo y a la vista más cerca de la mira (dentro de un cono pequeño), en yaw y pitch.</summary>
+        private bool FindAssistTarget(out float yawTo, out float pitchTo, out float angle)
+        {
+            yawTo = pitchTo = 0f;
+            angle = float.MaxValue;
+            if (_self == null && !TryGetComponent(out _self)) return false;
+            Transform eye = viewCamera.transform;
+            Combatant best = null;
+            Vector3 bestDir = Vector3.zero;
+            foreach (Combatant c in Combatant.All)
+            {
+                if (c == null || c == _self || !c.Alive || !Combatant.AreEnemies(_self, c)) continue;
+                Vector3 to = c.AimPoint - eye.position;
+                float d = to.magnitude;
+                if (d < 1f || d > AssistRangeM) continue;
+                float a = Vector3.Angle(eye.forward, to);
+                if (a >= AssistConeDeg || a >= angle) continue;
+                angle = a;
+                best = c;
+                bestDir = to / d;
+            }
+            if (best == null) return false;
+            // Sin ayuda a través de las paredes.
+            if (Physics.Linecast(eye.position, best.AimPoint, out RaycastHit hit, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)
+                && hit.collider.GetComponentInParent<Combatant>() != best)
+            {
+                angle = float.MaxValue;
+                return false;
+            }
+            yawTo = Mathf.Atan2(bestDir.x, bestDir.z) * Mathf.Rad2Deg;
+            pitchTo = -Mathf.Asin(Mathf.Clamp(bestDir.y, -1f, 1f)) * Mathf.Rad2Deg;
+            return true;
         }
 
         private InfantryInput ReadInput(bool hasFocus)

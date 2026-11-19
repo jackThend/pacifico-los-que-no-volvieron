@@ -26,13 +26,12 @@ namespace Pacifico.EditorTools
 
             foreach (CollectibleRecord record in CollectibleCatalog.BuildFromRepository(root))
             {
+                // Primero la imagen: importarla puede refrescar la base de datos de recursos y dejar destruida una
+                // ficha cargada antes (MissingReferenceException al reconstruir). La ficha se carga después.
+                Texture2D texture = string.IsNullOrEmpty(record.FacsimileImage) ? null : ImportArchiveTexture(root, record.FacsimileImage);
                 var asset = LoadOrCreate<CollectibleDataSO>(ProjectPaths.CollectibleData, "Collectible_" + record.Id);
                 asset.CopyFrom(record);
-                if (!string.IsNullOrEmpty(record.FacsimileImage))
-                {
-                    Texture2D texture = ImportArchiveTexture(root, record.FacsimileImage);
-                    if (texture != null) asset.facsimile = texture;
-                }
+                if (texture != null) asset.facsimile = texture;
                 Finish(asset, record.Validate().IsValid, report);
             }
         }

@@ -241,6 +241,7 @@ namespace Pacifico.Campaign
             if (_runner.State == MissionState.Running)
             {
                 if (_stage != S.Council) _hud.DrawObjectives(_runner, "CAPÍTULO 6", "Soldado Manuel Salazar · batallón Artesanos de Tacna");
+                if (Waypoint(out Vector3 goal, out string goalName)) ObjectiveMarker.Draw(Camera.main, goal, goalName);
                 _hud.DrawDialogue(_runner, _stage == S.Council ? 140f : 190f);
             }
             else
@@ -283,5 +284,26 @@ namespace Pacifico.Campaign
             GUI.color = Color.white;
             GUI.Label(new Rect(back.x, back.yMax + 2f, 216f, 20f), "Salud " + (f * 100f).ToString("0"), _small);
         }
-    }
+    
+        /// <summary>Adónde ir: los sacos del parapeto, y luego la explanada de la cima.</summary>
+        private bool Waypoint(out Vector3 at, out string name)
+        {
+            at = Vector3.zero;
+            name = string.Empty;
+            if (player == null) return false;
+            if (_stage == S.Parapet && parapet != null && Flat(player.transform.position, parapet.position) > 12f)
+            {
+                at = parapet.position;
+                name = "El parapeto";
+                return true;
+            }
+            if ((_stage == S.Withdraw || _stage == S.Summit) && summit != null)
+            {
+                at = summit.position;
+                name = _stage == S.Withdraw ? "La explanada" : "La bandera";
+                return true;
+            }
+            return false;
+        }
+}
 }

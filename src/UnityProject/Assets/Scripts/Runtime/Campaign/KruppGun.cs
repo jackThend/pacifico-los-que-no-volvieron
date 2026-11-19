@@ -34,6 +34,9 @@ namespace Pacifico.Campaign
         public bool Firing { get; set; }
         public bool Capturable { get; set; }
         public CapturePoint Capture => _capture;
+
+        /// <summary>La pieza ya es del jugador.</summary>
+        public bool IsCaptured => _capture.Captured;
         public event Action<KruppGun> Captured;
 
         public void Configure(Transform barrelTransform, Vector3 zoneCenter, float zoneRadius, Material dustMaterial,

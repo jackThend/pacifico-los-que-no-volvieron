@@ -341,6 +341,7 @@ namespace Pacifico.Campaign
             {
                 DrawLastEnemies();
                 _hud.DrawObjectives(_runner, "CAPÍTULO 4", "Soldado Mariano Santos · batallón Zepita (Cáceres)");
+                if (Waypoint(out Vector3 goal, out string goalName)) ObjectiveMarker.Draw(Camera.main, goal, goalName);
                 _hud.DrawDialogue(_runner, 190f);
             }
             else
@@ -383,5 +384,58 @@ namespace Pacifico.Campaign
             string canteen = _runner.Facts.Flag(G.WaterGiven) ? "Caramayola: vacía" : "Caramayola: un resto de agua";
             GUI.Label(new Rect(back.x, back.yMax + 2f, 216f, 20f), "Salud " + (f * 100f).ToString("0") + " · " + canteen, _small);
         }
-    }
+    
+        /// <summary>Adónde ir en cada etapa: la plaza, el Krupp más cercano sin tomar, el tambor herido o la columna.</summary>
+        private bool Waypoint(out Vector3 at, out string name)
+        {
+            at = Vector3.zero;
+            name = string.Empty;
+            if (player == null) return false;
+            if (_stage == S.Surprise && plaza != null && !_runner.Facts.Flag(G.AtRally))
+            {
+                at = plaza.position;
+                name = "Plaza de la iglesia";
+                return true;
+            }
+            if (_stage == S.Krupp && NearestOf(kruppGuns, g => !g.IsCaptured, out at))
+            {
+                name = "Cañón Krupp";
+                return true;
+            }
+            if (_stage == S.Aftermath)
+            {
+                if (drummer != null && drummer.Active && !drummer.Watered)
+                {
+                    at = drummer.transform.position;
+                    name = "Tambor herido";
+                    return true;
+                }
+                if (column != null && !_runner.Facts.Flag(G.ReachedColumn))
+                {
+                    at = column.position;
+                    name = "La columna";
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>El primero de <paramref name="points"/> más cercano al jugador (para la marca de objetivo).</summary>
+        private bool NearestOf<T>(T[] items, System.Func<T, bool> pending, out Vector3 at) where T : Component
+        {
+            at = Vector3.zero;
+            float best = float.MaxValue;
+            foreach (T item in items)
+            {
+                if (item == null || !pending(item)) continue;
+                float d = Flat(item.transform.position, player.transform.position);
+                if (d < best)
+                {
+                    best = d;
+                    at = item.transform.position;
+                }
+            }
+            return best < float.MaxValue;
+        }
+}
 }

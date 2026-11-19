@@ -16,6 +16,7 @@ namespace Pacifico.Infantry
         [SerializeField] private bool showDebug = true;
 
         private GUIStyle _label;
+        private GUIStyle _center;
         private Texture2D _white;
         private float _smoothedFps = 60f;
 
@@ -42,19 +43,64 @@ namespace Pacifico.Infantry
             if (Time.unscaledDeltaTime > 0f) _smoothedFps = Mathf.Lerp(_smoothedFps, 1f / Time.unscaledDeltaTime, 0.05f);
         }
 
+        private float _hitTime = -10f;
+        private bool _hitKill;
+
+        private void OnEnable() => Combatant.Hit += OnCombatantHit;
+        private void OnDisable() => Combatant.Hit -= OnCombatantHit;
+
+        /// <summary>Un enemigo herido por el jugador: marca en la mira (roja y más grande si cae).</summary>
+        private void OnCombatantHit(Combatant victim, GameObject attacker, bool down)
+        {
+            if (player == null || attacker == null || victim == null || victim.IsPlayer) return;
+            if (attacker.transform.root != player.transform.root) return;
+            _hitTime = Time.time;
+            _hitKill = down;
+            Pacifico.Input.GameInput.Rumble(0.15f, 0.35f, 0.08f);
+        }
+
+        /// <summary>Mira en cruz, bien visible sobre la arena; se aparta al encarar (ahí mandan las miras del fusil).</summary>
+        private void DrawCrosshair(float aim)
+        {
+            float alpha = 1f - Mathf.Clamp01(aim * 2f);
+            float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
+            if (alpha > 0.01f)
+            {
+                const float gap = 6f, length = 10f, thick = 2f;
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    GUI.color = pass == 0 ? new Color(0f, 0f, 0f, 0.6f * alpha) : new Color(1f, 1f, 1f, 0.9f * alpha);
+                    float o = pass == 0 ? 1f : 0f, t = thick + (pass == 0 ? 2f : 0f);
+                    GUI.DrawTexture(new Rect(cx - gap - length - o, cy - t * 0.5f, length + 2f * o, t), _white);
+                    GUI.DrawTexture(new Rect(cx + gap - o, cy - t * 0.5f, length + 2f * o, t), _white);
+                    GUI.DrawTexture(new Rect(cx - t * 0.5f, cy - gap - length - o, t, length + 2f * o), _white);
+                    GUI.DrawTexture(new Rect(cx - t * 0.5f, cy + gap - o, t, length + 2f * o), _white);
+                }
+            }
+            // Aviso de impacto: una X que se desvanece en medio segundo.
+            float since = Time.time - _hitTime;
+            if (since < 0.5f)
+            {
+                float a = 1f - since / 0.5f, size = _hitKill ? 30f : 22f;
+                GUI.color = _hitKill ? new Color(1f, 0.3f, 0.25f, a) : new Color(1f, 1f, 1f, a);
+                Matrix4x4 m = GUI.matrix;
+                GUIUtility.RotateAroundPivot(45f, new Vector2(cx, cy));
+                GUI.DrawTexture(new Rect(cx - size * 0.5f, cy - 1.5f, size, 3f), _white);
+                GUI.DrawTexture(new Rect(cx - 1.5f, cy - size * 0.5f, 3f, size), _white);
+                GUI.matrix = m;
+                if (_hitKill) GUI.Label(new Rect(cx - 100f, cy + 24f, 200f, 24f), "¡Abatido!", _center);
+            }
+            GUI.color = Color.white;
+        }
+
         private void OnGUI()
         {
             if (player == null || player.Motor == null) return;
             EnsureStyles();
             InfantryMotor m = player.Motor;
 
-            // Punto central discreto solo a la cadera.
             float aim = player.Sights != null ? player.Sights.Eased : 0f;
-            if (aim < 0.5f)
-            {
-                GUI.color = new Color(1f, 1f, 1f, 0.6f * (1f - aim * 2f));
-                GUI.DrawTexture(new Rect(Screen.width * 0.5f - 2f, Screen.height * 0.5f - 2f, 4f, 4f), _white);
-            }
+            DrawCrosshair(aim);
 
             // Fondos oscuros: sobre la arena del desierto el texto blanco no se lee.
             GUI.color = new Color(0f, 0f, 0f, 0.5f);
@@ -140,6 +186,7 @@ namespace Pacifico.Infantry
             if (_label != null) return;
             _label = new GUIStyle(GUI.skin.label) { fontSize = 18 };
             _label.normal.textColor = new Color(0.95f, 0.92f, 0.85f);
+            _center = new GUIStyle(_label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _white = Texture2D.whiteTexture;
         }
     }

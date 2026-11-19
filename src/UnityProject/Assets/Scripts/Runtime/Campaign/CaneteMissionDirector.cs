@@ -391,6 +391,7 @@ namespace Pacifico.Campaign
             if (_runner.State == MissionState.Running)
             {
                 if (!plateStage) _hud.DrawObjectives(_runner, "CAPÍTULO 7", "Quintín Quintana · los culíes liberados");
+                if (!plateStage && Waypoint(out Vector3 goal, out string goalName)) ObjectiveMarker.Draw(Camera.main, goal, goalName, 3f);
                 _hud.DrawDialogue(_runner, plateStage ? 40f : 190f);
                 if (_gateFuse > 0f)
                 {
@@ -443,5 +444,72 @@ namespace Pacifico.Campaign
             GUI.color = Color.white;
             GUI.Label(new Rect(back.x, back.yMax + 2f, 216f, 20f), "Salud " + (f * 100f).ToString("0"), _small);
         }
-    }
+    
+        /// <summary>Adónde ir: la trampa más cercana, el herido (o la acequia, si ya va a cuestas), las armas y el portón.</summary>
+        private bool Waypoint(out Vector3 at, out string name)
+        {
+            at = Vector3.zero;
+            name = string.Empty;
+            if (player == null) return false;
+            if (_stage == S.Silence && NearestOf(trailMines, m => m.Model != null && m.Model.Armed, out at))
+            {
+                name = "Trampa: agáchate";
+                return true;
+            }
+            if (_stage == S.Blood && wounded != null && wounded.Model != null && !wounded.Model.Safe)
+            {
+                bool carried = wounded.Model.Carried;
+                if (carried && wounded.SafeSpot == null) return false;
+                at = carried ? wounded.SafeSpot.position : wounded.Position;
+                name = carried ? "La acequia" : "El herido";
+                return true;
+            }
+            if (_stage == S.Assault)
+            {
+                if (!_runner.Facts.Flag(G.WinchesterTaken) && winchesterSpot != null)
+                {
+                    at = winchesterSpot.position;
+                    name = "Carabina Winchester";
+                    return true;
+                }
+                if (!_runner.Facts.Flag(G.DynamiteTaken) && dynamite != null)
+                {
+                    at = dynamite.transform.position;
+                    name = "Dinamita";
+                    return true;
+                }
+                if (!_runner.Facts.Flag(G.GateBlown) && gateCharge != null)
+                {
+                    at = gateCharge.transform.position;
+                    name = "El portón";
+                    return true;
+                }
+                if (courtyard != null)
+                {
+                    at = courtyard.position;
+                    name = "El patio";
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>El primero de <paramref name="points"/> más cercano al jugador (para la marca de objetivo).</summary>
+        private bool NearestOf<T>(T[] items, System.Func<T, bool> pending, out Vector3 at) where T : Component
+        {
+            at = Vector3.zero;
+            float best = float.MaxValue;
+            foreach (T item in items)
+            {
+                if (item == null || !pending(item)) continue;
+                float d = Flat(item.transform.position, player.transform.position);
+                if (d < best)
+                {
+                    best = d;
+                    at = item.transform.position;
+                }
+            }
+            return best < float.MaxValue;
+        }
+}
 }

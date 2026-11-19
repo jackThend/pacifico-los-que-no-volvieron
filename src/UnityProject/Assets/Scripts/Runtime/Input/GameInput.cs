@@ -245,6 +245,29 @@ namespace Pacifico.Input
             return Mathf.Clamp(value, -1f, 1f);
         }
 
+        private static float s_rumbleUntil;
+
+        /// <summary>Hace vibrar el mando (motores grave y agudo de 0 a 1) durante <paramref name="seconds"/>.</summary>
+        public static void Rumble(float low, float high, float seconds)
+        {
+#if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
+            if (!s_usingPad || Blocked || Gamepad.current == null || !Campaign.GameSettings.Vibration) return;
+            Gamepad.current.SetMotorSpeeds(Mathf.Clamp01(low), Mathf.Clamp01(high));
+            s_rumbleUntil = Mathf.Max(s_rumbleUntil, Time.unscaledTime + seconds);
+#endif
+        }
+
+        /// <summary>Apaga la vibración cuando se acaba su tiempo (o al pausar).</summary>
+        public static void UpdateRumble()
+        {
+#if PACIFICO_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM
+            if (s_rumbleUntil <= 0f || Gamepad.current == null) return;
+            if (Time.unscaledTime < s_rumbleUntil && !Blocked) return;
+            s_rumbleUntil = 0f;
+            Gamepad.current.SetMotorSpeeds(0f, 0f);
+#endif
+        }
+
         /// <summary>Respuesta curva del stick: fino cerca del centro, rápido a fondo.</summary>
         private static Vector2 Curve(Vector2 stick) => stick * stick.magnitude;
 

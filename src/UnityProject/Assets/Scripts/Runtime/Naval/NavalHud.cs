@@ -123,7 +123,9 @@ namespace Pacifico.Naval
             x += 12f;
             y += 8f;
 
-            GUI.Label(new Rect(x, y, inner, 30f), ship.Spec.Name, _title);
+            // Los nombres largos («Fragata blindada Almirante Cochrane») bajan de tamaño para caber.
+            GUIStyle nameStyle = _title.CalcSize(new GUIContent(ship.Spec.Name)).x <= inner ? _title : _label;
+            GUI.Label(new Rect(x, y, inner, 30f), ship.Spec.Name, nameStyle);
             y += 34f;
             if (ship.PlayerControlled)
             {

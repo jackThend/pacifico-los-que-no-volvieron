@@ -20,7 +20,16 @@ namespace Pacifico.Input
             go.AddComponent<GamepadSupport>();
         }
 
-        private void Update() => GameInput.Tick();
+        private void Update()
+        {
+            GameInput.Tick();
+            GameInput.UpdateRumble();
+        }
+
+        private void OnApplicationFocus(bool focus)
+        {
+            if (!focus) GameInput.Rumble(0f, 0f, 0f);
+        }
 
         private void OnGUI()
         {

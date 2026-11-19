@@ -16,6 +16,7 @@ namespace Pacifico.Input
         private static int s_count;
         private static int s_navFrame = -1;
         private static bool s_confirm;
+        private static int s_horizontal;
         private static object s_owner;
 
         /// <summary>Índice del botón resaltado (en el orden en que se dibujan).</summary>
@@ -41,6 +42,9 @@ namespace Pacifico.Input
             if (s_navFrame == Time.frameCount) return;
             s_navFrame = Time.frameCount;
             s_confirm = GameInput.PadPressedRaw(PadButton.A);
+            s_horizontal = 0;
+            if (GameInput.PadPressedRaw(PadButton.DLeft) || GameInput.PadPressedRaw(PadButton.LLeft)) s_horizontal = -1;
+            if (GameInput.PadPressedRaw(PadButton.DRight) || GameInput.PadPressedRaw(PadButton.LRight)) s_horizontal = 1;
             int step = 0;
             if (GameInput.PadPressedRaw(PadButton.DUp) || GameInput.PadPressedRaw(PadButton.LUp)) step = -1;
             if (GameInput.PadPressedRaw(PadButton.DDown) || GameInput.PadPressedRaw(PadButton.LDown)) step = 1;
@@ -69,6 +73,30 @@ namespace Pacifico.Input
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Como GUI.HorizontalSlider; con mando se elige como un botón y se mueve a saltos de <paramref name="step"/>
+        /// con la cruceta o el stick a izquierda y derecha.
+        /// </summary>
+        public static float Slider(Rect rect, float value, float min, float max, float step)
+        {
+            int index = s_count++;
+            s_enabled.Add(GUI.enabled);
+            bool focused = GameInput.UsingGamepad && index == s_focus && GUI.enabled;
+            if (focused && Event.current.type == EventType.Repaint)
+            {
+                GUI.color = new Color(1f, 0.82f, 0.25f, 0.55f);
+                GUI.DrawTexture(new Rect(rect.x - 6f, rect.y - 8f, rect.width + 12f, rect.height + 16f), Texture2D.whiteTexture);
+                GUI.color = Color.white;
+            }
+            float result = GUI.HorizontalSlider(rect, value, min, max);
+            if (focused && s_horizontal != 0 && Event.current.type == EventType.Repaint)
+            {
+                result = Mathf.Clamp(Mathf.Round((value + s_horizontal * step) / step) * step, min, max);
+                s_horizontal = 0;
+            }
+            return result;
         }
 
         /// <summary>Como GUI.Button; con mando, el botón resaltado se pulsa con A.</summary>

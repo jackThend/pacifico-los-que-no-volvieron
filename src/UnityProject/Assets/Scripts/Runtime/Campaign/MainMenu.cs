@@ -101,7 +101,7 @@ namespace Pacifico.Campaign
             }
             if (PadMenu.Button(new Rect(x + width * 0.51f, y, width * 0.49f, 40f), "Salir", _button)) Application.Quit();
             y += 54f;
-            if (y + 60f < Screen.height - 90f) GameSettings.DrawSliders(new Rect(x, y, width, 60f));
+            if (y + 96f < Screen.height - 70f) GameSettings.DrawSliders(new Rect(x, y, width, 60f));
             DrawFooter(x);
         }
 
