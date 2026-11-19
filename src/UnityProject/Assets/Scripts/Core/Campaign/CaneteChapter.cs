@@ -101,7 +101,7 @@ namespace Pacifico.Core.Campaign
             var silence = new MissionStage { Id = Stages.Silence, Title = "El silencio en la noche", Perspective = Perspectives.Quintin };
             silence.OnEnter.Add(Narrate("Quintín Quintana avanza entre los cañaverales. La luna alumbra apenas las acequias."));
             silence.OnEnter.Add(Narrate("Los defensores han sembrado la senda de torpedos de tierra: cajas de dinamita con un alambre oculto en la arena."));
-            silence.OnEnter.Add(Hint("C: agacharse. Agachado, el gancho de caña descubre los alambres a 4 m. Junto a la carga, quieto y agachado, mantén E para cortarlo."));
+            silence.OnEnter.Add(Hint("{agacharse}: agáchate. Agachado ves los alambres escondidos. Junto a la trampa, quieto y agachado, mantén {usar} para cortar el alambre."));
             silence.Objectives.Add(new MissionObjective
             {
                 Id = "senda", Text = "Abre una senda segura para la columna",
@@ -120,7 +120,7 @@ namespace Pacifico.Core.Campaign
             alarm.Lines.Add(Narrate("Una patrulla chilena impaciente se sale de la senda. Una mina estalla en la oscuridad."));
             alarm.Lines.Add(Narrate("Desde los muros de la hacienda, los fusileros peruanos abren fuego cruzado."));
             alarm.Lines.Add(Narrate("Un joven soldado chileno queda malherido en medio del campo de tiro, gritando de dolor. Dos tiradores salen a rematarlo."));
-            alarm.Lines.Add(Hint("G: tajo de machete. Llega hasta él, mantén E a su lado para cargarlo y llévalo a cubierto, a la acequia."));
+            alarm.Lines.Add(Hint("{tajo}: golpe de machete. Llega hasta el herido, mantén {usar} para cargarlo y llévalo a la acequia."));
             blood.Triggers.Add(alarm);
             blood.Objectives.Add(new MissionObjective
             {
@@ -143,7 +143,7 @@ namespace Pacifico.Core.Campaign
             var assault = new MissionStage { Id = Stages.Assault, Title = "El asalto con fuego", Perspective = Perspectives.Quintin };
             assault.Triggers.Add(new MissionTrigger { Id = "se_suman", When = MissionCondition.StageTime(0f), SetsFlag = Flags.AlliesJoin });
             assault.OnEnter.Add(Narrate("Los culíes liberados y los compañeros del herido se agrupan detrás de Quintín."));
-            assault.OnEnter.Add(Hint("E: recoge la carabina Winchester y los cartuchos de dinamita. Pon la carga en el portón y apártate."));
+            assault.OnEnter.Add(Hint("{usar}: recoge la carabina y la dinamita. Pon la carga en el portón y aléjate."));
             assault.Objectives.Add(new MissionObjective { Id = "winchester", Text = "Recoge la Winchester 1873", Complete = MissionCondition.Flag(Flags.WinchesterTaken) });
             assault.Objectives.Add(new MissionObjective { Id = "dinamita", Text = "Recoge la dinamita", Complete = MissionCondition.Flag(Flags.DynamiteTaken) });
             assault.Objectives.Add(new MissionObjective { Id = "porton", Text = "Vuela el portón de la hacienda", Complete = MissionCondition.Flag(Flags.GateBlown) });

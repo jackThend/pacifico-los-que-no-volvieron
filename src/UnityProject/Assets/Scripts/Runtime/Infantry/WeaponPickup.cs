@@ -102,7 +102,7 @@ namespace Pacifico.Infantry
                 _style = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };
                 _style.normal.textColor = new Color(1f, 0.95f, 0.8f);
             }
-            GUI.Label(new Rect(screen.x - 160f, Screen.height - screen.y - 12f, 320f, 24f), "[E] " + _spec.DisplayName + " · " + rounds + " cartuchos", _style);
+            GUI.Label(new Rect(screen.x - 160f, Screen.height - screen.y - 12f, 320f, 24f), Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Use) + " " + _spec.DisplayName + " · " + rounds + " cartuchos", _style);
         }
     }
 }

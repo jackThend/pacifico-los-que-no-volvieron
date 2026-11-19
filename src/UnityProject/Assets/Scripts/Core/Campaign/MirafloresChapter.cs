@@ -86,7 +86,7 @@ namespace Pacifico.Core.Campaign
             var gardens = new MissionStage { Id = Stages.Gardens, Title = "Los jardines de Miraflores", Perspective = Perspectives.Soldier };
             gardens.OnEnter.Add(Narrate("15 de enero de 1881. Soldado Abraham Quiroz, 3.º de Línea, natural de Quillota."));
             gardens.OnEnter.Add(Narrate("Los Krupp chilenos y las fragatas desde el mar bombardean los balnearios de Chorrillos y Miraflores."));
-            gardens.OnEnter.Add(Hint("Avanza con tu escuadra entre muros de adobe derrumbados y jardines destrozados. Clic derecho: encarar. Clic: fuego. F: bayoneta."));
+            gardens.OnEnter.Add(Hint("Avanza con tu escuadra entre muros de adobe y jardines destrozados. {apuntar} apuntar, {disparar} disparar, {bayoneta} bayoneta."));
             gardens.Objectives.Add(new MissionObjective { Id = "avanzar", Text = "Avanza con tu escuadra hasta el Reducto N.º 3", Complete = MissionCondition.Flag(Flags.AtRedoubt) });
             var shouts = new MissionTrigger { Id = "gritos", When = MissionCondition.AtLeast(Facts.DefendersDown, 2) };
             shouts.Lines.Add(Narrate("Entre las tapias se oyen gritos de hombres que defienden sus casas."));
@@ -127,7 +127,7 @@ namespace Pacifico.Core.Campaign
 
             var ending = new MissionStage { Id = Stages.Ending, Title = "El desenlace", Perspective = Perspectives.Soldier };
             ending.OnEnter.Add(Narrate("Los soldados de la escuadra se dejan caer al suelo, exhaustos, y se desabrochan los correajes empapados."));
-            ending.OnEnter.Add(Hint("E: sentarte contra el parapeto de tierra."));
+            ending.OnEnter.Add(Hint("{usar}: siéntate contra el parapeto de tierra."));
             ending.Objectives.Add(new MissionObjective { Id = "descanso", Text = "Siéntate contra el parapeto", Complete = MissionCondition.Flag(Flags.Seated) });
             var letter = new MissionTrigger { Id = "la_carta", When = MissionCondition.Flag(Flags.Seated), Interrupts = true };
             letter.Lines.Add(Narrate("Solo se oye tu respiración y el viento de la costa en las ramas de un olivo partido por un cañonazo."));

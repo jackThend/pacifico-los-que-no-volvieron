@@ -309,7 +309,7 @@ namespace Pacifico.Campaign
                 if (_stage == S.Charge && !_charged)
                 {
                     GUI.color = new Color(0.85f, 0.2f, 0.15f);
-                    if (GUI.Button(new Rect(Screen.width * 0.5f - 130f, Screen.height - 110f, 260f, 56f), "¡A LA CARGA!  [C]", _button)) OrderCharge();
+                    if (GUI.Button(new Rect(Screen.width * 0.5f - 130f, Screen.height - 110f, 260f, 56f), "¡A LA CARGA!  " + Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Charge), _button)) OrderCharge();
                     GUI.color = Color.white;
                 }
                 DrawMarkers();

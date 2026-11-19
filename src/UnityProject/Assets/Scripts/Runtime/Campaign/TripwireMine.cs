@@ -110,7 +110,7 @@ namespace Pacifico.Campaign
             string text = !Crouched ? "Agáchate (C) junto a la carga"
                 : dx * dx + dz * dz > Tripwire.DisarmReachM * Tripwire.DisarmReachM ? "Acércate a la carga"
                 : _model.Progress > 0f ? "Cortando el alambre… " + (_model.Progress * 100f).ToString("0") + "%  (no te muevas)"
-                : "[E] Mantén para cortar el alambre";
+                : Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Use) + " Mantén para cortar el alambre";
             GUI.Label(new Rect(Screen.width * 0.5f - 250f, Screen.height * 0.5f + 40f, 500f, 24f), text, _style);
         }
     }

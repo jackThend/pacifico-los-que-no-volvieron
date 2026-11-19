@@ -127,11 +127,11 @@ namespace Pacifico.Naval
             if (State == null) return string.Empty;
             if (State.ActiveAction != null)
             {
-                return "Brigada: " + ActionName(State.ActiveAction.Value) + " (" + State.ActiveRemaining.ToString("0") + " s)";
+                return "Marineros: " + ActionName(State.ActiveAction.Value) + " (" + State.ActiveRemaining.ToString("0") + " s)";
             }
             return State.CooldownRemaining > 0f
-                ? "Brigada: descansando " + State.CooldownRemaining.ToString("0") + " s"
-                : "Brigada lista: [1] fuego  [2] agua  [3] vapor y timón";
+                ? "Marineros: descansando " + State.CooldownRemaining.ToString("0") + " s"
+                : GameInput.UsingGamepad ? "Arreglos con la cruceta: ← fuego · ↑ agua · → timón" : "Arreglos: [1] fuego · [2] agua · [3] timón";
         }
 
         private static string ActionName(DamageControlAction action)

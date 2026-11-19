@@ -60,7 +60,7 @@ namespace Pacifico.Campaign
                 _style = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleCenter };
                 _style.normal.textColor = new Color(1f, 0.95f, 0.8f);
             }
-            GUI.Label(new Rect(Screen.width * 0.5f - 200f, Screen.height * 0.5f + 40f, 400f, 24f), "[E] Darle tu caramayola", _style);
+            GUI.Label(new Rect(Screen.width * 0.5f - 200f, Screen.height * 0.5f + 40f, 400f, 24f), Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Use) + " Darle tu caramayola", _style);
         }
     }
 }

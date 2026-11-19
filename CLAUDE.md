@@ -17,7 +17,7 @@ Consulta y sigue estrictamente las directivas maestras de desarrollo autónomo d
 
 ## 📍 Estado actual y cómo continuar (actualizar al cerrar cada sesión)
 
-**Última actualización:** 2026-11-17.
+**Última actualización:** 2026-11-19.
 
 * **Completado:** todas las tareas del roadmap (fases 0 a 6, ocho capítulos jugables) salvo la **0.3**, que está `[EN PROCESO]`: el proyecto ya compila en **Unity 6.6 (6000.6.3f1)**, pasa el Test Runner EditMode (440/440) y construye toda la campaña sin errores. Detalle por tarea en `DEV_LOG.md`.
 * **Sonido (2026-10-28):** efectos y ambientes de Sonniss GameAudioGDC en `Assets/Resources/Sonido/<grupo>` (créditos en su `CREDITOS.md`), preparados con `tools/audio/preparar_sonidos.py`; código en `Runtime/Audio` (`GameAudio.Play(Sfx.X, punto)`, `SoundLoop`, `Ambience` con capas por escena). Faltan fusiles de pólvora negra, tambores y cornetas.
@@ -29,7 +29,8 @@ Consulta y sigue estrictamente las directivas maestras de desarrollo autónomo d
 * **Revisión de jugabilidad (2026-11-07):** arreglado que el capítulo 1 se perdiera porque se hundía el Huáscar o se colgara esperando espolonazos; rediseñado: timón de la Esmeralda en el acto I y espolonazos del jugador en el acto II. El capítulo 2 ya tiene peligro real (granadas, espolón, hundimiento); pausa y puntos de control hechos (`PauseMenu`, `CheckpointStore`), y cámara, marcas y panel de barcos (`ShipCameraRig`, `NavalHud`). Detalle en `DEV_LOG.md`.
 * **Instalador (2026-11-17):** versión 0.7.0 compilada; `python tools/instalador/crear_instalador.py` (Inno Setup 6) tras `BuildWindowsPlayerOnlyBatch` deja `tools/instalador/salida/Pacifico_Instalador_<versión>.exe`. Logo e icono con `tools/arte/generar_logo.py`; Unity los aplica con `Editor/GameBranding.cs`. Subir la versión en `GameBuilder.Version`. Repartida como versión preliminar de GitHub `prueba-0.7.0` (instalador adjunto con `gh release create`). Falta firma digital.
 * **0.7.1 (2026-11-17):** jugador con la mitad de daño y sin muerte de un solo balazo (`Vitality.ForPlayer`); soldados que ya no se quedan quietos esperando camino (`RiflemanAI.MoveTo`, `WatchStuck`); marcas y carga final en Tarapacá (`EnemyMarkers`); volumen y sensibilidad del ratón (`GameSettings`). Plan de la revisión de jugabilidad terminado.
-* **Siguiente:** recoger lo que digan los jugadores de la prueba; después, arte pendiente y la 0.3.
+* **0.8.0 (2026-11-19):** mando de Xbox en todo el juego (`GameInput` + `PadFor`, cursor virtual `GamepadSupport`, menús con `PadMenu`), barco que acelera manteniendo el stick o W y rumbo con clic derecho en el mar, e interfaz para escolares (`ControlPrompts.DrawBar`, ayudas con marcas `{disparar}` en Core). Fotos: `Pacifico.exe -pacifico-fotos-ui <carpeta>`. Falta probarlo con un mando real y crear el instalador.
+* **Siguiente:** que el usuario pruebe la 0.8.0 con su mando; recoger lo que digan los jugadores de la prueba; después, arte pendiente y la 0.3.
 
 ### Sobre el usuario
 * Habla español y **no es técnico**: explicar en lenguaje llano, sin jerga, con pasos cortos. Tiene lesionadas las manos: acompañar el trabajo con páginas HTML de verificación visual en lugar de pedirle pruebas.
@@ -41,7 +42,7 @@ Consulta y sigue estrictamente las directivas maestras de desarrollo autónomo d
 * **Verificación antes de marcar `[X]`:** Test Runner en modo batch (`-batchmode -nographics -runTests -testPlatform EditMode`) y reconstrucción de la campaña (`-executeMethod Pacifico.EditorTools.GameBuilder.BuildAllScenesBatch`). Las fotos de comprobación necesitan GPU: modo batch **sin** `-nographics`. El proyecto no puede estar abierto dos veces: cerrar el editor del usuario (cierre normal) antes del modo batch y volver a abrirlo al terminar.
 * `tools/verify/verify.sh` (compilación contra `Unity3D.SDK` y NUnit fuera del motor) sigue sirviendo en la nube; el código nuevo de URP va tras `PACIFICO_URP` para que compile allí.
 * Con el editor abierto, un paquete nuevo puede compilarse sin recargarse: si los GLB quedan con `DefaultImporter`, cerrar el editor y abrir una vez en modo batch.
-* La entrada de teclado y ratón pasa siempre por `Runtime/Input/GameInput.cs` (Input System o gestor clásico). No usar `Keyboard.current` ni `UnityEngine.Input` directamente.
+* La entrada de teclado y ratón pasa siempre por `Runtime/Input/GameInput.cs` (Input System o gestor clásico). No usar `Keyboard.current` ni `UnityEngine.Input` directamente. Los textos de pantalla que nombran teclas usan `ControlPrompts.Key(Act.X)` (o marcas `{token}` en Core) para que con mando salga el botón.
 * **Puntos de control:** cada director guarda con `CheckpointStore.Save` al entrar en una etapa y recoloca el mundo en `RestoreWorld` (primer `Update`). Al añadir etapas o enemigos de escena, revisar su `RestoreWorld`.
 * **Un MonoBehaviour por archivo y con su mismo nombre:** si no, queda como «script perdido» en la escena guardada y el juego compilado dice «levelN is corrupted».
 * **Compilar el juego (no solo escenas):** la coma de la ruta rompe UnityLinker; compilar desde el enlace `C:\Users\caosd\PacificoUnity` con `GameBuilder.BuildWindowsPlayerOnlyBatch` y reconstruir las escenas desde la ruta original.

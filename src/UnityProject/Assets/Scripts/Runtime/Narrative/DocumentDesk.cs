@@ -30,7 +30,8 @@ namespace Pacifico.Narrative
         private void Update()
         {
             if (viewer == null || viewer.IsOpen || viewCamera == null) return;
-            if (!GameInput.MousePressed(0)) return;
+            GameInput.WantPointer();
+            if (!GameInput.MousePressed(0) && !GameInput.PadPressed(PadButton.A)) return;
             Ray ray = viewCamera.ScreenPointToRay(GameInput.MousePosition);
             if (!Physics.Raycast(ray, out RaycastHit hit, 20f)) return;
             DocumentItem item = hit.collider.GetComponentInParent<DocumentItem>();
@@ -40,7 +41,7 @@ namespace Pacifico.Narrative
         private void OnGUI()
         {
             if (viewer == null || viewer.IsOpen) return;
-            GUI.Label(new Rect(20f, 20f, 700f, 24f), "Haz clic en un documento para examinarlo.");
+            GUI.Label(new Rect(20f, 20f, 700f, 24f), GameInput.UsingGamepad ? "Lleva el círculo a un documento y pulsa [A] para examinarlo." : "Haz clic en un documento para examinarlo.");
         }
     }
 }

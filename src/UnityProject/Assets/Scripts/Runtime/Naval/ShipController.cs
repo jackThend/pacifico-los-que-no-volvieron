@@ -9,7 +9,9 @@ namespace Pacifico.Naval
     /// Puente entre <see cref="ShipMotionModel"/> y la escena (ROADMAP 2.1). La física de maniobra vive en
     /// Pacifico.Core; aquí solo se leen mandos y se mueve un Rigidbody cinemático, de modo que el buque es
     /// determinista y a la vez dispara triggers (espolón) y recibe raycasts (artillería).
-    /// Controles: W/S telégrafo, A/D timón.
+    /// Controles: W/S (o el stick hacia delante y atrás, mantenido) suben y bajan la máquina un punto cada poco;
+    /// A/D (o el stick a los lados) llevan el timón. Un clic derecho corto en el mar marca un rumbo: el buque va
+    /// solo hacia allí hasta llegar o hasta que el jugador toque el timón.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
@@ -36,6 +38,10 @@ namespace Pacifico.Naval
         private float _heel;
         private float _heldRudder;
         private int _pendingTelegraphSteps;
+        private float _throttleRepeat;
+        private int _throttleSign;
+        private Vector3 _rightPress;
+        private float _rightPressTime;
         private float _baseY;
         private float _sinkDepth;
         private float _sinkPitch;
@@ -43,6 +49,14 @@ namespace Pacifico.Naval
 
         /// <summary>Balanceo impuesto desde fuera (°, + estribor arriba): el oleaje que sienten los artilleros.</summary>
         public float ExtraRollDeg { get; set; }
+
+        /// <summary>Segundos entre un punto de máquina y el siguiente al mantener W/S o el stick (valor de jugabilidad).</summary>
+        private const float ThrottleRepeatSeconds = 0.55f;
+        /// <summary>Al llegar a esta distancia (m) del rumbo marcado se da por alcanzado.</summary>
+        private const float CourseArrivalM = 140f;
+
+        /// <summary>Punto del mar al que el jugador mandó ir con el ratón (null: ninguno).</summary>
+        public Vector3? CourseTarget { get; private set; }
 
         public ShipDataSO Data => data;
         public ShipSpec Spec { get; private set; }
@@ -97,13 +111,61 @@ namespace Pacifico.Naval
         {
             if (Motion == null || !playerControlled) return;
 
+            // Máquina: al empujar sube (o baja) un punto enseguida y, si se mantiene, otro cada poco.
             // Las pulsaciones se acumulan en Update para no perderlas entre pasos de FixedUpdate.
-            if (GameInput.Pressed(GameKey.W)) _pendingTelegraphSteps++;
-            if (GameInput.Pressed(GameKey.S)) _pendingTelegraphSteps--;
+            float throttle = GameInput.Axis(GameKey.S, GameKey.W);
+            int sign = throttle > 0.5f ? 1 : throttle < -0.5f ? -1 : 0;
+            if (sign == 0) _throttleSign = 0;
+            else if (sign != _throttleSign || (_throttleRepeat -= Time.deltaTime) <= 0f)
+            {
+                _pendingTelegraphSteps += sign;
+                _throttleSign = sign;
+                _throttleRepeat = ThrottleRepeatSeconds;
+                CourseTarget = null;
+            }
+
+            ReadCourseClick();
 
             float axis = GameInput.Axis(GameKey.A, GameKey.D);
-            if (axis != 0f || autoCenterRudder) _heldRudder = axis;
+            if (Mathf.Abs(axis) > 0.15f) CourseTarget = null;
+            if (CourseTarget.HasValue) _heldRudder = SteerToCourse();
+            else if (axis != 0f || autoCenterRudder) _heldRudder = axis;
             Motion.RudderCommand = _heldRudder;
+        }
+
+        /// <summary>Clic derecho corto (sin arrastrar, que es girar la cámara) en el mar: rumbo hacia ese punto.</summary>
+        private void ReadCourseClick()
+        {
+            if (GameInput.UsingGamepad) return;
+            if (GameInput.MousePressed(1))
+            {
+                _rightPress = GameInput.MousePosition;
+                _rightPressTime = Time.unscaledTime;
+            }
+            if (!GameInput.MouseReleased(1)) return;
+            Vector3 mouse = GameInput.MousePosition;
+            if ((mouse - _rightPress).sqrMagnitude > 12f * 12f || Time.unscaledTime - _rightPressTime > 0.35f) return;
+            Camera view = Camera.main;
+            if (view == null) return;
+            Ray ray = view.ScreenPointToRay(mouse);
+            var sea = new Plane(Vector3.up, new Vector3(0f, _baseY, 0f));
+            if (!sea.Raycast(ray, out float enter)) return;
+            CourseTarget = ray.GetPoint(enter);
+            // Quien marca un rumbo quiere moverse: si el buque está parado o va atrás, avante.
+            if (Motion.Telegraph.Order <= EngineOrder.Stop) _pendingTelegraphSteps += (int)EngineOrder.HalfAhead - (int)Motion.Telegraph.Order;
+        }
+
+        /// <summary>Timón proporcional hacia el rumbo marcado; lo olvida al llegar.</summary>
+        private float SteerToCourse()
+        {
+            Vector3 to = CourseTarget.Value - transform.position;
+            if (new Vector2(to.x, to.z).magnitude < CourseArrivalM)
+            {
+                CourseTarget = null;
+                return 0f;
+            }
+            float bearing = Mathf.Atan2(to.x, to.z) * Mathf.Rad2Deg;
+            return Mathf.Clamp(Mathf.DeltaAngle(Motion.HeadingDeg, bearing) / 25f, -1f, 1f);
         }
 
         private void FixedUpdate()

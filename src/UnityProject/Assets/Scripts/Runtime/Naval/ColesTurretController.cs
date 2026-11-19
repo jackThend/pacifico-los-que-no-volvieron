@@ -72,9 +72,9 @@ namespace Pacifico.Naval
             if (hud != null)
             {
                 hud.ExtraLines.Add(() => !playerControlled || hud.Ship != ship ? string.Empty
-                    : "Torre:      " + _model.TrainDeg.ToString("+000;-000") + "°  elev " + _model.ElevationDeg.ToString("0.0") + "°");
+                    : "Torre: apunta con " + ControlPrompts.Key(Act.TurretAim) + " y dispara con " + ControlPrompts.Key(Act.Fire));
                 hud.ExtraLines.Add(() => !playerControlled || hud.Ship != ship ? string.Empty
-                    : "Convergencia: " + _model.ConvergenceRangeM.ToString("0") + " m   [R/F]");
+                    : "Distancia de tiro: " + _model.ConvergenceRangeM.ToString("0") + " m   " + ControlPrompts.Key(Act.Convergence));
             }
         }
 
@@ -108,7 +108,8 @@ namespace Pacifico.Naval
 
                 if (_camera != null)
                 {
-                    float fov = GameInput.Held(GameKey.LeftShift) ? rangefinderFov : normalFov;
+                    bool zoom = GameInput.Held(GameKey.LeftShift) || (GameInput.UsingGamepad && GameInput.MouseHeld(1));
+                    float fov = zoom ? rangefinderFov : normalFov;
                     _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, fov, 1f - Mathf.Exp(-8f * Time.deltaTime));
                 }
             }

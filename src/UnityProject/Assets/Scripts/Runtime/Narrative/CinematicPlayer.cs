@@ -178,7 +178,7 @@ namespace Pacifico.Narrative
             if (showSubtitles && f.Cue >= 0) DrawSubtitle(picture, _timeline.Cues[f.Cue]);
 
             GUI.color = new Color(1f, 1f, 1f, 0.45f);
-            GUI.Label(new Rect(12f, Screen.height - bar * 0.5f - 10f, 400f, 20f), _paused ? "En pausa · Espacio: seguir · Esc: saltar" : "Espacio: pausa · Esc: saltar", _credit);
+            GUI.Label(new Rect(12f, Screen.height - bar * 0.5f - 10f, 400f, 20f), GameInput.UsingGamepad ? (_paused ? "En pausa · [A] seguir · [Start] saltar" : "[A] pausa · [Start] saltar") : (_paused ? "En pausa · Espacio: seguir · Esc: saltar" : "Espacio: pausa · Esc: saltar"), _credit);
             GUI.color = Color.white;
         }
 

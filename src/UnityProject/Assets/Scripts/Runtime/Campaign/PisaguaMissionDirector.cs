@@ -303,6 +303,7 @@ namespace Pacifico.Campaign
             if (fleet == null || _runner.CurrentStage.Perspective != P.Command) return;
             if (GameInput.Pressed(GameKey.B)) SetDesignating(!_designating);
             if (!_designating) return;
+            GameInput.WantPointer();
             if (GameInput.MousePressed(1) || GameInput.Pressed(GameKey.Escape))
             {
                 SetDesignating(false);
@@ -530,7 +531,7 @@ namespace Pacifico.Campaign
                 if (GUI.Button(new Rect(box.x + 10f, box.y + 34f + 34f * i, box.width - 20f, 28f), text)) fleet.Designate(fort.transform.position);
             }
             GUI.enabled = true;
-            string mark = _designating ? "Clic en el mapa para marcar (clic derecho: cancelar)" : "[B] Marcar otro blanco";
+            string mark = _designating ? (Pacifico.Input.GameInput.UsingGamepad ? "Lleva el círculo al blanco y pulsa [RT] ([LT]: cancelar)" : "Clic en el mapa para marcar (clic derecho: cancelar)") : Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Mark) + " Marcar otro blanco";
             if (GUI.Button(new Rect(box.x + 10f, box.y + 34f + 34f * forts.Length, box.width - 20f, 28f), mark)) SetDesignating(!_designating);
         }
 

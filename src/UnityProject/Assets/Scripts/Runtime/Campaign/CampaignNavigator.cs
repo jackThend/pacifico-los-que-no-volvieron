@@ -48,15 +48,24 @@ namespace Pacifico.Campaign
                 if (next != null) Load(next);
                 else Menu();
             }
-            if (!completed && CheckpointStore.ExistsFor(chapterId) && GameInput.Pressed(GameKey.C)) ResumeCheckpoint();
+            // Con mando, A vuelve al punto de control (C en el teclado).
+            if (!completed && CheckpointStore.ExistsFor(chapterId) && (GameInput.Pressed(GameKey.C) || GameInput.PadPressed(PadButton.A))) ResumeCheckpoint();
             if (GameInput.Pressed(GameKey.M)) Menu();
         }
 
         /// <summary>Texto de ayuda del panel final.</summary>
         public static string EndHint(string chapterId, bool completed)
         {
-            if (!completed) return CheckpointStore.ExistsFor(chapterId) ? "[C] punto de control · [R] desde el principio · [M] menú" : "[R] reintentar · [M] menú";
-            return CampaignCatalog.Next(chapterId) != null ? "[N] siguiente capítulo · [R] volver a jugar · [M] menú" : "[R] volver a jugar · [M] menú";
+            string retry = ControlPrompts.Key(Act.Retry), menu = ControlPrompts.Key(Act.Menu);
+            if (!completed)
+            {
+                return CheckpointStore.ExistsFor(chapterId)
+                    ? ControlPrompts.Key(Act.Checkpoint) + " seguir desde el punto de control   " + retry + " desde el principio   " + menu + " menú"
+                    : retry + " intentarlo otra vez   " + menu + " menú";
+            }
+            return CampaignCatalog.Next(chapterId) != null
+                ? ControlPrompts.Key(Act.Next) + " siguiente capítulo   " + retry + " volver a jugar   " + menu + " menú"
+                : retry + " volver a jugar   " + menu + " menú";
         }
     }
 }

@@ -56,9 +56,15 @@ namespace Pacifico.Infantry
                 GUI.DrawTexture(new Rect(Screen.width * 0.5f - 2f, Screen.height * 0.5f - 2f, 4f, 4f), _white);
             }
 
+            // Fondos oscuros: sobre la arena del desierto el texto blanco no se lee.
+            GUI.color = new Color(0f, 0f, 0f, 0.5f);
+            GUI.DrawTexture(new Rect(10f, Screen.height - 142f, 420f, 76f), _white);
+            if (rifle != null && rifle.Model != null) GUI.DrawTexture(new Rect(Screen.width - 340f, Screen.height - 114f, 330f, 52f), _white);
+            GUI.color = Color.white;
+
             // Resistencia.
             const float barWidth = 220f;
-            float x = 20f, y = Screen.height - 70f;
+            float x = 20f, y = Screen.height - 110f;
             GUI.color = new Color(0f, 0f, 0f, 0.45f);
             GUI.DrawTexture(new Rect(x, y, barWidth, 10f), _white);
             GUI.color = m.IsExhausted ? new Color(0.85f, 0.3f, 0.2f) : new Color(0.9f, 0.82f, 0.6f);
@@ -70,7 +76,7 @@ namespace Pacifico.Infantry
 
             if (player.Weapon != null)
             {
-                string sight = player.Ladder != null ? "   Alza: " + player.Ladder.RangeM.ToString("0") + " m [rueda al apuntar]" : string.Empty;
+                string sight = player.Ladder != null ? "   Alza: " + player.Ladder.RangeM.ToString("0") + " m" : string.Empty;
                 GUI.Label(new Rect(x, y + 16f, 700f, 22f), player.Weapon.DisplayName + sight, _label);
             }
 
@@ -78,13 +84,13 @@ namespace Pacifico.Infantry
             {
                 RifleCycleModel r = rifle.Model;
                 string rounds = (r.Chambered ? "1" : "0") + (r.MagazineCapacity > 0 ? " + " + r.MagazineRounds : string.Empty) + " | " + r.Reserve;
-                string state = r.TotalRounds == 0 ? "SIN MUNICIÓN"
-                    : r.IsReady && !r.Chambered ? "Vacío [R recargar]"
+                string state = r.TotalRounds == 0 ? "¡SIN BALAS! Busca más"
+                    : r.IsReady && !r.Chambered ? "Vacío: " + Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Reload) + " recargar"
                     : StageName(r.Stage);
-                GUI.Label(new Rect(Screen.width - 330f, Screen.height - 70f, 320f, 22f), "Cartuchos: " + rounds, _label);
-                GUI.Label(new Rect(Screen.width - 330f, Screen.height - 48f, 320f, 22f), state, _label);
+                GUI.Label(new Rect(Screen.width - 330f, Screen.height - 110f, 320f, 22f), "Balas: " + rounds, _label);
+                GUI.Label(new Rect(Screen.width - 330f, Screen.height - 86f, 320f, 22f), state, _label);
                 string lastHit = ShootingTarget.DescribeLastHit();
-                if (lastHit.Length > 0) GUI.Label(new Rect(Screen.width - 330f, Screen.height - 94f, 320f, 22f), "Impacto: " + lastHit, _label);
+                if (lastHit.Length > 0) GUI.Label(new Rect(Screen.width - 330f, Screen.height - 136f, 320f, 22f), "Impacto: " + lastHit, _label);
             }
 
             if (melee != null)
@@ -93,15 +99,18 @@ namespace Pacifico.Infantry
                 if (melee.Guard > 0.5f && !melee.Model.IsBusy && (melee.ThrustProfile != null || melee.SlashProfile != null))
                 {
                     GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01((melee.Guard - 0.5f) * 2f));
-                    string keys = (melee.ThrustProfile != null ? "[F] estocada" : string.Empty) +
+                    string keys = (melee.ThrustProfile != null ? Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Bayonet) + " estocada" : string.Empty) +
                                   (melee.ThrustProfile != null && melee.SlashProfile != null ? " · " : string.Empty) +
-                                  (melee.SlashProfile != null ? "[G] tajo" : string.Empty);
+                                  (melee.SlashProfile != null ? Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Slash) + " tajo" : string.Empty);
                     GUI.Label(new Rect(Screen.width * 0.5f - 110f, Screen.height * 0.5f + 40f, 260f, 22f), "EN GUARDIA  " + keys, _label);
                     GUI.color = Color.white;
                 }
                 string strike = MeleeDummy.DescribeLastStrike();
-                if (strike.Length > 0) GUI.Label(new Rect(Screen.width - 330f, Screen.height - 118f, 320f, 22f), "Golpe: " + strike, _label);
+                if (strike.Length > 0) GUI.Label(new Rect(Screen.width - 330f, Screen.height - 162f, 320f, 22f), "Golpe: " + strike, _label);
             }
+
+            Pacifico.Input.ControlPrompts.DrawBar(12f, Pacifico.Input.Act.Move, Pacifico.Input.Act.Fire, Pacifico.Input.Act.Aim,
+                                                  Pacifico.Input.Act.Reload, Pacifico.Input.Act.Use, Pacifico.Input.Act.Pause);
 
             if (showDebug && Debug.isDebugBuild)
             {
@@ -129,7 +138,7 @@ namespace Pacifico.Infantry
         private void EnsureStyles()
         {
             if (_label != null) return;
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 15 };
+            _label = new GUIStyle(GUI.skin.label) { fontSize = 18 };
             _label.normal.textColor = new Color(0.95f, 0.92f, 0.85f);
             _white = Texture2D.whiteTexture;
         }

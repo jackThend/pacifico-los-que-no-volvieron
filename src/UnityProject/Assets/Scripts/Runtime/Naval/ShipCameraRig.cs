@@ -52,7 +52,8 @@ namespace Pacifico.Naval
                 _lockEnabled = !_lockEnabled;
                 _yawOffset = 0f;
             }
-            if (GameInput.MouseHeld(1))
+            // Con ratón se gira con el botón derecho; con mando, el stick derecho gira siempre.
+            if (GameInput.MouseHeld(1) || GameInput.UsingGamepad)
             {
                 Vector2 delta = GameInput.MouseDelta * (orbitSensitivity * Campaign.GameSettings.MouseSensitivity);
                 _yawOffset += delta.x;
@@ -78,7 +79,8 @@ namespace Pacifico.Naval
 
             if (_camera != null)
             {
-                float fov = GameInput.Held(GameKey.LeftShift) ? SpyglassFov : NormalFov;
+                bool spyglass = GameInput.Held(GameKey.LeftShift) || (GameInput.UsingGamepad && GameInput.MouseHeld(1));
+                float fov = spyglass ? SpyglassFov : NormalFov;
                 _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, fov, 1f - Mathf.Exp(-8f * Time.deltaTime));
             }
         }

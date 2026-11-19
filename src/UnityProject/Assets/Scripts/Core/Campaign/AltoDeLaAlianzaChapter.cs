@@ -80,7 +80,7 @@ namespace Pacifico.Core.Campaign
             fog.OnEnter.Add(Narrate("26 de mayo de 1880. Meseta del Alto de la Alianza, Tacna. La batalla campal más grande de la guerra."));
             fog.OnEnter.Add(Narrate("20.000 soldados chilenos contra 12.000 aliados atrincherados en las dunas."));
             fog.OnEnter.Add(Narrate("Subteniente Daniel Ballivián, Colorados de Bolivia: el sector central y la reserva boliviana en las alturas del Intiorko."));
-            fog.OnEnter.Add(Hint("Clic o recuadro: seleccionar. Clic derecho: mover (arrastrar: frente). Lleva las escuadras a la zanja antes de que se levante la niebla."));
+            fog.OnEnter.Add(Hint("{seleccionar}: elige tus soldados. {ordenar}: mándalos allí. Llévalos a la zanja antes de que se vaya la niebla."));
             fog.Objectives.Add(new MissionObjective
             {
                 Id = "trinchera", Text = "Despliega las escuadras en la trinchera",
@@ -110,7 +110,7 @@ namespace Pacifico.Core.Campaign
             script.Stages.Add(advance);
 
             var charge = new MissionStage { Id = Stages.Charge, Title = "La carga de los Colorados", Perspective = Perspective };
-            charge.OnEnter.Add(Hint("C (o el botón «¡A LA CARGA!»): los Colorados cargan a la bayoneta contra el enemigo más cercano."));
+            charge.OnEnter.Add(Hint("{carga}: ¡a la carga! Los Colorados corren con la bayoneta contra el enemigo más cercano."));
             charge.Objectives.Add(new MissionObjective { Id = "carga", Text = "Ordena la carga de los Colorados", Complete = MissionCondition.Flag(Flags.ChargeOrdered) });
             charge.Objectives.Add(new MissionObjective
             {

@@ -141,7 +141,7 @@ namespace Pacifico.Core.Campaign
             // ---- Fase 1: la cabeza de playa --------------------------------------------------------------------
             var beach = new MissionStage { Id = Stages.Beachhead, Title = "La cabeza de playa", Perspective = Perspectives.Command };
             beach.OnEnter.Add(Narrate("Comandancia de desembarco. Los botes planos del Atacama y de los Zapadores se separan de los transportes."));
-            beach.OnEnter.Add(Hint("B y clic en el mapa (o los botones de los fuertes): marca el blanco de la artillería de la flota, el Cochrane y el O'Higgins."));
+            beach.OnEnter.Add(Hint("{marcar}: elige dónde disparan los barcos Cochrane y O'Higgins. Después marca el fuerte en el mapa."));
             beach.OnEnter.Add(Hint("Mientras los fuertes y los fusileros tiren, los botes sangran. Callados los fuertes, la travesía cuesta poco."));
             beach.Objectives.Add(new MissionObjective { Id = "pichalo", Text = "Silencia el fuerte de " + Pichalo, Complete = MissionCondition.Flag(Flags.PichaloSilenced) });
             beach.Objectives.Add(new MissionObjective { Id = "guacas", Text = "Silencia el fuerte de " + Guacas, Complete = MissionCondition.Flag(Flags.GuacasSilenced) });
@@ -152,7 +152,7 @@ namespace Pacifico.Core.Campaign
             });
             var landed = new MissionTrigger { Id = "en_la_playa", When = MissionCondition.AtLeast(Facts.BoatsLanded, 1) };
             landed.Lines.Add(Narrate("Las primeras compañías saltan de los botes entre las rocas. Ni un grito: avanzan en silencio."));
-            landed.Lines.Add(Hint("Clic o recuadro: seleccionar. Clic derecho: mover o atacar. Ponlas a cubierto al pie del risco."));
+            landed.Lines.Add(Hint("{seleccionar}: elige tus soldados. {ordenar}: mándalos allí o al ataque. Ponlos a cubierto al pie del cerro."));
             beach.Triggers.Add(landed);
             var second = new MissionTrigger { Id = "segunda_ola", When = MissionCondition.AtLeast(Facts.BoatsLanded, firstWave), SetsFlag = Flags.SecondWave };
             second.Lines.Add(Narrate("Los botes vacíos vuelven a los transportes. Zarpa la segunda ola."));
@@ -175,7 +175,7 @@ namespace Pacifico.Core.Campaign
             // ---- Fase 2: el asalto al risco ---------------------------------------------------------------------
             var cliff = new MissionStage { Id = Stages.Cliff, Title = "El asalto al risco", Perspective = Perspectives.Command };
             cliff.OnEnter.Add(Narrate("No hay sitio para atrincherarse. Desde el terraplén del ferrocarril salitrero, los fusileros bolivianos y peruanos barren la ladera."));
-            cliff.OnEnter.Add(Hint("Fija a los fusileros con el fuego de una escuadra (clic derecho sobre ellos) y, mientras estén suprimidos, sube a los zapadores por la duna."));
+            cliff.OnEnter.Add(Hint("Manda una escuadra a disparar a los fusileros ({ordenar} sobre ellos) y, mientras se esconden, sube a los zapadores por la duna."));
             cliff.Objectives.Add(new MissionObjective { Id = "terraplen", Text = "Toma el terraplén del ferrocarril", Complete = MissionCondition.Flag(Flags.EmbankmentTaken) });
             var crest = new MissionTrigger { Id = "en_el_terraplen", When = MissionCondition.Flag(Flags.EmbankmentTaken) };
             crest.Lines.Add(Narrate("Los zapadores coronan el terraplén con la mochila a la espalda y el fusil en alto. Los defensores se repliegan hacia la estación."));

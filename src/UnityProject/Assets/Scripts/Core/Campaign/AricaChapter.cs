@@ -82,7 +82,7 @@ namespace Pacifico.Core.Campaign
             var parapet = new MissionStage { Id = Stages.Parapet, Title = "Los parapetos de caliza", Perspective = Perspectives.Soldier };
             parapet.OnEnter.Add(Narrate("7 de junio de 1880, 5:30 de la madrugada. Soldado Manuel Salazar, batallón Artesanos de Tacna."));
             parapet.OnEnter.Add(Narrate("Sin preparación de artillería, el 3.º y el 4.º de Línea asaltan los fuertes del bajo y trepan por las escarpas."));
-            parapet.OnEnter.Add(Hint("Defiende los sacos y el parapeto. Clic derecho: encarar. Clic: fuego. R: cargar. F: bayoneta."));
+            parapet.OnEnter.Add(Hint("Defiende los sacos y el parapeto. {apuntar} apuntar, {disparar} disparar, {recargar} recargar, {bayoneta} bayoneta."));
             parapet.Objectives.Add(new MissionObjective
             {
                 Id = "parapeto", Text = "Rechaza el asalto al parapeto",

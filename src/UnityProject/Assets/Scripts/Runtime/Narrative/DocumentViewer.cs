@@ -231,7 +231,9 @@ namespace Pacifico.Narrative
         {
             if (!IsOpen) return;
             float dt = Time.unscaledDeltaTime;
-            Vector3 mouse = GameInput.MousePosition;
+            // Con mando el documento se gira con el stick derecho y se acerca con el izquierdo; no hace falta cursor.
+            bool pad = GameInput.UsingGamepad;
+            Vector3 mouse = pad ? _lastMouse : GameInput.MousePosition;
             Vector3 delta = mouse - _lastMouse;
             _lastMouse = mouse;
             // Al ver el reverso, izquierda y derecha del documento están invertidas respecto a la pantalla.
@@ -239,7 +241,14 @@ namespace Pacifico.Narrative
             Rect docRect = DocumentScreenRect();
 
             bool overPanel = _model.ShowTranscription && mouse.x > Screen.width * 0.58f;
-            if (!overPanel)
+            if (pad)
+            {
+                Vector2 turn = GameInput.PadStick(true) * (700f * dt);
+                _model.Rotate(turn.x, turn.y);
+                float zoom = GameInput.PadStick(false).y;
+                if (Mathf.Abs(zoom) > 0.2f) _model.ZoomAt(zoom * dt * 4f, 0f, 0f);
+            }
+            else if (!overPanel)
             {
                 if (GameInput.MouseHeld(0) && !GameInput.MousePressed(0)) _model.Rotate(delta.x, delta.y);
                 if (GameInput.MouseHeld(1) && !GameInput.MousePressed(1)) _model.Pan(mirror * delta.x / docRect.width, delta.y / docRect.height);
@@ -262,7 +271,7 @@ namespace Pacifico.Narrative
                 if (_voice.isPlaying) _voice.Stop();
                 else _voice.PlayOneShot(_spec.Narration);
             }
-            if (GameInput.Pressed(GameKey.Escape))
+            if (GameInput.Pressed(GameKey.Escape) || GameInput.PadPressedRaw(PadButton.B))
             {
                 Close();
                 return;
@@ -329,9 +338,11 @@ namespace Pacifico.Narrative
                 GUI.Label(new Rect(24f, 74f, Screen.width - 48f, 22f), reverse, _hint);
             }
 
-            string listen = _spec.Narration != null ? " · L escuchar" : string.Empty;
-            GUI.Label(new Rect(24f, Screen.height - 34f, Screen.width - 48f, 22f),
-                "Arrastrar: girar · F: dar la vuelta · rueda: acercar · botón derecho: desplazar · T: transcripción · R: restablecer" + listen + " · Esc: cerrar", _hint);
+            string listen = _spec.Narration != null ? (GameInput.UsingGamepad ? " · [LB] escuchar" : " · L escuchar") : string.Empty;
+            string help = GameInput.UsingGamepad
+                ? "Stick derecho: girar · stick izquierdo: acercar · [RB] dar la vuelta · [Y] leer en letra clara · [X] restablecer" + listen + " · [B] cerrar"
+                : "Arrastrar: girar · F: dar la vuelta · rueda: acercar · botón derecho: desplazar · T: leer en letra clara · R: restablecer" + listen + " · Esc: cerrar";
+            GUI.Label(new Rect(24f, Screen.height - 34f, Screen.width - 48f, 22f), help, _hint);
 
             float blend = _model.TranscriptionBlend;
             if (blend < 0.01f || _pages.Count == 0) return;
@@ -342,7 +353,7 @@ namespace Pacifico.Narrative
             string text = string.Join("\n", _pages[Mathf.Clamp(_page, 0, _pages.Count - 1)]);
             GUI.Label(new Rect(panel.x + 18f, panel.y + 14f, panel.width - 36f, panel.height - 50f), text, _text);
             GUI.Label(new Rect(panel.x + 18f, panel.yMax - 30f, panel.width - 36f, 22f),
-                "Página " + (_page + 1) + " de " + _pages.Count + "   (RePág / AvPág)", _text);
+                "Página " + (_page + 1) + " de " + _pages.Count + (GameInput.UsingGamepad ? "   (cruceta ↑ ↓)" : "   (RePág / AvPág)"), _text);
             GUI.color = Color.white;
         }
 

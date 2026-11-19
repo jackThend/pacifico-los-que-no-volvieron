@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Pacifico.Core.Naval;
+using Pacifico.Input;
 using UnityEngine;
 
 namespace Pacifico.Naval
@@ -21,14 +22,13 @@ namespace Pacifico.Naval
     }
 
     /// <summary>
-    /// Interfaz de los capítulos navales (IMGUI): panel del buque con barras de casco, agua y vapor; rosa de marcaciones
-    /// con el sector de tiro de la batería; una marca sobre cada buque, con flecha si queda fuera de la imagen; y avisos
-    /// de avería con la tecla que la remedia.
+    /// Interfaz de los capítulos navales (IMGUI), pensada para escolares: panel del buque con la velocidad en palabras
+    /// y barras de vida, agua y motor; una marca sobre cada buque, con flecha si queda fuera de la imagen; avisos de
+    /// avería con el botón que la remedia; y abajo, la barra con los controles (teclado o mando, según lo que se use).
     /// </summary>
     public sealed class NavalHud : MonoBehaviour
     {
         private const float PanelWidth = 340f;
-        private const float RoseWidth = 560f;
         private const float EdgeInset = 70f;
 
         private static readonly Color EnemyColor = new Color(1f, 0.45f, 0.35f);
@@ -42,7 +42,6 @@ namespace Pacifico.Naval
         private GUIStyle _label;
         private GUIStyle _small;
         private GUIStyle _title;
-        private GUIStyle _center;
         private GUIStyle _alert;
         private GUIStyle _mark;
 
@@ -91,11 +90,12 @@ namespace Pacifico.Naval
             {
                 foreach (NavalContact contact in _contacts) DrawContact(view, contact);
             }
-            DrawRose();
             string urgent = PriorityAlert != null ? PriorityAlert() : null;
-            if (!string.IsNullOrEmpty(urgent)) DrawAlert(urgent, 84f);
-            if (showDamage) DrawAlerts(damage.State, string.IsNullOrEmpty(urgent) ? 84f : 120f);
+            if (!string.IsNullOrEmpty(urgent)) DrawAlert(urgent, 20f);
+            if (showDamage) DrawAlerts(damage.State, string.IsNullOrEmpty(urgent) ? 20f : 64f);
             DrawPanel(damage, showDamage);
+            DrawControls();
+            DrawCourse(view);
         }
 
         // ------------------------------------------------------------------------------------------
@@ -112,41 +112,39 @@ namespace Pacifico.Naval
                 if (!string.IsNullOrEmpty(text)) _lines.Add(text); // las de otro buque o de un sistema inactivo vienen vacías
             }
 
-            float inner = PanelWidth - 20f;
-            float height = 30f + 22f * (ship.PlayerControlled ? 3f : 2f) + (showDamage ? 3f * 20f + 6f : 0f) + 26f;
-            foreach (string line in _lines) height += _small.CalcHeight(new GUIContent(line), inner) + 3f;
+            float inner = PanelWidth - 24f;
+            float height = 42f + (ship.PlayerControlled ? 56f : 28f) + (showDamage ? 3f * 28f + 6f : 0f) + 8f;
+            foreach (string line in _lines) height += _small.CalcHeight(new GUIContent(line), inner) + 4f;
 
-            float x = 16f, y = Screen.height - height - 16f;
+            float x = 16f, y = Screen.height - height - 70f;
             GUI.color = new Color(0f, 0f, 0f, 0.62f);
             GUI.DrawTexture(new Rect(x, y, PanelWidth, height), Texture2D.whiteTexture);
             GUI.color = Color.white;
-            x += 10f;
-            y += 6f;
+            x += 12f;
+            y += 8f;
 
-            GUI.Label(new Rect(x, y, inner, 24f), ship.Spec.Name, _title);
-            y += 26f;
+            GUI.Label(new Rect(x, y, inner, 30f), ship.Spec.Name, _title);
+            y += 34f;
             if (ship.PlayerControlled)
             {
-                GUI.Label(new Rect(x, y, inner, 22f), "Máquina:  " + EngineTelegraph.DisplayName(m.Telegraph.Order) + "   [W/S]", _label);
-                y += 22f;
-                GUI.Label(new Rect(x, y, inner, 22f), "Timón:  " + RudderBar(m.Rudder) + "   [A/D]", _label);
-                y += 22f;
+                GUI.Label(new Rect(x, y, inner, 24f), "Velocidad: " + SpeedName(m.Telegraph.Order), _label);
+                y += 26f;
+                DrawThrottle(x, y, inner, m.Telegraph.Order);
+                y += 30f;
             }
             else
             {
-                GUI.Label(new Rect(x, y, inner, 22f), "Timón y máquina los lleva la dotación", _label);
-                y += 22f;
+                GUI.Label(new Rect(x, y, inner, 24f), "El barco lo maneja la tripulación", _label);
+                y += 28f;
             }
-            GUI.Label(new Rect(x, y, inner, 22f), m.SpeedKnots.ToString("0.0") + " nudos  ·  rumbo " + m.HeadingDeg.ToString("000") + "°", _label);
-            y += 22f;
 
             if (showDamage)
             {
                 y += 4f;
                 ShipDamageState s = damage.State;
-                DrawBar(x, ref y, inner, "Casco", s.IntegrityFraction, Color.Lerp(new Color(0.85f, 0.2f, 0.15f), new Color(0.45f, 0.8f, 0.45f), s.IntegrityFraction));
+                DrawBar(x, ref y, inner, "Vida", s.IntegrityFraction, Color.Lerp(new Color(0.85f, 0.2f, 0.15f), new Color(0.45f, 0.8f, 0.45f), s.IntegrityFraction));
                 DrawBar(x, ref y, inner, "Agua", s.FloodFraction, s.FloodFraction > 0.6f ? new Color(0.9f, 0.35f, 0.2f) : new Color(0.35f, 0.65f, 0.95f));
-                DrawBar(x, ref y, inner, "Vapor", 1f - s.BoilerDamage, new Color(0.85f, 0.75f, 0.45f));
+                DrawBar(x, ref y, inner, "Motor", 1f - s.BoilerDamage, new Color(0.85f, 0.75f, 0.45f));
                 y += 2f;
             }
 
@@ -154,30 +152,84 @@ namespace Pacifico.Naval
             {
                 float h = _small.CalcHeight(new GUIContent(line), inner);
                 GUI.Label(new Rect(x, y, inner, h), line, _small);
-                y += h + 3f;
+                y += h + 4f;
             }
-            GUI.color = new Color(1f, 1f, 1f, 0.65f);
-            GUI.Label(new Rect(x, y + 2f, inner, 20f), "[Tab] cámara  ·  [Mayús] catalejo  ·  [Esc] pausa", _small);
+        }
+
+        /// <summary>Barra de abajo: solo los controles que sirven ahora (timón si el jugador lleva el buque, fuego si sirve un cañón).</summary>
+        private void DrawControls()
+        {
+            var turret = ship.GetComponent<ColesTurretController>();
+            var gunner = ship.GetComponent<Campaign.PlayerBroadsideGunner>();
+            bool turretActive = turret != null && turret.enabled && turret.PlayerControlled;
+            bool canFire = turretActive || (gunner != null && gunner.PlayerActive);
+            if (ship.PlayerControlled && turretActive)
+                ControlPrompts.DrawBar(12f, Act.Faster, Act.Slower, Act.Steer, Act.TurretAim, Act.Fire, Act.Pause);
+            else if (ship.PlayerControlled && canFire)
+                ControlPrompts.DrawBar(12f, Act.Faster, Act.Slower, Act.Steer, Act.ShipFire, Act.Camera, Act.Pause);
+            else if (ship.PlayerControlled)
+                ControlPrompts.DrawBar(12f, Act.Faster, Act.Slower, Act.Steer, Act.Camera, Act.Pause);
+            else if (turretActive)
+                ControlPrompts.DrawBar(12f, Act.TurretAim, Act.Fire, Act.Convergence, Act.Pause);
+            else if (canFire)
+                ControlPrompts.DrawBar(12f, Act.ShipFire, Act.Camera, Act.Spyglass, Act.Pause);
+        }
+
+        /// <summary>La orden de máquina en palabras de todos los días.</summary>
+        private static string SpeedName(EngineOrder order)
+        {
+            switch (order)
+            {
+                case EngineOrder.HalfAstern: return "marcha atrás";
+                case EngineOrder.QuarterAhead: return "despacio";
+                case EngineOrder.HalfAhead: return "media";
+                case EngineOrder.FullAhead: return "¡a toda máquina!";
+                default: return "parado";
+            }
+        }
+
+        /// <summary>Cinco casillas, de marcha atrás a toda máquina, con la actual encendida.</summary>
+        private static void DrawThrottle(float x, float y, float width, EngineOrder order)
+        {
+            const int steps = 5;
+            float cell = (width - (steps - 1) * 4f) / steps;
+            int lit = (int)order - (int)EngineTelegraph.MinOrder;
+            for (int i = 0; i < steps; i++)
+            {
+                Color on = i == 0 ? new Color(0.95f, 0.55f, 0.3f) : i == 1 ? new Color(0.8f, 0.8f, 0.8f) : new Color(0.45f, 0.85f, 0.45f);
+                GUI.color = i == lit ? on : i < lit && i > 1 ? new Color(on.r, on.g, on.b, 0.45f) : new Color(1f, 1f, 1f, 0.14f);
+                GUI.DrawTexture(new Rect(x + i * (cell + 4f), y + 2f, cell, 20f), Texture2D.whiteTexture);
+            }
             GUI.color = Color.white;
+        }
+
+        /// <summary>Marca en el mar del rumbo que el jugador pidió con el ratón.</summary>
+        private void DrawCourse(Camera view)
+        {
+            if (view == null || !ship.CourseTarget.HasValue) return;
+            Vector3 screen = view.WorldToScreenPoint(ship.CourseTarget.Value + Vector3.up * 4f);
+            if (screen.z <= 0f) return;
+            Label(new Rect(screen.x - 100f, Screen.height - screen.y - 30f, 200f, 24f), "▼ vamos aquí", _mark, new Color(1f, 0.9f, 0.4f));
         }
 
         private void DrawBar(float x, ref float y, float width, string name, float fraction, Color color)
         {
-            const float labelWidth = 54f;
-            GUI.Label(new Rect(x, y - 2f, labelWidth, 20f), name, _small);
-            var back = new Rect(x + labelWidth, y + 3f, width - labelWidth - 44f, 10f);
+            const float labelWidth = 64f;
+            GUI.Label(new Rect(x, y, labelWidth, 24f), name, _label);
+            var back = new Rect(x + labelWidth, y + 5f, width - labelWidth - 50f, 14f);
             GUI.color = new Color(1f, 1f, 1f, 0.16f);
             GUI.DrawTexture(back, Texture2D.whiteTexture);
             GUI.color = color;
             GUI.DrawTexture(new Rect(back.x, back.y, back.width * Mathf.Clamp01(fraction), back.height), Texture2D.whiteTexture);
             GUI.color = Color.white;
-            GUI.Label(new Rect(back.xMax + 6f, y - 2f, 40f, 20f), (fraction * 100f).ToString("0") + " %", _small);
-            y += 20f;
+            GUI.Label(new Rect(back.xMax + 6f, y, 50f, 24f), (fraction * 100f).ToString("0") + " %", _label);
+            y += 28f;
         }
 
         private void DrawAlert(string text, float y)
         {
-            var rect = new Rect((Screen.width - 460f) * 0.5f, y, 460f, 32f);
+            float width = Mathf.Min(620f, Screen.width - 40f);
+            var rect = new Rect((Screen.width - width) * 0.5f, y, width, 40f);
             GUI.color = new Color(0.35f, 0.05f, 0.03f, 0.8f);
             GUI.DrawTexture(rect, Texture2D.whiteTexture);
             GUI.color = Color.white;
@@ -187,67 +239,13 @@ namespace Pacifico.Naval
         private void DrawAlerts(ShipDamageState s, float y)
         {
             string text = null;
-            if (s.SteeringJammed) text = "¡TIMÓN TRABADO!  Pulsa [3]";
-            else if (s.FloodFraction > 0.25f || s.InflowRate > s.BasePumpRate) text = "¡VÍA DE AGUA!  Pulsa [2]";
-            else if (s.FireIntensity > 0.4f) text = "¡INCENDIO A BORDO!  Pulsa [1]";
+            if (s.SteeringJammed) text = "¡EL TIMÓN NO GIRA!  Pulsa " + ControlPrompts.Key(Act.FixSteam);
+            else if (s.FloodFraction > 0.25f || s.InflowRate > s.BasePumpRate) text = "¡ENTRA AGUA!  Pulsa " + ControlPrompts.Key(Act.FixWater);
+            else if (s.FireIntensity > 0.4f) text = "¡FUEGO A BORDO!  Pulsa " + ControlPrompts.Key(Act.FixFire);
             if (text == null) return;
             if (s.ActiveAction != null) text = "La brigada está trabajando…";
-            else if (s.CooldownRemaining > 0f) text = text.Substring(0, text.IndexOf('!') + 1) + "  Brigada lista en " + s.CooldownRemaining.ToString("0") + " s";
+            else if (s.CooldownRemaining > 0f) text = text.Substring(0, text.IndexOf('!') + 1) + "  Los marineros vuelven en " + s.CooldownRemaining.ToString("0") + " s";
             DrawAlert(text, y);
-        }
-
-        private static string RudderBar(float rudder)
-        {
-            const int half = 5;
-            int pos = Mathf.RoundToInt(rudder * half);
-            var chars = new char[half * 2 + 1];
-            for (int i = 0; i < chars.Length; i++) chars[i] = '·';
-            chars[half] = '|';
-            chars[half + pos] = '■';
-            return "Br " + new string(chars) + " Er";
-        }
-
-        // ------------------------------------------------------------------------------------------
-        // Rosa de marcaciones: la proa al centro, la popa en los extremos y, en verde, por dónde tira la batería
-        // ------------------------------------------------------------------------------------------
-
-        private void DrawRose()
-        {
-            if (ship.Motion == null || _contacts.Count == 0) return;
-            float left = Mathf.Max(480f, (Screen.width - RoseWidth) * 0.5f);
-            float width = Mathf.Min(RoseWidth, Screen.width - left - 16f);
-            const float top = 12f, height = 28f;
-            float X(float relative) => left + (Mathf.Clamp(relative, -180f, 180f) + 180f) / 360f * width;
-
-            GUI.color = new Color(0f, 0f, 0f, 0.62f);
-            GUI.DrawTexture(new Rect(left, top, width, height + 20f), Texture2D.whiteTexture);
-
-            var battery = ship.GetComponent<BroadsideBatteryController>();
-            if (battery != null && battery.Model != null && ship.GetComponent<ColesTurretController>() == null)
-            {
-                float arc = battery.Model.ArcHalfWidthDeg;
-                GUI.color = new Color(0.3f, 0.8f, 0.4f, 0.4f);
-                GUI.DrawTexture(new Rect(X(-90f - arc), top + 8f, X(-90f + arc) - X(-90f - arc), 12f), Texture2D.whiteTexture);
-                GUI.DrawTexture(new Rect(X(90f - arc), top + 8f, X(90f + arc) - X(90f - arc), 12f), Texture2D.whiteTexture);
-            }
-            GUI.color = new Color(1f, 1f, 1f, 0.4f);
-            GUI.DrawTexture(new Rect(left, top + 13f, width, 2f), Texture2D.whiteTexture);
-            GUI.color = Ink;
-            GUI.Label(new Rect(X(0f) - 40f, top + height - 2f, 80f, 20f), "proa", _center);
-            GUI.Label(new Rect(X(-90f) - 40f, top + height - 2f, 80f, 20f), "babor", _center);
-            GUI.Label(new Rect(X(90f) - 40f, top + height - 2f, 80f, 20f), "estribor", _center);
-            GUI.Label(new Rect(left, top + height - 2f, 40f, 20f), "popa", _center);
-            GUI.Label(new Rect(left + width - 40f, top + height - 2f, 40f, 20f), "popa", _center);
-
-            foreach (NavalContact contact in _contacts)
-            {
-                if (contact.Where == null) continue;
-                Vector3 to = contact.Where.position - ship.transform.position;
-                float relative = Mathf.DeltaAngle(ship.Motion.HeadingDeg, Ballistics.Bearing(0f, 0f, to.x, to.z));
-                GUI.color = contact.Enemy ? EnemyColor : AllyColor;
-                GUI.DrawTexture(new Rect(X(relative) - 4f, top + 2f, 8f, 24f), Texture2D.whiteTexture);
-            }
-            GUI.color = Color.white;
         }
 
         // ------------------------------------------------------------------------------------------
@@ -301,14 +299,13 @@ namespace Pacifico.Naval
         private void EnsureStyles()
         {
             if (_label != null) return;
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 15 };
+            _label = new GUIStyle(GUI.skin.label) { fontSize = 18 };
             _label.normal.textColor = Ink;
-            _small = new GUIStyle(_label) { fontSize = 13, wordWrap = true };
-            _title = new GUIStyle(_label) { fontSize = 16, fontStyle = FontStyle.Bold, wordWrap = false };
-            _center = new GUIStyle(_small) { alignment = TextAnchor.MiddleCenter, wordWrap = false };
-            _alert = new GUIStyle(_label) { fontSize = 16, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _small = new GUIStyle(_label) { fontSize = 16, wordWrap = true };
+            _title = new GUIStyle(_label) { fontSize = 22, fontStyle = FontStyle.Bold, wordWrap = false };
+            _alert = new GUIStyle(_label) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _alert.normal.textColor = Color.white;
-            _mark = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _mark = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _mark.normal.textColor = Color.white;
         }
     }

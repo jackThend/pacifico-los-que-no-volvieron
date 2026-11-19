@@ -39,6 +39,7 @@ namespace Pacifico.Tactics
 
         private Texture2D _white;
         private GUIStyle _label;
+        private GUIStyle _note;
         private GUIStyle _small;
 
         public Camera ViewCamera
@@ -181,12 +182,12 @@ namespace Pacifico.Tactics
             foreach (SquadController squad in SquadController.All)
             {
                 if (squad.Suppression.State == SuppressionState.Normal) continue;
-                Label(squad.CenterOfMass() + Vector3.up * 5f, squad.Suppression.State == SuppressionState.Suppressed ? "¡Suprimida!" : "Presionada", _small);
+                Label(squad.CenterOfMass() + Vector3.up * 5f, squad.Suppression.State == SuppressionState.Suppressed ? "¡Se cubren!" : "Bajo fuego", _small);
             }
             if (_hoverEnemy != null)
             {
                 foreach (SoldierUnit soldier in _hoverEnemy.Soldiers) Mark(soldier.transform.position, new Color(1f, 0.35f, 0.25f, 0.9f), 6f);
-                Label(_hoverEnemy.CenterOfMass() + Vector3.up * 3f, _hoverEnemy.DisplayName + " — [clic derecho] atacar", _small);
+                Label(_hoverEnemy.CenterOfMass() + Vector3.up * 3f, _hoverEnemy.DisplayName + " — " + Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Order) + " atacar", _small);
             }
 
             // Previsualización de la orden: los puestos finales de cada hombre.
@@ -222,41 +223,54 @@ namespace Pacifico.Tactics
             }
 
             DrawPanel();
+            Pacifico.Input.ControlPrompts.DrawBar(12f, Pacifico.Input.Act.Select, Pacifico.Input.Act.Order, Pacifico.Input.Act.Move,
+                                                  Pacifico.Input.Act.CameraTurn, Pacifico.Input.Act.Pause);
         }
 
+        /// <summary>
+        /// Tus escuadras abajo a la izquierda (dos líneas cada una: nombre y soldados; qué hacen), sobre fondo oscuro y
+        /// dentro de 360 px, para no pisar los diálogos del centro.
+        /// </summary>
         private void DrawPanel()
         {
-            float y = Screen.height - 24f;
+            const float width = 360f, rowHeight = 44f;
             List<SquadController> own = _own;
             own.Clear();
             foreach (SquadController s in SquadController.All) if (s.PlayerControlled) own.Add(s);
-            for (int i = own.Count - 1; i >= 0; i--)
+            int carts = 0;
+            foreach (SupplyCart cart in SupplyCart.All) if (cart.Faction != Faction.Chile) carts++;
+            float height = own.Count * rowHeight + carts * 24f + 10f;
+            float top = Screen.height - 76f - height;
+            GUI.color = new Color(0f, 0f, 0f, 0.55f);
+            GUI.DrawTexture(new Rect(8f, top, width, height), _white);
+            GUI.color = Color.white;
+
+            float y = top + 6f;
+            foreach (SquadController s in own)
             {
-                SquadController s = own[i];
                 bool selected = _selection.Contains(s.StableId());
-                string state = s.Order == SquadOrderKind.Attack ? "Atacando" : s.Command.March.Moving ? "En marcha" : s.Target != null ? "Haciendo fuego" : "Alto";
-                string text = (selected ? "> " : "   ") + s.DisplayName + " — " + s.Strength + "/" + s.InitialStrength + " · " +
-                              (s.Formation == FormationType.Line ? "Línea" : "Guerrilla") + " · " + state +
-                              " · " + SuppressionName(s.Suppression.State) + (s.InCover > 0 ? " · a cubierto " + s.InCover : string.Empty) +
-                              " · " + SupplyText(s.Supply) + " · bajas causadas: " + s.EnemyCasualties;
-                DrawSuppressionBar(new Rect(12f, y - 3f, 120f, 3f), s.Suppression.Level);
-                GUI.Label(new Rect(12f, y - 20f, 900f, 22f), text, _label);
-                y -= 22f;
+                string state = s.Order == SquadOrderKind.Attack ? "Atacando" : s.Command.March.Moving ? "En marcha" : s.Target != null ? "Disparando" : "Quietos";
+                if (s.Suppression.State != SuppressionState.Normal) state += " · " + SuppressionName(s.Suppression.State);
+                if (s.InCover > 0) state += " · a cubierto";
+                if (s.Supply != null && s.Supply.Effectiveness < 0.95f) state += s.Supply.Effectiveness < 0.6f ? " · ¡MUCHA SED!" : " · sed";
+                GUI.color = selected ? new Color(0.6f, 1f, 0.6f) : Color.white;
+                GUI.Label(new Rect(16f, y, width - 16f, 22f), (selected ? "► " : string.Empty) + s.DisplayName + "  ·  " + s.Strength + "/" + s.InitialStrength, _label);
+                GUI.color = new Color(1f, 1f, 1f, 0.75f);
+                GUI.Label(new Rect(16f, y + 19f, width - 16f, 20f), state, _note);
+                GUI.color = Color.white;
+                DrawSuppressionBar(new Rect(16f, y + 39f, 120f, 3f), s.Suppression.Level);
+                y += rowHeight;
             }
             foreach (SupplyCart cart in SupplyCart.All)
             {
                 if (cart.Faction == Faction.Chile) continue;
-                GUI.Label(new Rect(12f, y - 20f, 900f, 22f), "   Carro de vituallas — agua " + cart.Model.WaterLiters.ToString("0") + " L · cartuchos " +
-                          cart.Model.Cartridges + " · " + cart.Status, _label);
-                y -= 22f;
+                GUI.Label(new Rect(16f, y, width - 16f, 22f), "Carro: agua " + cart.Model.WaterLiters.ToString("0") + " L · " + cart.Status, _note);
+                y += 24f;
             }
             string climate = BattlefieldClimate.Active != null
-                ? (BattlefieldClimate.Heat < 0.7f ? "Camanchaca" : "Sol del desierto") + " (calor " + (BattlefieldClimate.Heat * 100f).ToString("0") + " %)"
+                ? (BattlefieldClimate.Heat < 0.7f ? "Niebla (camanchaca)" : "Sol del desierto") + " · calor " + (BattlefieldClimate.Heat * 100f).ToString("0") + " %"
                 : string.Empty;
             if (climate.Length > 0) GUI.Label(new Rect(Screen.width - 330f, 10f, 320f, 22f), climate, _label);
-            GUI.Label(new Rect(12f, 10f, 1200f, 22f),
-                "Clic/recuadro: seleccionar (Mayús añade, Ctrl alterna) · Clic dcho.: mover (arrastrar: frente y orientación) · " +
-                "Clic dcho. sobre enemigo: atacar · 1 línea · 2 guerrilla · H alto · WASD/QE/rueda: cámara", _small);
         }
 
         /// <summary>«agua 60 % · 74 cart./hombre · sed» (ROADMAP 4.3).</summary>
@@ -311,9 +325,10 @@ namespace Pacifico.Tactics
         {
             if (_label != null) return;
             _white = Texture2D.whiteTexture;
-            _label = new GUIStyle(GUI.skin.label) { fontSize = 15 };
+            _label = new GUIStyle(GUI.skin.label) { fontSize = 17 };
             _label.normal.textColor = new Color(0.97f, 0.94f, 0.86f);
             _small = new GUIStyle(_label) { fontSize = 13, alignment = TextAnchor.MiddleCenter };
+            _note = new GUIStyle(_label) { fontSize = 14, alignment = TextAnchor.UpperLeft };
         }
 
         private static Vec3 ToVec3(Vector3 v) => new Vec3(v.x, v.y, v.z);

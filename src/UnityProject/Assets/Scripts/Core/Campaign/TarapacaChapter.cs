@@ -71,7 +71,7 @@ namespace Pacifico.Core.Campaign
             surprise.OnEnter.Add(Narrate("Amanece. Hambrientos y exhaustos tras la marcha desde Iquique, los aliados descansan entre sauces secos y casas de barro."));
             surprise.OnEnter.Add(Narrate("Las campanas de la iglesia tañen desordenadas: la vanguardia chilena baja por las laderas."));
             surprise.OnEnter.Add(new MissionLine(Caceres, guion.Find("¡Hijos del Zepita!")));
-            surprise.OnEnter.Add(Hint("WASD y ratón: moverse y mirar. Clic derecho: encarar. Clic: fuego. Ve a la plaza de la iglesia con el Zepita."));
+            surprise.OnEnter.Add(Hint("{mover}: caminar. {mirar}: mirar. {apuntar}: apuntar. {disparar}: disparar. Ve a la plaza de la iglesia con el Zepita."));
             surprise.Objectives.Add(new MissionObjective { Id = "plaza", Text = "Forma con el Zepita en la plaza de la iglesia", Complete = MissionCondition.Flag(Flags.AtRally) });
             surprise.Transitions.Add(new MissionTransition(MissionCondition.AtLeast(Facts.EnemiesDown, 1), Stages.Village));
             surprise.Transitions.Add(new MissionTransition(MissionCondition.All(MissionCondition.Flag(Flags.AtRally), MissionCondition.DialogueIdle()), Stages.Village));
@@ -90,7 +90,7 @@ namespace Pacifico.Core.Campaign
                 Id = "pocos_cartuchos", Interrupts = true,
                 When = MissionCondition.All(MissionCondition.Not(MissionCondition.AtLeast(Facts.Rounds, LowAmmoThreshold + 1)), MissionCondition.NotFlag(Flags.SwappedRifle)),
             };
-            lowAmmo.Lines.Add(Hint("Quedan pocos cartuchos de Chassepot. Recoge el Comblain de un chileno caído (E) y sus cartuchos."));
+            lowAmmo.Lines.Add(Hint("Te quedan pocas balas. Recoge con {usar} el fusil Comblain de un soldado caído y sus balas."));
             village.Triggers.Add(lowAmmo);
             var swap = new MissionTrigger { Id = "comblain", When = MissionCondition.Flag(Flags.SwappedRifle) };
             swap.Lines.Add(Narrate("Un Comblain chileno: otro cerrojo, otro cartucho. Las cartucheras de los caídos vuelven a servir."));
@@ -101,7 +101,7 @@ namespace Pacifico.Core.Campaign
             var krupp = new MissionStage { Id = Stages.Krupp, Title = "Los Krupp de la pampa", Perspective = Perspective };
             krupp.OnEnter.Add(Narrate("Desde la pampa superior, los cañones Krupp chilenos barren la quebrada."));
             krupp.OnEnter.Add(Narrate("Cáceres ordena calar bayonetas y subir la ladera."));
-            krupp.OnEnter.Add(Hint("F: estocada con la bayoneta. Quédate junto a cada pieza, sin chilenos en pie, para tomarla."));
+            krupp.OnEnter.Add(Hint("{bayoneta}: golpe de bayoneta. Quédate junto a cada cañón, sin enemigos cerca, para tomarlo."));
             krupp.Objectives.Add(new MissionObjective
             {
                 Id = "krupp", Text = "Toma los cañones Krupp de la pampa",
@@ -121,7 +121,7 @@ namespace Pacifico.Core.Campaign
             after.Objectives.Add(new MissionObjective { Id = "columna", Text = "Únete a la columna que marcha hacia Arica", Complete = MissionCondition.Flag(Flags.ReachedColumn) });
             var drummer = new MissionTrigger { Id = "tambor_herido", When = MissionCondition.Flag(Flags.DrummerFound) };
             drummer.Lines.Add(Narrate("Un joven tambor chileno, herido de muerte, recostado contra una pared de barro. Pide agua con un hilo de voz."));
-            drummer.Lines.Add(Hint("E: darle tu caramayola."));
+            drummer.Lines.Add(Hint("{usar}: dale agua de tu caramayola (cantimplora)."));
             after.Triggers.Add(drummer);
             var water = new MissionTrigger { Id = "agua", When = MissionCondition.Flag(Flags.WaterGiven), Interrupts = true };
             water.Lines.Add(Narrate("Bebe despacio. Expira en silencio, mirándote con gratitud."));

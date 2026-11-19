@@ -322,7 +322,7 @@ namespace Pacifico.Campaign
                 {
                     GUI.depth = -400;
                     GUI.color = new Color(1f, 1f, 1f, 0.5f);
-                    GUI.Label(new Rect(0f, Screen.height - 40f, Screen.width - 20f, 24f), "[M] menú   ", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight });
+                    GUI.Label(new Rect(0f, Screen.height - 40f, Screen.width - 20f, 24f), Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Menu) + " menú   ", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight });
                     GUI.color = Color.white;
                 }
                 return;

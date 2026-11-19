@@ -199,7 +199,7 @@ namespace Pacifico.Core.Campaign
             trap.OnEnter.Add(Narrate("8 de octubre de 1879, frente a Punta Angamos. Fragata blindada Almirante Cochrane, comandante Juan José Latorre."));
             trap.OnEnter.Add(Narrate(guion.Field("Prólogo")));
             trap.OnEnter.Add(Narrate("Amanece con mar picado y cielo plomizo. El Huáscar y la corbeta Unión navegan a toda máquina hacia el norte."));
-            trap.OnEnter.Add(Hint("W/S: máquina. A/D: timón. Córtale el paso al Huáscar antes de que escape."));
+            trap.OnEnter.Add(Hint("{acelerar} más rápido, {frenar} más lento, {timon} girar. Córtale el paso al Huáscar antes de que escape."));
             trap.Objectives.Add(new MissionObjective
             {
                 Id = "cerco", Text = "Corta la retirada del Huáscar (" + Meters(ChaseRangeM) + " m)",
@@ -224,8 +224,8 @@ namespace Pacifico.Core.Campaign
             var duel = new MissionStage { Id = Stages.Duel, Title = "Duelo de blindados", Perspective = Perspectives.CochraneBridge };
             duel.OnEnter.Add(Narrate("El Huáscar abre fuego. Sus granadas de 300 libras levantan columnas de agua junto al Cochrane."));
             duel.OnEnter.Add(Narrate("Latorre ordena no responder hasta tenerlo a " + openFire + " m: más lejos, las granadas de 250 libras no atraviesan su coraza."));
-            duel.OnEnter.Add(Hint("Espacio: andanada cuando la cubierta pase por la horizontal (la aguja en la zona verde)."));
-            duel.OnEnter.Add(Hint("Tenlo en ángulo, en el borde de la zona verde de arriba: tiras y tu coraza desvía sus granadas. Si te da de frente, pueden hundirte."));
+            duel.OnEnter.Add(Hint("{cañones}: ¡fuego! Dispara cuando la raya blanca esté en la zona verde."));
+            duel.OnEnter.Add(Hint("Ponte de lado al Huáscar para disparar, pero no te quedes quieto: si te da de frente, pueden hundirte."));
             duel.Objectives.Add(new MissionObjective
             {
                 Id = "perforar", Text = "Perfora la coraza del Huáscar",
@@ -268,7 +268,7 @@ namespace Pacifico.Core.Campaign
             duel.Triggers.Add(ramRun);
             var rammed = new MissionTrigger { Id = "espolonazo_recibido", When = MissionCondition.AtLeast(Facts.RamsReceived, 1), Interrupts = true };
             rammed.Lines.Add(Narrate("El espolón abre el costado del Cochrane. El agua entra a raudales."));
-            rammed.Lines.Add(Hint("2: achique, antes de que el agua te hunda."));
+            rammed.Lines.Add(Hint("{achique}: ¡saca el agua antes de que te hundas!"));
             duel.Triggers.Add(rammed);
             var help = new MissionTrigger { Id = "llega_el_blanco", When = MissionCondition.Flag(Flags.BlancoArrives) };
             help.Lines.Add(Narrate("El Blanco Encalada, con el comodoro Galvarino Riveros a bordo, entra en combate. Ya no estás solo."));
@@ -347,7 +347,7 @@ namespace Pacifico.Core.Campaign
             // ---- Cierre: las láminas del Archivo ---------------------------------------------------------------
             var plates = new MissionStage { Id = Stages.Plates, Title = "La captura del Huáscar", Perspective = Perspectives.Plates };
             plates.OnEnter.Add(Narrate("El Huáscar es llevado a Mejillones con la bandera de Chile. Con él, el Perú pierde el dominio del mar."));
-            plates.OnEnter.Add(Hint("Espacio: siguiente lámina."));
+            plates.OnEnter.Add(Hint("{pasar}: siguiente lámina."));
             plates.Transitions.Add(new MissionTransition(MissionCondition.Flag(Flags.PlatesClosed), MissionScript.CompleteStage));
             script.Stages.Add(plates);
 

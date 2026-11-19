@@ -50,7 +50,7 @@ namespace Pacifico.Tests.Campaign
 
             // Combate en el pueblo: se gastan los cartuchos del Chassepot.
             for (int i = 0; i < 6; i++) { r.Facts.Add(F.EnemiesDown); r.Facts.Add(F.Rounds, -5); Run(r, 5f); }
-            Assert.That(said.Any(s => s.StartsWith("Quedan pocos cartuchos")), Is.True, "aviso al quedar 5 o menos");
+            Assert.That(said.Any(s => s.StartsWith("Te quedan pocas balas")), Is.True, "aviso al quedar 5 o menos");
             r.Facts.SetFlag(G.SwappedRifle);
             r.Facts.Set(F.Rounds, 15);
             for (int i = 6; i < TarapacaChapter.DefaultVillageEnemies; i++) { r.Facts.Add(F.EnemiesDown); Run(r, 5f); }

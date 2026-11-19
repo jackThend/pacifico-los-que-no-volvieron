@@ -25,7 +25,7 @@ namespace Pacifico.EditorTools
         public const string MenuScenePath = ProjectPaths.Scenes + "/" + CampaignCatalog.MenuScene + ".unity";
         public const string ProductName = "Pacífico: Los que no volvieron";
         /// <summary>Versión del juego; el instalador (<c>tools/instalador/Pacifico.iss</c>) la lee de aquí.</summary>
-        public const string Version = "0.7.1";
+        public const string Version = "0.8.0";
         private const string MenuBackdrop = "Archivo_Historico/01_Barcos_y_Combate_Naval/03_Combate_Naval_de_Iquique_Somerscales.jpg";
 
         public static string ScenePath(string sceneName) => ProjectPaths.Scenes + "/" + sceneName + ".unity";

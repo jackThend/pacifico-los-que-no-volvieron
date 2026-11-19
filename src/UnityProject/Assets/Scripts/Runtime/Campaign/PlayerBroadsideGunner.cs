@@ -10,7 +10,8 @@ namespace Pacifico.Campaign
     /// El jugador sirve la batería de costado (capítulo 1, acto I: el grumete Wenceslao Vargas en las piezas de
     /// 40 libras de la Esmeralda). La maniobra la lleva el buque; el jugador elige el instante del disparo: la
     /// cubierta balancea y la andanada sale con el error de elevación del momento (<see cref="DeckRollModel"/>).
-    /// Espacio o clic: fuego. Un clinómetro y la caída prevista («CORTO / AL BLANCO / LARGO») ayudan a elegir.
+    /// Espacio, clic, A o RT: fuego. Una aguja que se mueve con la cubierta y un aviso grande («¡AHORA!») ayudan a
+    /// elegir el momento; si el enemigo no queda de costado, el panel dice hacia dónde girar.
     /// </summary>
     [RequireComponent(typeof(BroadsideBatteryController))]
     public sealed class PlayerBroadsideGunner : MonoBehaviour
@@ -101,12 +102,12 @@ namespace Pacifico.Campaign
         {
             if (!Solve(out BroadsideSide side, out _, out float error))
             {
-                Say("El enemigo no está por el través");
+                Say("No lo tienes de lado: gira el barco");
                 return;
             }
             if (!_battery.Model.IsLoaded(side))
             {
-                Say("Cargando… " + _battery.Model.ReloadRemaining(side).ToString("0.0") + " s");
+                Say("Los cañones aún se cargan… " + _battery.Model.ReloadRemaining(side).ToString("0") + " s");
                 return;
             }
             // Las bandas cargan por separado: el balanceo del instante del disparo decide la caída.
@@ -115,12 +116,12 @@ namespace Pacifico.Campaign
             _battery.Model.DispersionDeg = perfect ? NormalDispersionDeg * 0.5f : NormalDispersionDeg;
             if (_battery.TryFireAt(target, error))
             {
-                Say((perfect ? "¡Andanada perfecta! " : "¡Fuego! ") + before + " piezas de " + (side == BroadsideSide.Starboard ? "estribor" : "babor"));
+                Say((perfect ? "¡Disparo perfecto! " : "¡Fuego! ") + before + " cañones");
                 PlayerFired?.Invoke(before);
             }
             else
             {
-                Say("Fuera de alcance");
+                Say("Está muy lejos: acércate");
             }
         }
 
@@ -139,52 +140,59 @@ namespace Pacifico.Campaign
             if (!PlayerActive || Sunk || target == null || _battery.Model == null || _ship.Motion == null) return;
             if (_label == null)
             {
-                _label = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };
+                _label = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter };
                 _label.normal.textColor = new Color(0.95f, 0.92f, 0.82f);
-                _big = new GUIStyle(_label) { fontSize = 22, fontStyle = FontStyle.Bold };
+                _big = new GUIStyle(_label) { fontSize = 28, fontStyle = FontStyle.Bold };
             }
 
-            float cx = Screen.width * 0.5f, top = Screen.height - 190f;
-            GUI.Box(new Rect(cx - 170f, top, 340f, 150f), GUIContent.none);
+            const float width = 460f, height = 150f;
+            float cx = Screen.width * 0.5f, top = Screen.height - height - 70f;
+            GUI.color = new Color(0f, 0f, 0f, 0.62f);
+            GUI.DrawTexture(new Rect(cx - width * 0.5f, top, width, height), Texture2D.whiteTexture);
+            GUI.color = Color.white;
 
-            // Clinómetro: una aguja que oscila con la cubierta; la zona verde es el balanceo con el que se acierta.
-            float angle = _roll.AngleDeg;
-            float scale = 150f / Mathf.Max(0.5f, _roll.AmplitudeDeg);
             bool solved = Solve(out BroadsideSide side, out float range, out float error);
             float v = _battery.Model.Gun.MuzzleVelocityMps;
-            float height = solved ? DeckRollModel.MissHeight(v, range, error) : float.NaN;
-            bool onTarget = solved && height >= -targetBand.x && height <= targetBand.y;
+            float fallHeight = solved ? DeckRollModel.MissHeight(v, range, error) : float.NaN;
+            bool onTarget = solved && fallHeight >= -targetBand.x && fallHeight <= targetBand.y;
+            bool loaded = solved && _battery.Model.IsLoaded(side);
 
-            GUI.color = new Color(0.3f, 0.9f, 0.4f, 0.5f);
-            float good = solved ? BandHalfWidthDeg(v, range) * scale : 0f;
-            GUI.DrawTexture(new Rect(cx - good, top + 20f, 2f * good, 16f), Texture2D.whiteTexture);
-            GUI.color = new Color(1f, 1f, 1f, 0.35f);
-            GUI.DrawTexture(new Rect(cx - 150f, top + 27f, 300f, 2f), Texture2D.whiteTexture);
-            GUI.color = onTarget ? new Color(0.4f, 1f, 0.5f) : new Color(1f, 0.8f, 0.3f);
-            float needle = (side == BroadsideSide.Port ? -angle : angle) * scale;
-            GUI.DrawTexture(new Rect(cx + needle - 2f, top + 14f, 4f, 28f), Texture2D.whiteTexture);
-            GUI.color = Color.white;
-            GUI.Label(new Rect(cx - 170f, top + 42f, 340f, 20f), "Balanceo " + angle.ToString("+0.0;-0.0") + "°  " + (_roll.RateDegPerSecond > 0f ? "▲" : "▼"), _label);
-
-            string fall;
-            if (!solved) fall = _ship.PlayerControlled ? TurnAdvice() : "Sin blanco por el través";
-            else if (float.IsNaN(height)) fall = "FUERA DE ALCANCE";
-            else if (onTarget) fall = "AL BLANCO";
-            else
+            // Lo más importante, en grande: qué hacer ahora.
+            string say;
+            Color sayColor = new Color(1f, 0.85f, 0.4f);
+            if (Time.time < _statusUntil) say = _status;
+            else if (!solved) say = _ship.PlayerControlled ? TurnAdvice() : "Espera: el barco está girando";
+            else if (float.IsNaN(fallHeight)) say = "Está muy lejos: acércate";
+            else if (!loaded) say = "Cargando cañones… " + _battery.Model.ReloadRemaining(side).ToString("0") + " s";
+            else if (onTarget)
             {
-                float delta = DeckRollModel.FallRange(v, range, error) - range;
-                fall = (delta < 0f ? "CORTO " : "LARGO ") + Mathf.Abs(delta).ToString("0") + " m";
+                say = "¡AHORA!  Pulsa " + ControlPrompts.Key(Act.ShipFire);
+                sayColor = new Color(0.5f, 1f, 0.55f);
             }
-            GUI.color = onTarget ? new Color(0.5f, 1f, 0.6f) : new Color(1f, 0.85f, 0.4f);
-            GUI.Label(new Rect(cx - 170f, top + 64f, 340f, 30f), fall, _big);
+            else say = "Espera a que la raya entre en lo verde";
+            GUI.color = sayColor;
+            GUI.Label(new Rect(cx - width * 0.5f, top + 10f, width, 40f), say, _big);
             GUI.color = Color.white;
 
-            string loaded = side == BroadsideSide.None ? "—"
-                : _battery.Model.IsLoaded(side) ? "cargada" : "cargando " + _battery.Model.ReloadRemaining(side).ToString("0") + " s";
-            GUI.Label(new Rect(cx - 170f, top + 96f, 340f, 20f),
-                "Batería de " + (side == BroadsideSide.Port ? "babor" : "estribor") + ": " + loaded + " · " + range.ToString("0") + " m", _label);
-            GUI.Label(new Rect(cx - 170f, top + 120f, 340f, 20f), Time.time < _statusUntil ? _status : "[Espacio] ¡Fuego!", _label);
+            // La raya se mueve con el balanceo; en la zona verde, los cañones apuntan al enemigo.
+            float scale = 190f / Mathf.Max(0.5f, _roll.AmplitudeDeg);
+            float good = solved ? BandHalfWidthDeg(v, range) * scale : 0f;
+            float barY = top + 66f;
+            GUI.color = new Color(1f, 1f, 1f, 0.15f);
+            GUI.DrawTexture(new Rect(cx - 200f, barY, 400f, 30f), Texture2D.whiteTexture);
+            GUI.color = new Color(0.3f, 0.9f, 0.4f, 0.75f);
+            GUI.DrawTexture(new Rect(cx - good, barY, 2f * good, 30f), Texture2D.whiteTexture);
+            float needle = Mathf.Clamp((side == BroadsideSide.Port ? -_roll.AngleDeg : _roll.AngleDeg) * scale, -200f, 200f);
+            GUI.color = onTarget ? Color.white : new Color(1f, 0.75f, 0.25f);
+            GUI.DrawTexture(new Rect(cx + needle - 4f, barY - 6f, 8f, 42f), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+
+            string where = !solved ? "El enemigo: " + DistanceWords(range)
+                : "Cañones de la " + (side == BroadsideSide.Port ? "izquierda" : "derecha") + "  ·  enemigo " + DistanceWords(range);
+            GUI.Label(new Rect(cx - width * 0.5f, top + 108f, width, 30f), where, _label);
         }
+
+        private static string DistanceWords(float meters) => meters < 900f ? "cerca" : meters < 2500f ? "a media distancia" : "lejos";
 
         /// <summary>Hacia dónde girar para poner al enemigo de costado.</summary>
         private string TurnAdvice()
@@ -194,7 +202,7 @@ namespace Pacifico.Campaign
             bool ahead = Mathf.Abs(relative) < 90f;
             // Por la proa se le aparta la proa; por la popa, se le acerca.
             bool toPort = ahead ? relative > 0f : relative < 0f;
-            return toPort ? "Gira a babor [A] para batirlo" : "Gira a estribor [D] para batirlo";
+            return toPort ? "◄ Gira a la izquierda" : "Gira a la derecha ►";
         }
 
         /// <summary>Semiancho (°) del balanceo con el que la andanada pasa por el blanco (para la zona verde).</summary>

@@ -107,7 +107,7 @@ namespace Pacifico.Campaign
             }
             string state = _model.Carried ? "A cuestas: llévalo a la acequia" :
                 Vector3.Distance(Flat(_player.transform.position), Flat(Position)) <= WoundedComrade.PickUpReachM
-                    ? (_model.PickUpProgress > 0f ? "Cargándolo… " + (_model.PickUpProgress * 100f).ToString("0") + "%" : "[E] Mantén para cargar al herido")
+                    ? (_model.PickUpProgress > 0f ? "Cargándolo… " + (_model.PickUpProgress * 100f).ToString("0") + "%" : Pacifico.Input.ControlPrompts.Key(Pacifico.Input.Act.Use) + " Mantén para cargar al herido")
                     : "Herido en el campo";
             GUI.Label(new Rect(Screen.width * 0.5f - 250f, Screen.height * 0.5f + 64f, 500f, 24f),
                 state + "  ·  se desangra en " + _model.Remaining.ToString("0") + " s", _style);

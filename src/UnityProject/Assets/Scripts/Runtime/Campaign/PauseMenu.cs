@@ -74,7 +74,14 @@ namespace Pacifico.Campaign
 
         private void Update()
         {
-            if (_chapter == null || !GameInput.Pressed(GameKey.Escape)) return;
+            if (_chapter == null) return;
+            // Con mando, B también quita la pausa.
+            if (_paused && GameInput.PadPressedRaw(PadButton.B))
+            {
+                Release(true);
+                return;
+            }
+            if (!GameInput.Pressed(GameKey.Escape)) return;
             if (_paused)
             {
                 Release(true);
@@ -138,57 +145,74 @@ namespace Pacifico.Campaign
 
         private void DrawMenu()
         {
-            GUI.color = new Color(0f, 0f, 0f, 0.72f);
+            GUI.color = new Color(0f, 0f, 0f, 0.86f);
             GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), Texture2D.whiteTexture);
             GUI.color = Color.white;
 
             float width = Mathf.Min(520f, Screen.width - 40f);
             float x = (Screen.width - width) * 0.5f;
-            float y = Mathf.Max(20f, Screen.height * 0.5f - 320f);
+            float y = Mathf.Max(20f, Screen.height * 0.5f - 380f);
             GUI.Label(new Rect(x, y, width, 44f), "PAUSA", _title);
             GUI.Label(new Rect(x, y + 44f, width, 26f), "Capítulo " + _chapter.Number + " · " + _chapter.Title, _text);
             y += 84f;
 
-            if (GUI.Button(new Rect(x, y, width, 44f), "Seguir jugando  [Esc]", _button)) Release(true);
+            PadMenu.Begin(this);
+            if (PadMenu.Button(new Rect(x, y, width, 48f), "Seguir jugando  " + ControlPrompts.Key(Act.Pause), _button)) Release(true);
             y += 52f;
             if (CheckpointStore.ExistsFor(_chapter.Id))
             {
-                if (GUI.Button(new Rect(x, y, width, 44f), "Volver al punto de control: " + CheckpointStore.Current.StageTitle, _button))
+                if (PadMenu.Button(new Rect(x, y, width, 48f), "Volver al punto de control: " + CheckpointStore.Current.StageTitle, _button))
                 {
                     CampaignNavigator.ResumeCheckpoint();
                     return;
                 }
                 y += 52f;
             }
-            if (GUI.Button(new Rect(x, y, width, 44f), "Empezar el capítulo de nuevo", _button))
+            if (PadMenu.Button(new Rect(x, y, width, 48f), "Empezar el capítulo de nuevo", _button))
             {
                 CampaignNavigator.Load(_chapter);
                 return;
             }
             y += 52f;
-            if (GUI.Button(new Rect(x, y, width, 44f), "Salir al menú", _button))
+            if (PadMenu.Button(new Rect(x, y, width, 48f), "Salir al menú", _button))
             {
                 CampaignNavigator.Menu();
                 return;
             }
             y += 58f;
             y += GameSettings.DrawSliders(new Rect(x, y, width, 60f)) + 4f;
-            GUI.Label(new Rect(x, y, width, Screen.height - y - 10f), ControlsText(_chapter.Mode), _text);
+            GUI.Label(new Rect(x, y, width, 28f), "CONTROLES", _text);
+            Act[][] rows = ControlRows(_chapter.Mode);
+            for (int i = 0; i < rows.Length; i++) ControlPrompts.DrawBarAt(y + 40f + i * 52f, rows[i]);
 
             // Nada de lo que queda debajo debe recibir el ratón mientras dura la pausa.
             if (Event.current.isMouse) Event.current.Use();
         }
 
-        private static string ControlsText(ChapterMode mode)
+        /// <summary>Los controles del capítulo, en filas para la barra de abajo.</summary>
+        private static Act[][] ControlRows(ChapterMode mode)
         {
             switch (mode)
             {
                 case ChapterMode.Naval:
-                    return "Controles\nW / S: máquina  ·  A / D: timón  ·  Espacio o clic: fuego\n1 incendios  ·  2 achique  ·  3 vapor y timón\nTab: cámara hacia el enemigo o por la popa  ·  Mayús: catalejo\nBotón derecho: girar la cámara  ·  Rueda: acercar  ·  En la torre: el ratón apunta";
+                    return new[]
+                    {
+                        new[] { Act.Faster, Act.Slower, Act.Steer, Act.ShipFire },
+                        new[] { Act.FixFire, Act.FixWater, Act.FixSteam },
+                        new[] { Act.Camera, Act.Spyglass, Act.Look, Act.CourseClick },
+                    };
                 case ChapterMode.Rts:
-                    return "Controles\nClic o recuadro: seleccionar  ·  Clic derecho: mover o atacar\nW A S D: mover la cámara  ·  Q / E: girarla  ·  Rueda: altura\n1 línea  ·  2 guerrilla  ·  H alto  ·  C carga  ·  B flota";
+                    return new[]
+                    {
+                        new[] { Act.Select, Act.Order, Act.Move, Act.CameraTurn },
+                        new[] { Act.Line, Act.Skirmish, Act.Halt, Act.Charge, Act.Mark },
+                    };
                 default:
-                    return "Controles\nW A S D: moverse  ·  Ratón: mirar  ·  Clic: fuego\nClic derecho: encarar  ·  R: cargar  ·  F: bayoneta\nC: agacharse  ·  E: usar o recoger  ·  Espacio: saltar";
+                    return new[]
+                    {
+                        new[] { Act.Move, Act.Look, Act.Fire, Act.Aim },
+                        new[] { Act.Reload, Act.Use, Act.Bayonet, Act.Crouch, Act.Jump, Act.Sprint },
+                    };
             }
         }
 
@@ -197,9 +221,9 @@ namespace Pacifico.Campaign
             if (_title != null) return;
             _title = new GUIStyle(GUI.skin.label) { fontSize = 34, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             _title.normal.textColor = new Color(1f, 0.94f, 0.82f);
-            _text = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter, wordWrap = true };
+            _text = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.MiddleCenter, wordWrap = true };
             _text.normal.textColor = Color.white;
-            _button = new GUIStyle(GUI.skin.button) { fontSize = 17 };
+            _button = new GUIStyle(GUI.skin.button) { fontSize = 20 };
         }
     }
 }

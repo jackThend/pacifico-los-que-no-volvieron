@@ -1,4 +1,5 @@
 using Pacifico.Core.Campaign;
+using Pacifico.Input;
 using UnityEngine;
 
 namespace Pacifico.Campaign
@@ -14,36 +15,53 @@ namespace Pacifico.Campaign
         private GUIStyle _speaker;
         private GUIStyle _line;
         private GUIStyle _center;
+        private GUIStyle _small;
+        private GUIStyle _goal;
+        private GUIStyle _endTitle;
+        private GUIStyle _endHint;
 
         public void DrawObjectives(MissionRunner runner, string chapterLabel, string who)
         {
             EnsureStyles();
             MissionStage stage = runner.CurrentStage;
-            float height = 86f + stage.Objectives.Count * 22f;
-            GUI.color = new Color(0f, 0f, 0f, 0.55f);
-            GUI.DrawTexture(new Rect(12f, 12f, 450f, height), Texture2D.whiteTexture);
+            const float width = 500f, inner = width - 24f;
+            float height = 96f;
+            foreach (MissionObjective objective in stage.Objectives) height += _goal.CalcHeight(new GUIContent(GoalText(runner, objective)), inner - 26f) + 6f;
+            GUI.color = new Color(0f, 0f, 0f, 0.58f);
+            GUI.DrawTexture(new Rect(12f, 12f, width, height), Texture2D.whiteTexture);
             GUI.color = Color.white;
-            GUI.Label(new Rect(22f, 16f, 430f, 22f), chapterLabel + " · " + runner.Script.Title.ToUpperInvariant(), _title);
-            GUI.Label(new Rect(22f, 38f, 430f, 20f), runner.Script.Date + " · " + runner.Script.Location + " — " + stage.Title, _text);
-            GUI.Label(new Rect(22f, 58f, 430f, 20f), who, _text);
-            float y = 82f;
+            GUI.Label(new Rect(24f, 16f, inner, 28f), chapterLabel + " · " + runner.Script.Title.ToUpperInvariant(), _title);
+            GUI.Label(new Rect(24f, 44f, inner, 24f), stage.Title, _text);
+            GUI.color = new Color(1f, 1f, 1f, 0.7f);
+            GUI.Label(new Rect(24f, 66f, inner, 22f), who, _small);
+            GUI.color = Color.white;
+            float y = 94f;
             foreach (MissionObjective objective in stage.Objectives)
             {
                 bool done = runner.IsObjectiveComplete(objective);
-                GUI.color = done ? new Color(0.6f, 1f, 0.65f) : objective.Optional ? new Color(0.8f, 0.8f, 0.75f) : Color.white;
-                GUI.Label(new Rect(22f, y, 430f, 20f), (done ? "☑ " : "☐ ") + runner.Describe(objective) + (objective.Optional ? " (opcional)" : string.Empty), _text);
-                y += 22f;
+                string text = GoalText(runner, objective);
+                float h = _goal.CalcHeight(new GUIContent(text), inner - 26f);
+                GUI.color = done ? new Color(0.6f, 1f, 0.65f) : objective.Optional ? new Color(0.8f, 0.8f, 0.75f) : new Color(1f, 0.9f, 0.55f);
+                GUI.Label(new Rect(24f, y, 24f, 24f), done ? "☑" : "►", _goal);
+                GUI.color = done ? new Color(0.6f, 1f, 0.65f) : Color.white;
+                GUI.Label(new Rect(50f, y, inner - 26f, h), text, _goal);
+                y += h + 6f;
             }
             GUI.color = Color.white;
         }
+
+        private static string GoalText(MissionRunner runner, MissionObjective objective) =>
+            ControlPrompts.Resolve(runner.Describe(objective)) + (objective.Optional ? " (si puedes)" : string.Empty);
 
         public void DrawDialogue(MissionRunner runner, float bottomOffset)
         {
             MissionLine line = runner.Dialogue.Current;
             if (line == null) return;
             EnsureStyles();
-            float width = Mathf.Min(900f, Screen.width - 40f);
-            var rect = new Rect((Screen.width - width) * 0.5f, Screen.height - bottomOffset, width, 76f);
+            // Deja 380 px a cada lado para los paneles del buque, de las escuadras y de la munición.
+            float width = Mathf.Clamp(Screen.width - 760f, Mathf.Min(520f, Screen.width - 40f), 980f);
+            var rect = new Rect((Screen.width - width) * 0.5f, Screen.height - Mathf.Max(bottomOffset, 100f) - 14f, width, 90f);
+            string said = ControlPrompts.Resolve(line.Text);
             GUI.color = new Color(0f, 0f, 0f, 0.6f);
             GUI.DrawTexture(rect, Texture2D.whiteTexture);
             float alpha = Mathf.Clamp01(runner.Dialogue.CurrentElapsed / 0.25f);
@@ -53,15 +71,15 @@ namespace Pacifico.Campaign
                     GUI.color = new Color(1f, 0.85f, 0.5f, alpha);
                     GUI.Label(new Rect(rect.x + 14f, rect.y + 6f, width - 28f, 20f), line.Speaker.ToUpperInvariant(), _speaker);
                     GUI.color = new Color(1f, 1f, 1f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 26f, width - 28f, 46f), "«" + line.Text + "»", _line);
+                    GUI.Label(new Rect(rect.x + 14f, rect.y + 28f, width - 28f, 58f), "«" + said + "»", _line);
                     break;
                 case LineKind.Hint:
                     GUI.color = new Color(0.75f, 0.9f, 1f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 10f, width - 28f, 56f), line.Text, _line);
+                    GUI.Label(new Rect(rect.x + 14f, rect.y + 8f, width - 28f, 74f), said, _line);
                     break;
                 default:
                     GUI.color = new Color(0.92f, 0.88f, 0.78f, alpha);
-                    GUI.Label(new Rect(rect.x + 14f, rect.y + 10f, width - 28f, 56f), line.Text, _center);
+                    GUI.Label(new Rect(rect.x + 14f, rect.y + 8f, width - 28f, 74f), said, _center);
                     break;
             }
             GUI.color = Color.white;
@@ -75,14 +93,17 @@ namespace Pacifico.Campaign
         public void DrawEnd(MissionRunner runner, string chapterLabel, string completeDetail, string hint)
         {
             EnsureStyles();
-            var rect = new Rect(Screen.width * 0.5f - 300f, Screen.height * 0.5f - 90f, 600f, 180f);
+            float w = Mathf.Min(760f, Screen.width - 40f);
+            var rect = new Rect(Screen.width * 0.5f - w * 0.5f, Screen.height * 0.5f - 110f, w, 220f);
             GUI.color = new Color(0f, 0f, 0f, 0.75f);
             GUI.DrawTexture(rect, Texture2D.whiteTexture);
             GUI.color = Color.white;
             bool complete = runner.State == MissionState.Complete;
-            GUI.Label(new Rect(rect.x, rect.y + 20f, rect.width, 30f), complete ? chapterLabel + " COMPLETADO" : "MISIÓN FRACASADA", _title);
-            GUI.Label(new Rect(rect.x + 20f, rect.y + 64f, rect.width - 40f, 60f), complete ? completeDetail : runner.FailureReason, _center);
-            GUI.Label(new Rect(rect.x, rect.y + 130f, rect.width, 24f), hint, _center);
+            GUI.color = complete ? new Color(0.6f, 1f, 0.65f) : new Color(1f, 0.6f, 0.5f);
+            GUI.Label(new Rect(rect.x, rect.y + 18f, rect.width, 40f), complete ? "¡" + chapterLabel + " SUPERADO!" : "¡OH, NO! INTÉNTALO OTRA VEZ", _endTitle);
+            GUI.color = Color.white;
+            GUI.Label(new Rect(rect.x + 20f, rect.y + 66f, rect.width - 40f, 80f), complete ? completeDetail : runner.FailureReason, _center);
+            GUI.Label(new Rect(rect.x + 10f, rect.y + 160f, rect.width - 20f, 44f), hint, _endHint);
         }
 
         public static void DrawFade(float alpha, Color color)
@@ -96,13 +117,21 @@ namespace Pacifico.Campaign
         private void EnsureStyles()
         {
             if (_title != null) return;
-            _title = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
+            _title = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
             _title.normal.textColor = new Color(1f, 0.93f, 0.8f);
-            _text = new GUIStyle(GUI.skin.label) { fontSize = 14 };
+            _text = new GUIStyle(GUI.skin.label) { fontSize = 17 };
             _text.normal.textColor = Color.white;
-            _speaker = new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Bold };
+            _small = new GUIStyle(GUI.skin.label) { fontSize = 14, fontStyle = FontStyle.Italic };
+            _small.normal.textColor = Color.white;
+            _goal = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
+            _goal.normal.textColor = Color.white;
+            _endTitle = new GUIStyle(GUI.skin.label) { fontSize = 30, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            _endTitle.normal.textColor = Color.white;
+            _endHint = new GUIStyle(GUI.skin.label) { fontSize = 18, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, wordWrap = true };
+            _endHint.normal.textColor = new Color(1f, 0.9f, 0.55f);
+            _speaker = new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold };
             _speaker.normal.textColor = Color.white;
-            _line = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
+            _line = new GUIStyle(GUI.skin.label) { fontSize = 20, wordWrap = true };
             _line.normal.textColor = Color.white;
             _center = new GUIStyle(_line) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Italic };
         }

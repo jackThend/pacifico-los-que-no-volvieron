@@ -106,8 +106,8 @@ namespace Pacifico.Core.Campaign
             var deck = new MissionStage { Id = Stages.WoodenDeck, Title = "La cubierta de madera", Perspective = Perspectives.EsmeraldaBattery };
             deck.OnEnter.Add(Narrate("21 de mayo de 1879, rada de Iquique. Corbeta Esmeralda. Grumete Wenceslao Vargas, batería de 40 libras."));
             deck.OnEnter.Add(Narrate("El monitor Huáscar emerge de la bruma. Hacia el sur, la Independencia persigue a la Covadonga."));
-            deck.OnEnter.Add(Hint("Espacio: andanada. Dispara cuando la cubierta pase por la horizontal: si escora, el tiro sale corto o largo."));
-            deck.OnEnter.Add(Hint("W/S: máquina. A/D: timón. Aléjate de las baterías de tierra y pon al Huáscar en la zona verde de arriba."));
+            deck.OnEnter.Add(Hint("{cañones}: ¡fuego! Dispara cuando la raya blanca esté en la zona verde; si no, fallas."));
+            deck.OnEnter.Add(Hint("{acelerar} más rápido, {frenar} más lento, {timon} girar. Aléjate de los cañones de la costa y pon al Huáscar de lado."));
             deck.Objectives.Add(new MissionObjective
             {
                 Id = "andanadas", Text = "Dispara las andanadas contra el Huáscar",
@@ -168,7 +168,7 @@ namespace Pacifico.Core.Campaign
             var turret = new MissionStage { Id = Stages.Turret, Title = "La torre giratoria", Perspective = Perspectives.HuascarTurret };
             turret.OnEnter.Add(Narrate("Torre Coles del Huáscar. Cabo Dámaso Antúnez: dieciséis artilleros cargan el cañón Armstrong de 300 libras."));
             turret.OnEnter.Add(Say(Grau, "¡Fuego a la línea"));
-            turret.OnEnter.Add(Hint("Ratón: girar la torre. Clic: fuego. R/F: convergencia. Mayús: telémetro."));
+            turret.OnEnter.Add(Hint("{torre}: apunta la torre. {disparar}: ¡fuego! {convergencia}: tiro más lejos o más cerca."));
             turret.Objectives.Add(new MissionObjective
             {
                 Id = "flotacion", Text = "Alcanza la línea de flotación de la Esmeralda", Complete = MissionCondition.AtLeast(Facts.WaterlineHits, 1),
@@ -184,7 +184,7 @@ namespace Pacifico.Core.Campaign
 
             var third = new MissionStage { Id = Stages.ThirdRam, Title = "El tercer espolonazo", Perspective = Perspectives.HuascarHelm };
             third.OnEnter.Add(Narrate("Grau ordena embestir de nuevo. La Esmeralda sigue disparando con sus últimos cañones a flor de agua."));
-            third.OnEnter.Add(Hint("W: toda máquina. A/D: timón. Lanza el espolón contra su costado, no de refilón. Tras el golpe, S: atrás."));
+            third.OnEnter.Add(Hint("{acelerar}: a toda máquina. {timon}: girar. Choca con la punta del barco contra su costado. Después, {frenar}: marcha atrás."));
             third.Objectives.Add(new MissionObjective
             {
                 Id = "espolonazos", Text = "Embiste a la Esmeralda con el espolón",
@@ -207,7 +207,7 @@ namespace Pacifico.Core.Campaign
             rescue.OnEnter.Add(Narrate("Silencio en la bahía. Entre los restos de madera, decenas de marineros chilenos luchan por no ahogarse."));
             rescue.OnEnter.Add(Narrate("Algunos artilleros alzan sus fusiles hacia los náufragos. Grau sale de la torre de mando."));
             rescue.OnEnter.Add(Say(Grau, "¡Fuego no!"));
-            rescue.OnEnter.Add(Hint("W/S: máquina. A/D: timón. Acércate despacio a cada grupo de náufragos para arriar los botes."));
+            rescue.OnEnter.Add(Hint("{acelerar} y {frenar}: velocidad. {timon}: girar. Acércate despacio a cada grupo de náufragos para rescatarlos."));
             rescue.Objectives.Add(new MissionObjective
             {
                 Id = "rescate", Text = "Recoge a los náufragos de la Esmeralda",
